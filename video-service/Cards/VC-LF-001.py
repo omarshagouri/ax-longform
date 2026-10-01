@@ -1,8 +1,8 @@
-# VC-LF-001 — AmpCoreX long-form hero-number card
-# Native canvas: 1920x1080 (16:9). Designed to keep the decorative X visible on the right.
+# VC-LF-001 | AmpCoreX long-form 1920x1080 conversion v1
+# Motion is duration-aware and reserves only the final 1.0 s as a settled hold.
 CARD = {
-    "id": "VC-LF-001",
-    "slots": ["KICKER", "NUM", "PCT"],
+    "id": 'VC-LF-001',
+    "slots": ['KICKER', 'NUM', 'PCT'],
     "default_duration": 3.0,
     "css": r'''
         #axsafe{
@@ -38,7 +38,12 @@ CARD = {
             transform-origin:center center;
         }
         .hero .key{ color:#00D4AA; }
-    ''',
+    
+/* LF v1 composition polish */
+#block{left:120px!important;top:285px!important;width:1080px!important;text-align:center!important;}
+.kicker{font-size:48px!important;letter-spacing:7px!important;color:#9CB1C8!important;}
+.hero{font-size:300px!important;}
+''',
     "body": r'''<div id="axsafe">
         <div id="block">
             <p class="kicker" id="kick">__KICKER__</p>
