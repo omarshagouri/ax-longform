@@ -34,7 +34,7 @@ CARD = {
 transform:translate(340px,-111px) scale(.78)!important;transform-origin:540px 540px!important;}
 
 /* LF V2 per-card readability scale */
-#axsafe{transform:translate(340px,-111px) scale(0.84)!important;transform-origin:540px 540px!important;}
+#axsafe{transform:translate(430px,-90px) scale(0.84)!important;transform-origin:540px 540px!important;}
 .src{bottom:760px!important;}
 ''',
     "body": r'''<div id="axsafe"><div class="g-wrap"><div class="g-ring"><canvas id="gCanvas" width="520" height="520"></canvas><div class="g-val" id="gVal">__VALUE__</div></div>
