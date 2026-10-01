@@ -8,7 +8,7 @@ CARD = {
     "css": r'''.th-wrap{position:absolute;left:0;top:0;width:1080px;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;}
 .th-cap{font-family:'Space Grotesk';font-weight:700;font-size:56px;color:#FFFFFF;margin-bottom:56px;text-align:center;opacity:0;transform:translateY(26px);}
 .th-row{display:flex;align-items:flex-end;gap:44px;}
-.th-tube{position:relative;width:78px;height:520px;background:rgba(140,160,184,.16);border-radius:40px;overflow:hidden;}
+.th-tube{position:relative;width:78px;height:520px;background:rgba(140,160,184,.16);border-radius:40px;overflow:hidden;opacity:0;transform:scaleY(.88);transform-origin:bottom center;}
 .th-merc{position:absolute;left:0;bottom:0;width:100%;height:0;background:linear-gradient(180deg,#FF7A3C,#00D4AA);}
 .th-val{font-family:'Space Grotesk';font-weight:700;font-size:110px;color:#FFFFFF;opacity:0;transform:translateY(28px);}
 
@@ -36,7 +36,7 @@ transform:translate(340px,-151px) scale(.78)!important;transform-origin:540px 54
 #axsafe{transform:translate(340px,-151px) scale(0.84)!important;transform-origin:540px 540px!important;}
 ''',
     "body": r'''<div id="axsafe"><div class="th-wrap"><div class="th-cap" id="thCap">__CAPTION__</div>
-<div class="th-row"><div class="th-tube"><div class="th-merc" id="thMerc"></div></div><div class="th-val" id="thVal">__TEMP__</div></div></div></div>''',
+<div class="th-row"><div class="th-tube" id="thTube"><div class="th-merc" id="thMerc"></div></div><div class="th-val" id="thVal">__TEMP__</div></div></div></div>''',
     "seek": r'''
 /* AmpCoreX LF timing normalization:
    real card duration = x
@@ -67,9 +67,41 @@ if(ready){el.dataset.fitpx=size;el.dataset.fitok='1';}}
 };}
 
 __fit(".th-val",320,0,1,0);__fit(".th-cap",900,180,0,1);
-function show(id,a,b,dy){var e=easeOutCubic(clamp((t-a)/(b-a)));var el=document.getElementById(id);if(el){el.style.opacity=e;el.style.transform='translateY('+(dy*(1-e))+'px)';}}
-function grow(id,a,b){var e=easeOutCubic(clamp((t-a)/(b-a)));var el=document.getElementById(id);if(el){el.style.transform='scaleX('+e+')';}}
-show('thCap',S(0,3),E(0,3),26);
-var e=easeOutCubic(clamp((t-S(1,3))/(E(1,3)-S(1,3))));document.getElementById('thMerc').style.height=(e*100)+'%';
-show('thVal',S(2,3),E(2,3),28);''',
+
+/* LF-014 motion order:
+   1) caption/text
+   2) grey thermometer track
+   3) coloured fill
+   4) temperature value
+   Motion occupies duration-1s; final 1s is fully settled.
+*/
+var p=clamp(t/(x-HOLD));
+
+function seg(a,b){
+    return easeOutCubic(clamp((p-a)/(b-a)));
+}
+
+var cap=document.getElementById('thCap');
+var tube=document.getElementById('thTube');
+var merc=document.getElementById('thMerc');
+var val=document.getElementById('thVal');
+
+/* 1. Caption first */
+var e1=seg(0.00,0.28);
+cap.style.opacity=e1;
+cap.style.transform='translateY('+(26*(1-e1))+'px)';
+
+/* 2. Grey tube appears after the caption has started */
+var e2=seg(0.22,0.46);
+tube.style.opacity=e2;
+tube.style.transform='scaleY('+(0.88+0.12*e2)+')';
+
+/* 3. Colour then rises through the tube */
+var e3=seg(0.40,0.82);
+merc.style.height=(e3*100)+'%';
+
+/* 4. Temperature value finishes the sequence */
+var e4=seg(0.72,1.00);
+val.style.opacity=e4;
+val.style.transform='translateY('+(28*(1-e4))+'px)';''',
 }
