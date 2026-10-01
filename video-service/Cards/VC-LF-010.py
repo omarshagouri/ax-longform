@@ -70,6 +70,28 @@ if(ready){el.dataset.fitpx=size;el.dataset.fitok='1';}}
 __fit(".col-t",224,0,1,1);__fit(".col-p",224,240,0,1);
 function show(id,a,b,dy){var e=easeOutCubic(clamp((t-a)/(b-a)));var el=document.getElementById(id);if(el){el.style.opacity=e;el.style.transform='translateY('+(dy*(1-e))+'px)';}}
 function grow(id,a,b){var e=easeOutCubic(clamp((t-a)/(b-a)));var el=document.getElementById(id);if(el){el.style.transform='scaleX('+e+')';}}
-['c1','c2','c3'].forEach(function(id){var el=document.getElementById(id);if(el&&el.textContent.indexOf('__')>-1){el.style.display='none';}});
-show('c1',S(0,3),E(0,3),40);show('c2',S(1,3),E(1,3),40);show('c3',S(2,3),E(2,3),40);''',
+/* Optional-column handling:
+   A column is visible only when it contains real title/point text.
+   Empty strings are treated exactly like missing placeholders.
+   Visible columns are re-timed using the actual visible-column count. */
+var filled=[];
+['c1','c2','c3'].forEach(function(id){
+  var el=document.getElementById(id);
+  if(!el){return;}
+  var titleEl=el.querySelector('.col-t');
+  var pointEl=el.querySelector('.col-p');
+  var title=titleEl?(titleEl.textContent||'').trim():'';
+  var point=pointEl?(pointEl.textContent||'').trim():'';
+  var unresolved=(title.indexOf('__')>-1 || point.indexOf('__')>-1);
+  var empty=(title.length===0 && point.length===0);
+  if(unresolved || empty){
+    el.style.display='none';
+  }else{
+    el.style.display='';
+    filled.push(id);
+  }
+});
+filled.forEach(function(id,i){
+  show(id,S(i,filled.length),E(i,filled.length),40);
+});''',
 }
