@@ -9,7 +9,7 @@ CARD = {
 .tl-line{position:relative;height:6px;background:rgba(140,160,184,.25);border-radius:3px;margin:0 20px;}
 .tl-prog{position:absolute;left:0;top:0;height:100%;width:100%;background:#00D4AA;transform:scaleX(0);transform-origin:left;border-radius:3px;}
 .tl-pts{position:relative;display:flex;justify-content:space-between;margin:0 20px;}
-.tl-pt{position:absolute;transform:translateX(-50%);text-align:center;top:-14px;opacity:0;}
+.tl-pt{position:absolute;transform:translateX(-50%);text-align:center;top:-14px;opacity:0;width:260px;}
 .tl-dot{width:30px;height:30px;border-radius:50%;background:#00D4AA;margin:0 auto 18px;box-shadow:0 0 0 8px rgba(0,212,170,.18);}
 .tl-yr{font-family:'Space Grotesk';font-weight:700;font-size:44px;color:#FFFFFF;}
 .tl-lb{font-family:Inter;font-weight:400;font-size:32px;color:#8CA0B8;max-width:230px;margin:8px auto 0;line-height:1.2;}
@@ -22,8 +22,8 @@ CARD = {
 
 #axsafe{transform:translate(140px,-193px)!important;}
 .tl-wrap{width:980px!important;}
-.tl-yr{font-size:40px!important;}
-.tl-lb{font-size:28px!important;}
+.tl-yr{font-size:38px!important;line-height:1.08!important;}
+.tl-lb{font-size:26px!important;line-height:1.22!important;}
 
 /* ===== LF V2 universal centered composition =====
    Optical content center ~= x 880 px.
@@ -69,10 +69,93 @@ while(size>16&&g<240&&(el.scrollWidth>el.clientWidth+0.5||(maxH&&el.scrollHeight
 if(ready){el.dataset.fitpx=size;el.dataset.fitok='1';}}
 };}
 
-__fit(".tl-yr",200,0,1,0);__fit(".tl-lb",230,150,0,0);
-function show(id,a,b,dy){var e=easeOutCubic(clamp((t-a)/(b-a)));var el=document.getElementById(id);if(el){el.style.opacity=e;el.style.transform='translateY('+(dy*(1-e))+'px)';}}
-function grow(id,a,b){var e=easeOutCubic(clamp((t-a)/(b-a)));var el=document.getElementById(id);if(el){el.style.transform='scaleX('+e+')';}}
-['tp1','tp2','tp3','tp4'].forEach(function(id){var el=document.getElementById(id);if(el&&el.textContent.indexOf('__')>-1){el.style.display='none';}});
-var N=4;grow('tlProg',S(0,N),E(3,N));
-show('tp1',S(0,N),E(0,N),18);show('tp2',S(1,N),E(1,N),18);show('tp3',S(2,N),E(2,N),18);show('tp4',S(3,N),E(3,N),18);''',
+function show(id,a,b,dy){
+    var e=easeOutCubic(clamp((t-a)/(b-a)));
+    var el=document.getElementById(id);
+    if(el){
+        el.style.opacity=e;
+        el.style.transform='translateX(-50%) translateY('+(dy*(1-e))+'px)';
+    }
+}
+function grow(id,a,b){
+    var e=easeOutCubic(clamp((t-a)/(b-a)));
+    var el=document.getElementById(id);
+    if(el){el.style.transform='scaleX('+e+')';}
+}
+
+/* Optional timeline points:
+   Empty YEAR+LABEL pairs disappear completely.
+   Remaining points are redistributed across the timeline.
+   One point becomes a centered single-date card instead of leaving 3 empty dots. */
+var ids=['tp1','tp2','tp3','tp4'];
+var visible=[];
+
+ids.forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el){return;}
+
+    var yr=el.querySelector('.tl-yr');
+    var lb=el.querySelector('.tl-lb');
+
+    var year=yr?(yr.textContent||'').trim():'';
+    var label=lb?(lb.textContent||'').trim():'';
+
+    var unresolved=(year.indexOf('__')>-1 || label.indexOf('__')>-1);
+    var empty=(year.length===0 && label.length===0);
+
+    if(unresolved || empty){
+        el.style.display='none';
+    }else{
+        el.style.display='';
+        visible.push(el);
+    }
+});
+
+var N=visible.length;
+var line=document.querySelector('.tl-line');
+var prog=document.getElementById('tlProg');
+
+if(N===0){
+    if(line){line.style.display='none';}
+}else if(N===1){
+    /* A single event should read as one centered milestone, not a 4-point timeline. */
+    var el=visible[0];
+    el.style.left='50%';
+    el.style.width='700px';
+
+    var yr=el.querySelector('.tl-yr');
+    var lb=el.querySelector('.tl-lb');
+    if(yr){yr.style.maxWidth='650px';}
+    if(lb){lb.style.maxWidth='560px';}
+
+    if(line){line.style.background='transparent';}
+    if(prog){prog.style.display='none';}
+
+    __fit("#"+el.id+" .tl-yr",650,105,1,1);
+    __fit("#"+el.id+" .tl-lb",560,155,0,1);
+
+    show(el.id,S(0,1),E(0,1),18);
+}else{
+    /* Evenly distribute 2–4 real milestones. */
+    var positions={
+        2:[20,80],
+        3:[12,50,88],
+        4:[8,36,64,92]
+    }[N];
+
+    visible.forEach(function(el,i){
+        el.style.left=positions[i]+'%';
+        el.style.width=(N===2?'360px':N===3?'300px':'250px');
+
+        var yr=el.querySelector('.tl-yr');
+        var lb=el.querySelector('.tl-lb');
+        if(yr){yr.style.maxWidth=(N===2?'340px':N===3?'280px':'230px');}
+        if(lb){lb.style.maxWidth=(N===2?'340px':N===3?'280px':'230px');}
+
+        show(el.id,S(i,N),E(i,N),18);
+    });
+
+    /* The teal line animates only when there is an actual timeline. */
+    grow('tlProg',S(0,N),E(N-1,N));
+}''',
 }
