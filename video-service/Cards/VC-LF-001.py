@@ -71,12 +71,26 @@ if(keyEl && keyEl.textContent.trim().length>3){
 __fit('.kicker',1080,90,0,1);
 __fit('.hero',1120,330,1,1);
 
+/*
+x = total card duration from the renderer.
+Motion uses the whole card duration minus the final 1 second.
+The last 1 second is a settled hold.
+*/
+var x=(typeof x!=='undefined' && x>0)?x:3.0;
+var HOLD=1.0;
+var ACTIVE=Math.max(0.25,x-HOLD);
+var p=clamp(t/ACTIVE);
+
 var kick=document.getElementById('kick');
 var hero=document.getElementById('hero');
-var we=easeOutCubic(clamp((t-0.0)/0.8));
+
+/* Preserve the original motion proportions, but stretch them across ACTIVE. */
+var we=easeOutCubic(clamp(p/0.64));
 kick.style.clipPath='inset(0 '+(100*(1-we))+'% 0 0)';
-var pp=clamp((t-0.75)/0.5);
+
+var pp=clamp((p-0.60)/0.40);
 hero.style.opacity=pp>0?1:0;
+
 var scale;
 if(pp<0.6){scale=0.85+(1.05-0.85)*easeOutCubic(pp/0.6);}
 else{scale=1.05-(1.05-1.0)*easeOutCubic((pp-0.6)/0.4);}
