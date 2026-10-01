@@ -118,23 +118,47 @@ var prog=document.getElementById('tlProg');
 if(N===0){
     if(line){line.style.display='none';}
 }else if(N===1){
-    /* A single event should read as one centered milestone, not a 4-point timeline. */
+    /* One real event:
+       keep the timeline language. Show a short centered line + one dot,
+       then reveal the date and label beneath it. */
     var el=visible[0];
     el.style.left='50%';
-    el.style.width='700px';
+    el.style.width='760px';
 
     var yr=el.querySelector('.tl-yr');
     var lb=el.querySelector('.tl-lb');
-    if(yr){yr.style.maxWidth='650px';}
-    if(lb){lb.style.maxWidth='560px';}
 
-    if(line){line.style.background='transparent';}
-    if(prog){prog.style.display='none';}
+    if(yr){
+        yr.style.maxWidth='700px';
+        yr.style.fontSize='46px';
+        yr.style.lineHeight='1.08';
+        yr.style.whiteSpace='nowrap';
+    }
+    if(lb){
+        lb.style.maxWidth='640px';
+        lb.style.fontSize='30px';
+        lb.style.lineHeight='1.22';
+    }
 
-    __fit("#"+el.id+" .tl-yr",650,105,1,1);
-    __fit("#"+el.id+" .tl-lb",560,155,0,1);
+    if(line){
+        line.style.width='560px';
+        line.style.margin='0 auto';
+        line.style.background='rgba(140,160,184,.25)';
+        line.style.transform='translateY(70px)';
+    }
+    if(prog){
+        prog.style.display='block';
+        prog.style.transformOrigin='center';
+    }
 
-    show(el.id,S(0,1),E(0,1),18);
+    __fit("#"+el.id+" .tl-yr",700,110,1,1);
+    __fit("#"+el.id+" .tl-lb",640,160,0,1);
+
+    /* Draw the short line first, then bring in the milestone.
+       The final second remains a settled hold. */
+    var lineEnd=Math.max(0.35,S(0,1)+0.75);
+    grow('tlProg',0.08,lineEnd);
+    show(el.id,Math.max(0.18,lineEnd*0.55),E(0,1),18);
 }else{
     /* Evenly distribute 2–4 real milestones. */
     var positions={
