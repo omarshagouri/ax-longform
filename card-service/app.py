@@ -50,8 +50,8 @@ FRAME = """
 <script>
   function clamp(x){return Math.max(0,Math.min(1,x));}
   function easeOutCubic(p){return 1-Math.pow(1-p,3);}
-  window.seek=function(t){__CARD_SEEK__};
-  window.seek(0);
+  window.seek=function(t,x){__CARD_SEEK__};
+  window.seek(0,1);
 </script></body></html>
 """
 
@@ -118,7 +118,7 @@ async def render_card_mp4(card, values, duration, out_path):
         await page.set_content(html)
         await page.evaluate("() => document.fonts.ready")
         for i in range(total):
-            await page.evaluate(f"window.seek({i / FPS})")
+            await page.evaluate("(args) => window.seek(args.t, args.x)", {"t": i / FPS, "x": duration})
             await page.locator("#stage").screenshot(path=f"{frames}/frame_{i:04d}.png")
         await context.close()
         cmd = [
@@ -131,14 +131,14 @@ async def render_card_mp4(card, values, duration, out_path):
     finally:
         shutil.rmtree(frames, ignore_errors=True)
 
-async def render_card_png(card, values, at_seconds, out_path):
+async def render_card_png(card, values, at_seconds, duration, out_path):
     html = build_html(card, values)
     context = await _browser.new_context(viewport={"width": WIDTH, "height": HEIGHT})
     page = await context.new_page()
     try:
         await page.set_content(html)
         await page.evaluate("() => document.fonts.ready")
-        await page.evaluate(f"window.seek({float(at_seconds)})")
+        await page.evaluate("(args) => window.seek(args.t, args.x)", {"t": float(at_seconds), "x": float(duration)})
         await page.wait_for_timeout(100)
         await page.locator("#stage").screenshot(path=out_path)
     finally:
@@ -155,6 +155,7 @@ def health():
         "service": "ampcorex-longform-card-lab",
         "canvas": f"{WIDTH}x{HEIGHT}",
         "fps": FPS,
+        "timing": "duration-aware; final 1s hold",
     }
 
 @app.post("/render-beat")
@@ -199,13 +200,14 @@ async def render_card_png_endpoint(req: Request):
     if isinstance(values, str):
         values = json.loads(values)
     card = load_card(card_id)
-    at_seconds = float(body.get("at_seconds", card.get("default_duration", 3.0)))
+    duration = parse_duration(body.get("duration"), card.get("default_duration", 3.0))
+    at_seconds = float(body.get("at_seconds", duration))
     output_name = str(body.get("output_name") or f"{card_id}.png")
     if not output_name.lower().endswith(".png"):
         output_name += ".png"
     out_path = f"/tmp/{output_name}"
     async with _render_lock:
-        await render_card_png(card, values, at_seconds, out_path)
+        await render_card_png(card, values, at_seconds, duration, out_path)
     with open(out_path, "rb") as f:
         payload = base64.b64encode(f.read()).decode()
     os.remove(out_path)
