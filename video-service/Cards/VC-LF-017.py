@@ -68,6 +68,59 @@ if(ready){el.dataset.fitpx=size;el.dataset.fitok='1';}}
 __fit(".pr-step",640,160,0,1);
 function show(id,a,b,dy){var e=easeOutCubic(clamp((t-a)/(b-a)));var el=document.getElementById(id);if(el){el.style.opacity=e;el.style.transform='translateY('+(dy*(1-e))+'px)';}}
 function grow(id,a,b){var e=easeOutCubic(clamp((t-a)/(b-a)));var el=document.getElementById(id);if(el){el.style.transform='scaleX('+e+')';}}
-[['ps4','pa3'],['ps3','pa2'],['ps2','pa1']].forEach(function(pr){var el=document.getElementById(pr[0]);if(el&&el.textContent.indexOf('__')>-1){el.style.display='none';var a=document.getElementById(pr[1]);if(a)a.style.display='none';}});
-show('ps1',S(0,7),E(0,7),34);show('pa1',S(1,7),E(1,7),10);show('ps2',S(2,7),E(2,7),34);show('pa2',S(3,7),E(3,7),10);show('ps3',S(4,7),E(4,7),34);show('pa3',S(5,7),E(5,7),10);show('ps4',S(6,7),E(6,7),34);''',
+/* Optional process steps:
+   - blank strings and unresolved placeholders are hidden
+   - arrows appear only BETWEEN real steps
+   - entrance timing is recalculated from the number of visible elements */
+var stepIds=['ps1','ps2','ps3','ps4'];
+var arrowIds=['pa1','pa2','pa3'];
+var visible=[];
+
+stepIds.forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el){return;}
+    var txt=(el.textContent||'').trim();
+    var empty=(txt.length===0 || txt.indexOf('__')>-1);
+    if(empty){
+        el.style.display='none';
+    }else{
+        el.style.display='';
+        visible.push(el);
+    }
+});
+
+/* Start with every arrow hidden. */
+arrowIds.forEach(function(id){
+    var a=document.getElementById(id);
+    if(a){a.style.display='none';}
+});
+
+/* Show the arrow that follows each visible step except the last one. */
+for(var i=0;i<visible.length-1;i++){
+    var idx=stepIds.indexOf(visible[i].id);
+    if(idx>=0 && idx<arrowIds.length){
+        var a=document.getElementById(arrowIds[idx]);
+        if(a){a.style.display='';}
+    }
+}
+
+/* Animate only real steps/arrows, in DOM order. */
+var sequence=[];
+stepIds.forEach(function(id,idx){
+    var el=document.getElementById(id);
+    if(el && el.style.display!=='none'){
+        sequence.push({id:id,dy:34});
+        if(idx<arrowIds.length){
+            var a=document.getElementById(arrowIds[idx]);
+            if(a && a.style.display!=='none'){
+                sequence.push({id:arrowIds[idx],dy:10});
+            }
+        }
+    }
+});
+
+var N=sequence.length;
+sequence.forEach(function(item,i){
+    show(item.id,S(i,N),E(i,N),item.dy);
+});''',
 }
