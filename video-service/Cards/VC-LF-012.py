@@ -7,9 +7,9 @@ CARD = {
     "default_duration": 4.0,
     "css": r'''.soc-wrap{position:absolute;left:96px;top:0;width:888px;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;}
 .soc-cap{font-family:'Space Grotesk';font-weight:700;font-size:56px;color:#FFFFFF;margin-bottom:60px;text-align:center;opacity:0;transform:translateY(28px);}
-.soc-track{position:relative;width:820px;height:96px;background:rgba(140,160,184,.18);border-radius:16px;overflow:hidden;opacity:0;}
+.soc-track{position:relative;width:820px;height:96px;background:rgba(140,160,184,.18);border-radius:16px;overflow:visible;opacity:0;}
 .soc-fill{position:absolute;top:0;height:100%;background:#00D4AA;transform:scaleX(0);transform-origin:left;}
-.soc-lab{position:absolute;top:-56px;font-family:'Space Grotesk';font-weight:700;font-size:40px;color:#00D4AA;opacity:0;}
+.soc-lab{position:absolute;top:-56px;font-family:'Space Grotesk';font-weight:700;font-size:40px;color:#00D4AA;opacity:0;white-space:nowrap;}
 .soc-ends{width:820px;display:flex;justify-content:space-between;margin-top:22px;font-family:Inter;font-weight:600;font-size:32px;color:#8CA0B8;opacity:0;}
 
 /* --- caption-safe-zone pass: keep all text above y=1180 (caption band y1180-1540) --- */
