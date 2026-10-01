@@ -1,5 +1,6 @@
-# VC-LF-030 | AmpCoreX long-form 1920x1080 conversion v1
-# Motion is duration-aware and reserves only the final 1.0 s as a settled hold.
+# VC-LF-030 | AmpCoreX long-form centered layout v2
+# 1920x1080. Main content is optically centered; lower subtitle band is protected.
+# Motion remains duration-aware: animate through duration-1s, hold only the final 1s.
 CARD = {
     "id": 'VC-LF-030',
     "name": 'Blueprint Sequential Build',
@@ -36,6 +37,18 @@ CARD = {
 .footer-block{padding:30px!important;border-radius:12px!important;border-left:5px solid #00D4AA!important;}
 .footer-title{font-size:18px!important;color:#00D4AA!important;margin-bottom:12px!important;}
 .footer-text{font-size:32px!important;line-height:1.35!important;}
+
+/* ===== LF V2 centered engineering panel ===== */
+.grid-container{position:absolute!important;left:340px!important;top:125px!important;width:1100px!important;height:660px!important;padding:40px!important;box-sizing:border-box!important;background:rgba(15,17,21,.80)!important;border:1px solid rgba(0,212,170,.30)!important;border-radius:16px!important;}
+.header-block{padding-bottom:22px!important;}
+.tag{font-size:15px!important;letter-spacing:2px!important;margin-bottom:10px!important;}
+.title{font-size:44px!important;line-height:1.13!important;}
+.data-row{margin-bottom:14px!important;}
+.chem-label{font-size:36px!important;}
+.chem-value{font-size:46px!important;color:#00D4AA!important;}
+.footer-block{padding:22px!important;border-radius:10px!important;border-left:4px solid #00D4AA!important;}
+.footer-title{font-size:15px!important;color:#00D4AA!important;margin-bottom:9px!important;}
+.footer-text{font-size:25px!important;line-height:1.35!important;}
 ''',
     "body": r'''
         <div class="grid-container">

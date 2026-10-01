@@ -1,5 +1,6 @@
-# VC-LF-004 | AmpCoreX long-form 1920x1080 conversion v1
-# Motion is duration-aware and reserves only the final 1.0 s as a settled hold.
+# VC-LF-004 | AmpCoreX long-form centered layout v2
+# 1920x1080. Main content is optically centered; lower subtitle band is protected.
+# Motion remains duration-aware: animate through duration-1s, hold only the final 1s.
 CARD = {
     "id": 'VC-LF-004',
     "slots": ['KICKER', 'HOOK'],
@@ -37,6 +38,17 @@ CARD = {
 #axsafe{transform:translate(140px,-150px)!important;}
 .hook-line{font-size:86px!important;}
 .hook-wrap{width:900px!important;}
+
+/* ===== LF V2 universal centered composition =====
+   Optical content center ~= x 880 px.
+   Scale 0.78 reduces Shorts-scale typography/graphics.
+   Transform origin y=540 pulls high titles down and low graphics up.
+   Approx. bottom 220-250 px remains available for subtitles. */
+#axsafe{position:absolute!important;left:0!important;top:0!important;width:1080px!important;height:1920px!important;
+transform:translate(340px,-150px) scale(.78)!important;transform-origin:540px 540px!important;}
+
+/* LF V2 per-card readability scale */
+#axsafe{transform:translate(340px,-150px) scale(0.82)!important;transform-origin:540px 540px!important;}
 ''',
     "body": r'''<div id="axsafe">
 <div class="hook-wrap">

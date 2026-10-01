@@ -1,5 +1,6 @@
-# VC-LF-019 | AmpCoreX long-form 1920x1080 conversion v1
-# Motion is duration-aware and reserves only the final 1.0 s as a settled hold.
+# VC-LF-019 | AmpCoreX long-form centered layout v2
+# 1920x1080. Main content is optically centered; lower subtitle band is protected.
+# Motion remains duration-aware: animate through duration-1s, hold only the final 1s.
 CARD = {
     "id": 'VC-LF-019',
     "slots": ['QUOTE_TEXT', 'SOURCE_NAME'],
@@ -22,6 +23,17 @@ CARD = {
 .q-mark{font-size:180px!important;height:105px!important;}
 .q-text{font-size:58px!important;}
 .q-name{font-size:34px!important;}
+
+/* ===== LF V2 universal centered composition =====
+   Optical content center ~= x 880 px.
+   Scale 0.78 reduces Shorts-scale typography/graphics.
+   Transform origin y=540 pulls high titles down and low graphics up.
+   Approx. bottom 220-250 px remains available for subtitles. */
+#axsafe{position:absolute!important;left:0!important;top:0!important;width:1080px!important;height:1920px!important;
+transform:translate(340px,-142px) scale(.78)!important;transform-origin:540px 540px!important;}
+
+/* LF V2 per-card readability scale */
+#axsafe{transform:translate(340px,-142px) scale(0.85)!important;transform-origin:540px 540px!important;}
 ''',
     "body": r'''<div id="axsafe"><div class="q-wrap"><div class="q-mark" id="qMark">&#8220;</div><div class="q-text" id="qText">__QUOTE_TEXT__</div>
 <div class="q-src" id="qSrc"><div class="q-bar"></div><div class="q-name">__SOURCE_NAME__</div></div></div></div>''',

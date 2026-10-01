@@ -1,5 +1,6 @@
-# VC-LF-017 | AmpCoreX long-form 1920x1080 conversion v1
-# Motion is duration-aware and reserves only the final 1.0 s as a settled hold.
+# VC-LF-017 | AmpCoreX long-form centered layout v2
+# 1920x1080. Main content is optically centered; lower subtitle band is protected.
+# Motion remains duration-aware: animate through duration-1s, hold only the final 1s.
 CARD = {
     "id": 'VC-LF-017',
     "slots": ['STEP1', 'STEP2', 'STEP3', 'STEP4'],
@@ -18,6 +19,17 @@ CARD = {
 .pr-wrap{width:930px!important;gap:22px!important;}
 .pr-step{width:700px!important;padding:26px 28px!important;font-size:44px!important;}
 .pr-arr{font-size:44px!important;}
+
+/* ===== LF V2 universal centered composition =====
+   Optical content center ~= x 880 px.
+   Scale 0.78 reduces Shorts-scale typography/graphics.
+   Transform origin y=540 pulls high titles down and low graphics up.
+   Approx. bottom 220-250 px remains available for subtitles. */
+#axsafe{position:absolute!important;left:0!important;top:0!important;width:1080px!important;height:1920px!important;
+transform:translate(340px,-145px) scale(.78)!important;transform-origin:540px 540px!important;}
+
+/* LF V2 per-card readability scale */
+#axsafe{transform:translate(340px,-145px) scale(0.88)!important;transform-origin:540px 540px!important;}
 ''',
     "body": r'''<div id="axsafe"><div class="pr-wrap">
 <div class="pr-step" id="ps1">__STEP1__</div><div class="pr-arr" id="pa1">&#9660;</div>

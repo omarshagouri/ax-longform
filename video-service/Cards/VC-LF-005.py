@@ -1,5 +1,6 @@
-# VC-LF-005 | AmpCoreX long-form 1920x1080 conversion v1
-# Motion is duration-aware and reserves only the final 1.0 s as a settled hold.
+# VC-LF-005 | AmpCoreX long-form centered layout v2
+# 1920x1080. Main content is optically centered; lower subtitle band is protected.
+# Motion remains duration-aware: animate through duration-1s, hold only the final 1s.
 CARD = {
     "id": 'VC-LF-005',
     "slots": ['BEAT_LINE'],
@@ -17,6 +18,17 @@ CARD = {
 #axsafe{transform:translate(140px,-153px)!important;}
 .beat-wrap{width:920px!important;}
 .beat-line{font-size:76px!important;}
+
+/* ===== LF V2 universal centered composition =====
+   Optical content center ~= x 880 px.
+   Scale 0.78 reduces Shorts-scale typography/graphics.
+   Transform origin y=540 pulls high titles down and low graphics up.
+   Approx. bottom 220-250 px remains available for subtitles. */
+#axsafe{position:absolute!important;left:0!important;top:0!important;width:1080px!important;height:1920px!important;
+transform:translate(340px,-153px) scale(.78)!important;transform-origin:540px 540px!important;}
+
+/* LF V2 per-card readability scale */
+#axsafe{transform:translate(340px,-153px) scale(0.82)!important;transform-origin:540px 540px!important;}
 ''',
     "body": r'''<div id="axsafe"><div class="beat-wrap"><div class="beat-line" id="beatLine">__BEAT_LINE__</div><div class="beat-rule" id="beatRule"></div></div></div>''',
     "seek": r'''

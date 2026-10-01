@@ -1,5 +1,6 @@
-# VC-LF-028 | AmpCoreX long-form 1920x1080 conversion v1
-# Motion is duration-aware and reserves only the final 1.0 s as a settled hold.
+# VC-LF-028 | AmpCoreX long-form centered layout v2
+# 1920x1080. Main content is optically centered; lower subtitle band is protected.
+# Motion remains duration-aware: animate through duration-1s, hold only the final 1s.
 CARD = {
     "id": 'VC-LF-028',
     "slots": ['SERIES', 'HEADLINE', 'SUBHEAD'],
@@ -34,6 +35,17 @@ CARD = {
 .tc-sub{font-size:38px!important;max-width:1050px!important;}
 .tc-logo{left:140px!important;bottom:80px!important;width:1120px!important;text-align:left!important;}
 .tc-logo img{height:110px!important;}
+
+/* ===== LF V2 16:9 first-frame composition ===== */
+.tc-root{position:absolute!important;inset:0!important;width:1920px!important;height:1080px!important;background:transparent!important;}
+.tc-bg{display:none!important;}
+.tc-veil{background:linear-gradient(90deg,rgba(10,22,40,.68) 0%,rgba(10,22,40,.52) 53%,rgba(10,22,40,.10) 78%,rgba(10,22,40,0) 100%)!important;}
+.tc-top{position:absolute!important;top:160px!important;left:300px!important;width:1120px!important;padding:0!important;align-items:center!important;text-align:center!important;gap:18px!important;}
+.tc-series{font-size:24px!important;letter-spacing:4px!important;}
+.tc-head{font-size:76px!important;line-height:1.05!important;max-width:1100px!important;}
+.tc-sub{font-size:30px!important;line-height:1.22!important;max-width:980px!important;}
+.tc-logo{left:300px!important;bottom:245px!important;width:1120px!important;text-align:center!important;}
+.tc-logo img{height:82px!important;}
 ''',
     "body": r'''
 <div class="tc-root">
@@ -72,7 +84,7 @@ if(s){ var st=s.textContent.trim(); if(!st || st.indexOf('__SUB')>-1){ s.style.d
 var li=document.getElementById('tcLogoImg');
 if(li){ var src=li.getAttribute('src')||''; if(!src || src.indexOf('__LOGO')>-1){ var lw=document.getElementById('tcLogo'); if(lw) lw.style.display='none'; } }
 
-__fit('.tc-head',1080,420,0,0);
-__fit('.tc-sub',1050,130,0,0);
+__fit('.tc-head',1100,300,0,1);
+__fit('.tc-sub',980,110,0,1);
 ''',
 }

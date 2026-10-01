@@ -1,5 +1,6 @@
-# VC-LF-014 | AmpCoreX long-form 1920x1080 conversion v1
-# Motion is duration-aware and reserves only the final 1.0 s as a settled hold.
+# VC-LF-014 | AmpCoreX long-form centered layout v2
+# 1920x1080. Main content is optically centered; lower subtitle band is protected.
+# Motion remains duration-aware: animate through duration-1s, hold only the final 1s.
 CARD = {
     "id": 'VC-LF-014',
     "slots": ['TEMP', 'CAPTION', 'SOURCE'],
@@ -22,6 +23,17 @@ CARD = {
 .th-cap{font-size:52px!important;}
 .th-tube{height:480px!important;}
 .th-val{font-size:104px!important;}
+
+/* ===== LF V2 universal centered composition =====
+   Optical content center ~= x 880 px.
+   Scale 0.78 reduces Shorts-scale typography/graphics.
+   Transform origin y=540 pulls high titles down and low graphics up.
+   Approx. bottom 220-250 px remains available for subtitles. */
+#axsafe{position:absolute!important;left:0!important;top:0!important;width:1080px!important;height:1920px!important;
+transform:translate(340px,-151px) scale(.78)!important;transform-origin:540px 540px!important;}
+
+/* LF V2 per-card readability scale */
+#axsafe{transform:translate(340px,-151px) scale(0.84)!important;transform-origin:540px 540px!important;}
 ''',
     "body": r'''<div id="axsafe"><div class="th-wrap"><div class="th-cap" id="thCap">__CAPTION__</div>
 <div class="th-row"><div class="th-tube"><div class="th-merc" id="thMerc"></div></div><div class="th-val" id="thVal">__TEMP__</div></div></div></div>''',

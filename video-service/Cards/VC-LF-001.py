@@ -1,5 +1,6 @@
-# VC-LF-001 | AmpCoreX long-form 1920x1080 conversion v1
-# Motion is duration-aware and reserves only the final 1.0 s as a settled hold.
+# VC-LF-001 | AmpCoreX long-form centered layout v2
+# 1920x1080. Main content is optically centered; lower subtitle band is protected.
+# Motion remains duration-aware: animate through duration-1s, hold only the final 1s.
 CARD = {
     "id": 'VC-LF-001',
     "slots": ['KICKER', 'NUM', 'PCT'],
@@ -43,6 +44,13 @@ CARD = {
 #block{left:120px!important;top:285px!important;width:1080px!important;text-align:center!important;}
 .kicker{font-size:48px!important;letter-spacing:7px!important;color:#9CB1C8!important;}
 .hero{font-size:300px!important;}
+
+/* ===== LF V2 centered composition ===== */
+#axsafe{position:absolute!important;inset:0!important;width:1920px!important;height:1080px!important;transform:none!important;}
+#block{position:absolute!important;left:350px!important;top:275px!important;width:1060px!important;text-align:center!important;}
+.kicker{font-size:38px!important;line-height:1.28!important;letter-spacing:6px!important;color:#9CB1C8!important;margin-bottom:24px!important;}
+.hero{font-size:230px!important;line-height:.95!important;}
+.hero .key{color:#00D4AA!important;}
 ''',
     "body": r'''<div id="axsafe">
         <div id="block">
@@ -73,8 +81,8 @@ if(keyEl && keyEl.textContent.trim().length>3){
     keyEl.style.whiteSpace='normal';
 }
 
-__fit('.kicker',1080,90,0,1);
-__fit('.hero',1120,330,1,1);
+__fit('.kicker',1040,110,0,1);
+__fit('.hero',980,280,1,1);
 
 /*
 x = total card duration from the renderer.

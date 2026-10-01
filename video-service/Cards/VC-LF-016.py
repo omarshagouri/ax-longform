@@ -1,5 +1,6 @@
-# VC-LF-016 | AmpCoreX long-form 1920x1080 conversion v1
-# Motion is duration-aware and reserves only the final 1.0 s as a settled hold.
+# VC-LF-016 | AmpCoreX long-form centered layout v2
+# 1920x1080. Main content is optically centered; lower subtitle band is protected.
+# Motion remains duration-aware: animate through duration-1s, hold only the final 1s.
 CARD = {
     "id": 'VC-LF-016',
     "slots": ['P1_YEAR', 'P1_LABEL', 'P2_YEAR', 'P2_LABEL', 'P3_YEAR', 'P3_LABEL', 'P4_YEAR', 'P4_LABEL'],
@@ -23,6 +24,17 @@ CARD = {
 .tl-wrap{width:980px!important;}
 .tl-yr{font-size:40px!important;}
 .tl-lb{font-size:28px!important;}
+
+/* ===== LF V2 universal centered composition =====
+   Optical content center ~= x 880 px.
+   Scale 0.78 reduces Shorts-scale typography/graphics.
+   Transform origin y=540 pulls high titles down and low graphics up.
+   Approx. bottom 220-250 px remains available for subtitles. */
+#axsafe{position:absolute!important;left:0!important;top:0!important;width:1080px!important;height:1920px!important;
+transform:translate(340px,-193px) scale(.78)!important;transform-origin:540px 540px!important;}
+
+/* LF V2 per-card readability scale */
+#axsafe{transform:translate(340px,-193px) scale(0.92)!important;transform-origin:540px 540px!important;}
 ''',
     "body": r'''<div id="axsafe"><div class="tl-wrap"><div class="tl-line"><div class="tl-prog" id="tlProg"></div>
 <div class="tl-pts" id="tlPts">
