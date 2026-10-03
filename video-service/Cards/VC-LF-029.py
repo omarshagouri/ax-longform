@@ -1,4 +1,4 @@
-# VC-LF-029 | Long-form comparison matrix
+# VC-LF-029 | Reusable long-form comparison matrix
 # 1920x1080. Two-column comparison with up to three reusable rows.
 CARD = {
     "id": "VC-LF-029",
