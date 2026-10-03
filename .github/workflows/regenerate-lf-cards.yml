@@ -1,0 +1,40 @@
+name: Regenerate LF card registry
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "video-service/Cards/VC-LF-*.py"
+      - "video-service/scripts/extract_cards.py"
+      - ".github/workflows/regenerate-lf-cards.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Regenerate card registry
+        run: python video-service/scripts/extract_cards.py video-service/Cards
+
+      - name: Commit registry when changed
+        run: |
+          if git diff --quiet -- video-service/src/cards/generated/allCards.ts; then
+            echo "Registry already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add video-service/src/cards/generated/allCards.ts
+          git commit -m "Regenerate LF card registry"
+          git push
