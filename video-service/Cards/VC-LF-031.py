@@ -141,16 +141,16 @@ CARD = {
   <div class="cl-title" id="clTitle">__TITLE__</div>
   <div class="cards" id="clCards">
     <div class="readout left" id="clLeft">
-      <div class="r-label">__LEFT_LABEL__</div>
+      <div class="r-label" id="clLeftLabel">__LEFT_LABEL__</div>
       <div class="soh-line"><div class="soh" id="clLeftSoh">__LEFT_SOH__</div><div class="pct">%</div></div>
       <div class="metric-name">State of Health</div>
-      <div class="usable"><div class="v">__LEFT_USABLE__</div><div class="l">usable capacity</div></div>
+      <div class="usable"><div class="v" id="clLeftUsable">__LEFT_USABLE__</div><div class="l">usable capacity</div></div>
     </div>
     <div class="readout right" id="clRight">
-      <div class="r-label">__RIGHT_LABEL__</div>
+      <div class="r-label" id="clRightLabel">__RIGHT_LABEL__</div>
       <div class="soh-line"><div class="soh" id="clRightSoh">__RIGHT_SOH__</div><div class="pct">%</div></div>
       <div class="metric-name">State of Health</div>
-      <div class="usable"><div class="v">__RIGHT_USABLE__</div><div class="l">usable capacity</div></div>
+      <div class="usable"><div class="v" id="clRightUsable">__RIGHT_USABLE__</div><div class="l">usable capacity</div></div>
     </div>
   </div>
   <div class="footer" id="clFooter">__FOOTER__</div>
@@ -202,13 +202,23 @@ var left=document.getElementById('clLeft');
 var right=document.getElementById('clRight');
 var cards=document.getElementById('clCards');
 
-function unresolvedOrEmpty(el){
-  var s=(el.textContent||'').trim();
-  return s.indexOf('__')>-1 || s.replace(/%/g,'').trim().length===0;
+function value(id){
+  var el=document.getElementById(id);
+  return el?(el.textContent||'').trim():'';
+}
+function panelOk(prefix){
+  var parts=[
+    value(prefix+'Label'),
+    value(prefix+'Soh'),
+    value(prefix+'Usable')
+  ];
+  var unresolved=parts.some(function(s){return s.indexOf('__')>-1;});
+  var empty=parts.join('').trim().length===0;
+  return !unresolved && !empty;
 }
 
-var leftOk=!unresolvedOrEmpty(left);
-var rightOk=!unresolvedOrEmpty(right);
+var leftOk=panelOk('clLeft');
+var rightOk=panelOk('clRight');
 
 if(!leftOk)left.style.display='none';
 if(!rightOk)right.style.display='none';
@@ -223,7 +233,11 @@ if(rightOk && !leftOk){
 }
 
 if(leftOk)revealCard(left,.20*active,.48*active);
-if(rightOk)revealCard(right,leftOk?.36*active:.20*active,leftOk?.64*active:.48*active);
+if(rightOk){
+  var ra=leftOk ? .36*active : .20*active;
+  var rb=leftOk ? .64*active : .48*active;
+  revealCard(right,ra,rb);
+}
 
 var footer=document.getElementById('clFooter');
 var ft=(footer.textContent||'').trim();
