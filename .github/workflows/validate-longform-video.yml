@@ -1,0 +1,41 @@
+name: Validate long-form video service
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "video-service/**"
+      - ".github/workflows/validate-longform-video.yml"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: video-service
+        run: npm install
+
+      - name: Regenerate cards
+        working-directory: video-service
+        run: python3 scripts/extract_cards.py Cards
+
+      - name: Typecheck
+        working-directory: video-service
+        run: npm run typecheck
+
+      - name: Build container
+        run: docker build -t longform-video-test ./video-service
