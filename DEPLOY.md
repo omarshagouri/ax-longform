@@ -62,6 +62,7 @@ gcloud run deploy ax-longform-video \
   --memory 4Gi \
   --cpu 4 \
   --timeout 900 \
+  --service-account ax-render@ampcorex.iam.gserviceaccount.com \
   --set-env-vars LONGFORM_RENDER_API_KEY=REPLACE_ME
 ```
 
