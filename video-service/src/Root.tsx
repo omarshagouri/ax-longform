@@ -1,13 +1,15 @@
 import React from "react";
-import { Composition } from "remotion";
+import { Composition, Still } from "remotion";
 import { loadFont } from "@remotion/google-fonts/SpaceGrotesk";
 import { Video } from "./Video";
+import { Thumbnail } from "./Thumbnail";
 import { sampleManifest } from "./sample-manifest";
 import { totalFrames, VideoManifest } from "./manifest";
 
 const { waitUntilDone } = loadFont("normal", { weights: ["500", "600", "700"] });
 
 export const RemotionRoot: React.FC = () => (
+  <>
   <Composition
     id="AmpCoreXLongForm"
     component={Video}
@@ -27,4 +29,18 @@ export const RemotionRoot: React.FC = () => (
       };
     }}
   />
+  <Still
+    id="AmpCoreXThumbnail"
+    component={Thumbnail}
+    width={1280}
+    height={720}
+    defaultProps={{
+      backgroundSrc: "",
+      logoSrc: "",
+      series: "BATTERY INTELLIGENCE",
+      headline: "Battery intelligence",
+      subhead: "",
+    }}
+  />
+  </>
 );
