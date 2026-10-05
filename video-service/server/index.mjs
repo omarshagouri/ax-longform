@@ -6,7 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { spawnSync } from "child_process";
 import { bundle } from "@remotion/bundler";
-import { selectComposition, renderMedia } from "@remotion/renderer";
+import { selectComposition, renderMedia, renderStill } from "@remotion/renderer";
 import { GoogleAuth } from "google-auth-library";
 import { parseBuffer } from "music-metadata";
 
@@ -107,6 +107,40 @@ async function buildChapter(video_id, fps, beats, audioIds) {
   }
 
   return { video_id: video_id || "chapter", fps, width: WIDTH, height: HEIGHT, timeline, audio };
+}
+
+async function renderThumbnail({ background_base64, headline, subhead = "", series = "BATTERY INTELLIGENCE", logo_file_id = "", output_name = "thumbnail.png" }) {
+  if (!background_base64) throw new Error("background_base64 is required");
+  if (!headline) throw new Error("headline is required");
+
+  const safe = String(output_name || "thumbnail.png").replace(/[^A-Za-z0-9._-]/g, "_");
+  const bgName = `thumb_bg_${Date.now()}.png`;
+  const bgPath = path.join(ASSETS, bgName);
+  fs.writeFileSync(bgPath, Buffer.from(background_base64, "base64"));
+
+  let logoSrc = "";
+  const logoId = String(logo_file_id || "").trim();
+  if (logoId) {
+    const { name } = await driveDownload(logoId, path.join(ASSETS, `thumb_logo_${Date.now()}`));
+    logoSrc = `${BASE}/assets/${name}`;
+  }
+
+  const serveUrl = await getServeUrl();
+  const inputProps = {
+    backgroundSrc: `${BASE}/assets/${bgName}`,
+    logoSrc,
+    series,
+    headline,
+    subhead,
+  };
+  const composition = await selectComposition({ serveUrl, id: "AmpCoreXThumbnail", inputProps });
+  const out = path.join("/tmp", safe.endsWith(".png") ? safe : `${safe}.png`);
+  await renderStill({ composition, serveUrl, output: out, inputProps, imageFormat: "png" });
+
+  const b64 = fs.readFileSync(out).toString("base64");
+  fs.unlinkSync(out);
+  try { fs.unlinkSync(bgPath); } catch {}
+  return { filename: path.basename(out), file_base64: b64, width: 1280, height: 720 };
 }
 
 async function renderManifest(manifest) {
@@ -220,6 +254,16 @@ app.post(["/build-and-render", "/render-chapter"], async (req, res) => {
       ...(await renderManifest(manifest)),
     });
   } catch (e) { console.error(e); return res.status(500).json({ error: String(e?.stack || e) }); }
+});
+
+app.post("/thumbnail", async (req, res) => {
+  if (!ok(req)) return res.status(401).json({ error: "bad api key" });
+  try {
+    return res.json({ status: "ok", ...(await renderThumbnail(req.body || {})) });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: String(e?.stack || e) });
+  }
 });
 
 app.post("/assemble-video", async (req, res) => {
