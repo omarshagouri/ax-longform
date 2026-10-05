@@ -67,3 +67,29 @@ gcloud run deploy ax-longform-video \
 ```
 
 Do not reuse a Shorts service name in either command.
+
+
+## 3. Final long-form assembly
+
+The same `ax-longform-render` service also exposes:
+
+`POST /assemble-video`
+
+Header:
+
+`x-api-key: <LONGFORM_RENDER_API_KEY>`
+
+Example body:
+
+```json
+{
+  "video_id": "AX-004-LF",
+  "chapters": [
+    {"chapter": 1, "file_id": "DRIVE_ID_1", "review_status": "Approved"},
+    {"chapter": 2, "file_id": "DRIVE_ID_2", "review_status": "Approved"}
+  ],
+  "end_clip_file_id": "OPTIONAL_FIXED_LF_END_CLIP_DRIVE_ID"
+}
+```
+
+The endpoint sorts chapters numerically, refuses assembly unless every chapter is Approved, rejects duplicate chapter numbers or missing Drive file IDs, concatenates the chapter MP4s, optionally appends the fixed LF end clip, and returns the final MP4 as base64.
