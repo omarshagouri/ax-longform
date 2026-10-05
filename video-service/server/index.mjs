@@ -4,6 +4,7 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { spawnSync } from "child_process";
 import { bundle } from "@remotion/bundler";
 import { selectComposition, renderMedia } from "@remotion/renderer";
 import { GoogleAuth } from "google-auth-library";
@@ -119,6 +120,64 @@ async function renderManifest(manifest) {
   return { filename: `${safe}.mp4`, file_base64: b64 };
 }
 
+async function assembleApprovedChapters(video_id, chapters, endClipId) {
+  const safe = String(video_id || "video").replace(/[^A-Za-z0-9_-]/g, "");
+  const ordered = [...chapters]
+    .map((x, i) => ({ chapter: Number(x?.chapter) || i + 1, file_id: String(x?.file_id || "").trim() }))
+    .filter((x) => x.file_id)
+    .sort((a, b) => a.chapter - b.chapter);
+  if (!ordered.length) throw new Error("need at least one approved chapter file_id");
+
+  const inputs = [];
+  for (let i = 0; i < ordered.length; i++) {
+    const { name } = await driveDownload(
+      ordered[i].file_id,
+      path.join(ASSETS, `${safe}_assembly_ch_${String(ordered[i].chapter).padStart(2, "0")}_${i + 1}`)
+    );
+    inputs.push(path.join(ASSETS, name));
+  }
+
+  const endId = String(endClipId || "").trim();
+  if (endId) {
+    const { name } = await driveDownload(endId, path.join(ASSETS, `${safe}_assembly_endclip`));
+    inputs.push(path.join(ASSETS, name));
+  }
+
+  const listPath = path.join("/tmp", `${safe}_concat.txt`);
+  const out = path.join("/tmp", `${safe}_FINAL.mp4`);
+  const listBody = inputs
+    .map((p) => `file '${p.replace(/'/g, "'\\''")}'`)
+    .join("\n");
+  fs.writeFileSync(listPath, listBody);
+
+  let ff = spawnSync("ffmpeg", [
+    "-y", "-f", "concat", "-safe", "0", "-i", listPath,
+    "-c", "copy", "-movflags", "+faststart", out
+  ], { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 });
+
+  if (ff.status !== 0 || !fs.existsSync(out)) {
+    ff = spawnSync("ffmpeg", [
+      "-y", "-f", "concat", "-safe", "0", "-i", listPath,
+      "-c:v", "libx264", "-preset", "fast", "-crf", "18",
+      "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", out
+    ], { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 });
+  }
+
+  try { fs.unlinkSync(listPath); } catch {}
+  if (ff.status !== 0 || !fs.existsSync(out)) {
+    throw new Error(`ffmpeg assembly failed: ${ff.stderr || ff.stdout || "unknown error"}`);
+  }
+
+  const b64 = fs.readFileSync(out).toString("base64");
+  fs.unlinkSync(out);
+  return {
+    filename: `${safe}_FINAL.mp4`,
+    file_base64: b64,
+    chapter_count: ordered.length,
+    end_clip_included: Boolean(endId),
+  };
+}
+
 const ok = (req) => req.headers["x-api-key"] === API_KEY;
 
 app.get("/", (_req, res) => res.json({ status: "ok", service: "ax-longform-video", width: WIDTH, height: HEIGHT, fps: 30 }));
@@ -147,6 +206,23 @@ app.post(["/build-and-render", "/render-chapter"], async (req, res) => {
       ...(await renderManifest(manifest)),
     });
   } catch (e) { console.error(e); return res.status(500).json({ error: String(e?.stack || e) }); }
+});
+
+app.post("/assemble-video", async (req, res) => {
+  if (!ok(req)) return res.status(401).json({ error: "bad api key" });
+  const { video_id, chapters = [], end_clip_file_id = "" } = req.body || {};
+  if (!Array.isArray(chapters) || chapters.length === 0) {
+    return res.status(400).json({ error: "need non-empty chapters[]" });
+  }
+  try {
+    return res.json({
+      status: "ok",
+      ...(await assembleApprovedChapters(video_id, chapters, end_clip_file_id)),
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: String(e?.stack || e) });
+  }
 });
 
 app.listen(PORT, () => console.log(`ax-longform-video listening on ${PORT}`));
