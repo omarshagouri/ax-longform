@@ -122,11 +122,25 @@ async function renderManifest(manifest) {
 
 async function assembleApprovedChapters(video_id, chapters, endClipId) {
   const safe = String(video_id || "video").replace(/[^A-Za-z0-9_-]/g, "");
-  const ordered = [...chapters]
-    .map((x, i) => ({ chapter: Number(x?.chapter) || i + 1, file_id: String(x?.file_id || "").trim() }))
-    .filter((x) => x.file_id)
-    .sort((a, b) => a.chapter - b.chapter);
-  if (!ordered.length) throw new Error("need at least one approved chapter file_id");
+  const normalized = [...chapters].map((x, i) => ({
+    chapter: Number(x?.chapter) || i + 1,
+    file_id: String(x?.file_id || "").trim(),
+    review_status: String(x?.review_status || "").trim(),
+  }));
+  if (!normalized.length) throw new Error("need at least one approved chapter");
+  const blocked = normalized.filter((x) => x.review_status !== "Approved");
+  if (blocked.length) {
+    throw new Error(`assembly blocked: every chapter must be Approved (blocked chapters: ${blocked.map((x) => x.chapter).join(", ")})`);
+  }
+  const missing = normalized.filter((x) => !x.file_id);
+  if (missing.length) {
+    throw new Error(`assembly blocked: missing chapter video file IDs (chapters: ${missing.map((x) => x.chapter).join(", ")})`);
+  }
+  const ordered = normalized.sort((a, b) => a.chapter - b.chapter);
+  const chapterNums = ordered.map((x) => x.chapter);
+  if (new Set(chapterNums).size !== chapterNums.length) {
+    throw new Error("assembly blocked: duplicate chapter numbers found");
+  }
 
   const inputs = [];
   for (let i = 0; i < ordered.length; i++) {
