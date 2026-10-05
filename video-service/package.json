@@ -2,7 +2,7 @@
   "name": "ax-longform-video",
   "version": "1.0.0",
   "private": true,
-  "description": "AmpCoreX 16:9 long-form chapter renderer",
+  "description": "16:9 chapter renderer.",
   "scripts": {
     "cards": "python3 scripts/extract_cards.py Cards",
     "studio": "remotion studio",
