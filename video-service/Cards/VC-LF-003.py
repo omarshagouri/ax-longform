@@ -37,7 +37,7 @@ CARD = {
 /* LF quote/note framing */
 #axsafe{transform:translate(150px,-38px)!important;}
 .statement{font-size:62px!important;}
-.role{font-size:32px!important;}
+.role{font-size:32px!important;}\n#note{top:315px!important;}
 
 /* ===== LF V2 universal centered composition =====
    Optical content center ~= x 880 px.
