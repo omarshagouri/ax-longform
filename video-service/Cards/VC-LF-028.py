@@ -4,7 +4,7 @@
 CARD = {
     "id": 'VC-LF-028',
     "slots": ['SERIES', 'HEADLINE', 'SUBHEAD'],
-    "default_duration": 1.0,
+    "default_duration": 2.0,
     "css": r'''
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
 .tc-root{ position:absolute; inset:0; background:#0A1628; overflow:hidden; }
@@ -16,12 +16,15 @@ CARD = {
 .tc-top{ position:absolute; top:150px; left:0; width:1080px; box-sizing:border-box; padding:0 70px;
          display:flex; flex-direction:column; align-items:center; text-align:center; gap:18px; }
 .tc-series{ margin:0; font-family:'Space Mono', monospace; font-weight:400; font-size:30px;
-            letter-spacing:5px; color:#b3c6d7; text-transform:uppercase; text-shadow:0 2px 20px rgba(0,0,0,.5); }
+            letter-spacing:5px; color:#b3c6d7; text-transform:uppercase; text-shadow:0 2px 20px rgba(0,0,0,.5);
+            opacity:0; transform:translateY(14px); }
 .tc-head{ margin:0; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:108px;
-          line-height:1.06; letter-spacing:-1px; color:#FFFFFF; text-shadow:0 4px 30px rgba(0,0,0,.5); }
+          line-height:1.06; letter-spacing:-1px; color:#FFFFFF; text-shadow:0 4px 30px rgba(0,0,0,.5);
+          opacity:0; transform:translateY(20px); }
 .tc-head .key{ color:#00D4AA; }
 .tc-sub{ margin:0; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:44px;
-         line-height:1.18; color:#FFFFFF; text-shadow:0 3px 22px rgba(0,0,0,.5); }
+         line-height:1.18; color:#FFFFFF; text-shadow:0 3px 22px rgba(0,0,0,.5);
+         opacity:0; transform:translateY(18px); }
 .tc-logo{ position:absolute; left:0; bottom:80px; width:1080px; text-align:center; }
 .tc-logo img{ height:180px; width:auto; display:inline-block; filter:drop-shadow(0 4px 20px rgba(0,0,0,.6)); }
 
@@ -86,5 +89,25 @@ if(li){ var src=li.getAttribute('src')||''; if(!src || src.indexOf('__LOGO')>-1)
 
 __fit('.tc-head',1100,300,0,1);
 __fit('.tc-sub',980,110,0,1);
+
+function tcShow(el,a,b,dy,scale0){
+  if(!el)return;
+  var p=easeOutCubic(clamp((t-a)/(b-a)));
+  el.style.opacity=p;
+  el.style.transform='translateY('+(dy*(1-p))+'px) scale('+(scale0+(1-scale0)*p)+')';
+}
+
+/* Short, professional title-card entrance. All information is settled by ~1.4 s,
+   then the card holds cleanly for the narration beat. */
+tcShow(se,0.05,0.48,14,0.98);
+tcShow(h,0.22,0.92,20,0.975);
+tcShow(s,0.62,1.35,18,0.985);
+
+var lw=document.getElementById('tcLogo');
+if(lw && lw.style.display!=='none'){
+  var lp=easeOutCubic(clamp((t-0.85)/0.55));
+  lw.style.opacity=lp;
+  lw.style.transform='translateY('+(12*(1-lp))+'px)';
+}
 ''',
 }
