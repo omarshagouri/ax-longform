@@ -28,10 +28,10 @@ CARD = {
         #valA{ left:300px; } #valB{ left:600px; }
         .axis{
             position:absolute; bottom:520px;
-            width:360px; text-align:center; white-space:nowrap;
-            color:#8CA0B8; font-size:40px; font-weight:500; opacity:0;
+            width:260px; text-align:center;
+            color:#8CA0B8; font-size:34px; line-height:1.08; font-weight:500; opacity:0;
         }
-        #labA{ left:220px; } #labB{ left:520px; }
+        #labA{ left:270px; } #labB{ left:570px; }
         #source{
             position:absolute; bottom:340px; left:90px;
             color:#8CA0B8; font-size:30px; font-weight:400; opacity:0;
@@ -102,7 +102,7 @@ while(size>16&&g<240&&(el.scrollWidth>el.clientWidth+0.5||(maxH&&el.scrollHeight
 if(ready){el.dataset.fitpx=size;el.dataset.fitok='1';}}
 };}
 
-__fit("#title",1000,180,0,1);__fit(".val",220,0,1,1);__fit(".axis",360,0,1,1);__fit("#source",900,90,0,0);
+__fit("#title",1000,180,0,1);__fit(".val",220,0,1,1);__fit(".axis",260,100,0,1);__fit("#source",900,90,0,0);
 
         var title=document.getElementById('title');
         var barA=document.getElementById('barA'), barB=document.getElementById('barB');
