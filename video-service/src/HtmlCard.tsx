@@ -67,8 +67,11 @@ export const HtmlCard: React.FC<{
   // Mutate the DOM before paint so Remotion captures the right frame.
   useLayoutEffect(() => {
     try {
-      const durSec = holdFrames && holdFrames > 0 ? holdFrames / fps : data.default_duration;
-      seekFn(frame / fps, durSec, clamp, easeOutCubic);
+      const holdSec = holdFrames && holdFrames > 0 ? holdFrames / fps : data.default_duration;
+      // Card motion must not slow down just because the narration holds the visual longer.
+      // Settle the entrance in ~2 seconds, then hold the finished state.
+      const motionSec = Math.min(holdSec, data.default_duration, 2.8);
+      seekFn(frame / fps, motionSec, clamp, easeOutCubic);
     } catch {
       /* keep rendering even if a card's seek throws on an edge frame */
     }
