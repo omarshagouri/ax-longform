@@ -1,0 +1,54 @@
+name: QA long-form animations
+
+on:
+  push:
+    branches: [lf-animation-qa-v2]
+    paths:
+      - "video-service/**"
+      - ".github/workflows/qa-longform-animations.yml"
+  workflow_dispatch:
+
+jobs:
+  qa-animations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: video-service
+        run: npm install
+
+      - name: Regenerate cards
+        working-directory: video-service
+        run: python3 scripts/extract_cards.py Cards
+
+      - name: Typecheck
+        working-directory: video-service
+        run: npm run typecheck
+
+      - name: Render animation QA suite
+        working-directory: video-service
+        run: node scripts/qa_animations.mjs
+
+      - name: Upload QA renders
+        uses: actions/upload-artifact@v4
+        with:
+          name: va-lf-animation-qa-v2
+          path: video-service/qa-output
+          retention-days: 7
+
+      - name: Build production container
+        run: docker build -t longform-video-animation-qa ./video-service
