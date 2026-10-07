@@ -1,4 +1,4 @@
-name: Quick QA long-form card stills\n# QA rerun after card timing/layout fixes
+name: Quick QA long-form card stills\n# QA rerun after final VC-LF-002 label fix
 
 on:
   push:
