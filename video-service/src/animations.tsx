@@ -272,9 +272,9 @@ export const VALF001BatteryBuffer: React.FC<any> = ({
   const remaining = Math.max(0, 100 - usable - reserve);
 
   const shellP = enter(frame, fps, 9);
-  const usableP = linearPhase(frame, 18, 34);
-  const reserveP = linearPhase(frame, 43, 22);
-  const labelP = fade(frame, 58, 12);
+  const usableP = linearPhase(frame, 16, 30);
+  const reserveP = linearPhase(frame, 38, 18);
+  const labelP = fade(frame, 42, 10);
 
   return (
     <AbsoluteFill>
@@ -631,13 +631,21 @@ export const VALF003LineChart: React.FC<any> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const p = enter(frame, fps, 7);
-  const draw = linearPhase(frame, 24, 58);
+  const draw = linearPhase(frame, 20, 42);
   const all = [...seriesA, ...(seriesB || [])].map(Number);
   const rawMin = Math.min(...all);
   const rawMax = Math.max(...all);
   const spread = Math.max(1e-6, rawMax - rawMin);
-  const min = rawMin - spread * 0.08;
-  const max = rawMax + spread * 0.08;
+  const niceStep =
+    spread <= 1 ? 0.2 :
+    spread <= 5 ? 1 :
+    spread <= 15 ? 5 :
+    spread <= 40 ? 10 :
+    spread <= 100 ? 20 :
+    spread <= 250 ? 50 : 100;
+  let min = Math.floor(rawMin / niceStep) * niceStep;
+  let max = Math.ceil(rawMax / niceStep) * niceStep;
+  if (min === max) max = min + niceStep;
 
   const chartW = 1320;
   const chartH = 430;
@@ -987,7 +995,7 @@ export const VALF004ProcessFlow: React.FC<any> = ({
             fontSize: 27,
             fontWeight: 750,
             letterSpacing: 0.4,
-            opacity: fade(frame, 55, 12),
+            opacity: fade(frame, 45, 10),
           }}
         >
           {direction === "reverse"
@@ -1011,7 +1019,7 @@ export const VALF005Timeline: React.FC<any> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const p = enter(frame, fps, 7);
-  const lineP = linearPhase(frame, 20, 48);
+  const lineP = linearPhase(frame, 18, 40);
 
   const left = 150;
   const width = 1310;
@@ -1059,7 +1067,7 @@ export const VALF005Timeline: React.FC<any> = ({
 
         {milestones.map((m: any, i: number) => {
           const x = left + i * step;
-          const revealAt = 22 + i * 10;
+          const revealAt = 20 + i * 8;
           const q = enter(frame, fps, revealAt, 145);
           const c = toneColor(m.tone);
           const labelSize =
@@ -1279,7 +1287,7 @@ export const VALF007SystemDelta: React.FC<any> = ({
         }}
       >
         {items.map((item: string, i: number) => {
-          const q = fade(frame, (direction < 0 ? 22 : 48) + i * 7, 10);
+          const q = fade(frame, (direction < 0 ? 20 : 40) + i * 6, 10);
           return (
             <div
               key={item + i}
