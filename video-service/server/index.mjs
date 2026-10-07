@@ -62,13 +62,28 @@ function parseBeat(b, i, fps, cursor) {
   const durSec = parseFloat(String(b.duration)) || 3;
   const durationFrames = Math.max(1, Math.round(durSec * fps));
   const beat = Number(b.beat) || i + 1;
-  const id = String(b.card_id || "").trim();
-  if (!id.startsWith("VC-LF-")) throw new Error(`beat ${beat}: long-form renderer only accepts VC-LF-* cards (got ${id})`);
+  const id = String(b.card_id || b.visual_id || "").trim();
+  const isCard = id.startsWith("VC-LF-");
+  const isAnimation = id.startsWith("VA-LF-");
+  if (!isCard && !isAnimation) {
+    throw new Error(`beat ${beat}: long-form renderer accepts VC-LF-* cards or VA-LF-* animations (got ${id})`);
+  }
   let props = {};
   const v = b.values;
-  if (typeof v === "string") { try { props = JSON.parse(v || "{}"); } catch { props = {}; } }
-  else if (v && typeof v === "object") { props = v; }
-  return { beat, track: "card", component: id, props, startFrame: cursor, durationFrames };
+  if (typeof v === "string") {
+    try { props = JSON.parse(v || "{}"); }
+    catch { throw new Error(`beat ${beat}: values is not valid JSON for ${id}`); }
+  } else if (v && typeof v === "object") {
+    props = v;
+  }
+  return {
+    beat,
+    track: isAnimation ? "anim" : "card",
+    component: id,
+    props,
+    startFrame: cursor,
+    durationFrames,
+  };
 }
 
 function coalesce(timeline) {
@@ -249,7 +264,9 @@ app.post(["/build-and-render", "/render-chapter"], async (req, res) => {
     const manifest = await buildChapter(video_id, F, beats, audio_file_ids);
     return res.json({
       status: "ok",
-      card_beats: manifest.timeline.length,
+      visual_beats: manifest.timeline.length,
+      card_beats: manifest.timeline.filter((x) => x.track === "card").length,
+      animation_beats: manifest.timeline.filter((x) => x.track === "anim").length,
       audio_tracks: manifest.audio.length,
       ...(await renderManifest(manifest)),
     });
