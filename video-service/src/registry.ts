@@ -2,13 +2,14 @@ import React from "react";
 import { z } from "zod";
 import { makeHtmlCard, schemaFromSlots } from "./HtmlCard";
 import { allCards } from "./cards/generated/allCards";
+import { animationRegistry } from "./animations";
 
 export type CardEntry = {
   component: React.FC<any>;
   schema: z.ZodTypeAny;
 };
 
-export const registry: Record<string, CardEntry> = {};
+export const registry: Record<string, CardEntry> = { ...animationRegistry };
 for (const id of Object.keys(allCards)) {
   const data = allCards[id];
   registry[id] = {
@@ -24,7 +25,7 @@ export function validateTimeline(
   for (const item of timeline) {
     const entry = registry[item.component];
     if (!entry) {
-      errors.push(`beat ${item.beat}: unknown card "${item.component}"`);
+      errors.push(`beat ${item.beat}: unknown visual "${item.component}"`);
       continue;
     }
     const r = entry.schema.safeParse(item.props);
@@ -37,4 +38,6 @@ export function validateTimeline(
   return errors;
 }
 
-export const availableCards = () => Object.keys(registry).sort();
+export const availableCards = () => Object.keys(registry).filter((id) => id.startsWith("VC-LF-")).sort();
+export const availableAnimations = () => Object.keys(registry).filter((id) => id.startsWith("VA-LF-")).sort();
+export const availableVisuals = () => Object.keys(registry).sort();
