@@ -1,4 +1,4 @@
-name: Quick QA long-form card stills
+name: Quick QA long-form card stills\n# QA rerun after card timing/layout fixes
 
 on:
   push:
