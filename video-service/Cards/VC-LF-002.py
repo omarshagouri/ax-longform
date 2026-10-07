@@ -60,7 +60,7 @@ transform:translate(340px,-139px) scale(.78)!important;transform-origin:540px 54
 
 /* LF V2 per-card readability scale */
 #axsafe{transform:translate(340px,-139px) scale(0.78)!important;transform-origin:540px 540px!important;}
-#source{bottom:780px!important;}
+#source{bottom:560px!important;left:150px!important;width:780px!important;}
 ''',
     "body": r'''<div id="axsafe">
         <div id="title">__TITLE__</div>
