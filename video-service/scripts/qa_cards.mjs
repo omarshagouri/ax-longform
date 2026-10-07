@@ -92,7 +92,7 @@ const serveUrl = await bundle({
 async function makeComposition(test) {
   const durationFrames = Math.max(1, Math.round(test.durationSec * 30));
   const manifest = {
-    video_id: \`QA-\${test.id}\`,
+    video_id: `QA-${test.id}`,
     fps: 30,
     width: 1920,
     height: 1080,
@@ -134,7 +134,7 @@ for (const test of canonical) {
     await renderStill({
       composition,
       serveUrl,
-      output: path.join(dir, \`\${name}.png\`),
+      output: path.join(dir, `${name}.png`),
       inputProps,
       frame,
       imageFormat: "png",
@@ -145,7 +145,7 @@ for (const test of canonical) {
     composition,
     serveUrl,
     codec: "h264",
-    outputLocation: path.join(dir, \`\${test.id}.mp4\`),
+    outputLocation: path.join(dir, `${test.id}.mp4`),
     inputProps,
     concurrency: 2,
   });
@@ -165,7 +165,7 @@ for (const test of stress) {
     await renderStill({
       composition,
       serveUrl,
-      output: path.join(dir, \`\${test.id}_\${name}.png\`),
+      output: path.join(dir, `${test.id}_${name}.png`),
       inputProps,
       frame,
       imageFormat: "png",
@@ -173,4 +173,4 @@ for (const test of stress) {
   }
 }
 
-console.log(\`Rendered \${canonical.length} canonical cards with MP4s/checkpoints and \${stress.length} stress layouts to \${OUT}\`);
+console.log(`Rendered ${canonical.length} canonical cards with MP4s/checkpoints and ${stress.length} stress layouts to ${OUT}`);
