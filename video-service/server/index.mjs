@@ -1,4 +1,4 @@
-// AmpCoreX Long Form — independent Remotion chapter renderer.
+// Long Form — independent Remotion chapter renderer.
 // Native canvas: 1920x1080. This service never calls or modifies Shorts services.
 import express from "express";
 import fs from "fs";
@@ -148,7 +148,7 @@ async function renderThumbnail({ background_base64, headline, subhead = "", seri
     headline,
     subhead,
   };
-  const composition = await selectComposition({ serveUrl, id: "AmpCoreXThumbnail", inputProps });
+  const composition = await selectComposition({ serveUrl, id: "AXThumbnail", inputProps });
   const out = path.join("/tmp", safe.endsWith(".png") ? safe : `${safe}.png`);
   await renderStill({ composition, serveUrl, output: out, inputProps, imageFormat: "png" });
 
@@ -162,7 +162,7 @@ async function renderManifest(manifest) {
   const serveUrl = await getServeUrl();
   const safe = String(manifest.video_id || "chapter").replace(/[^A-Za-z0-9_-]/g, "");
   const out = path.join("/tmp", `${safe}.mp4`);
-  const composition = await selectComposition({ serveUrl, id: "AmpCoreXLongForm", inputProps: { manifest } });
+  const composition = await selectComposition({ serveUrl, id: "AXLongForm", inputProps: { manifest } });
   await renderMedia({ composition, serveUrl, codec: "h264", outputLocation: out, inputProps: { manifest } });
   const b64 = fs.readFileSync(out).toString("base64");
   fs.unlinkSync(out);
