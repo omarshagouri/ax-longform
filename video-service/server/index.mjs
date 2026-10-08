@@ -106,6 +106,17 @@ async function buildChapter(video_id, fps, beats, audioIds) {
   let cursor = 0;
   for (let i = 0; i < beats.length; i++) {
     const item = parseBeat(beats[i], i, fps, cursor);
+
+    // Optional per-animation background image from Drive.
+    // Visual Plan may pass values.backgroundFileId and backgroundOpacity.
+    if (item.track === "anim" && item.props && item.props.backgroundFileId) {
+      const bgId = String(item.props.backgroundFileId || "").trim();
+      if (bgId) {
+        const { name } = await driveDownload(bgId, path.join(ASSETS, `${safe}_bg_${item.beat}`));
+        item.props = { ...item.props, backgroundSrc: `${BASE}/assets/${name}` };
+      }
+    }
+
     timeline.push(item);
     cursor += item.durationFrames;
   }
