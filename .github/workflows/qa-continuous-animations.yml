@@ -2,7 +2,7 @@ name: QA continuous long-form animations
 
 on:
   push:
-    branches: [visual-library-v2]
+    branches: [main, visual-library-v2]
     paths:
       - "video-service/src/animations-continuous.tsx"
       - "video-service/src/animations.tsx"
