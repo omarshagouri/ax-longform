@@ -23,7 +23,7 @@ const serveUrl=await bundle({entryPoint:ENTRY,webpackOverride:(c)=>c});
 
 for(const test of cases){
  const inputProps={animationId:test.id,values:test.values,durationFrames:test.durationFrames};
- const comp=await selectComposition({serveUrl,id:"AmpCoreXAnimationPreview",inputProps});
+ const comp=await selectComposition({serveUrl,id:"AXAnimationPreview",inputProps});
  const dir=path.join(OUT,test.id); fs.mkdirSync(dir,{recursive:true});
  for(const cp of [
   ["t00_0.5s",15],["t01_1.5s",45],["t02_3.0s",90],["t03_5.0s",Math.min(test.durationFrames-2,150)],["t04_final",test.durationFrames-2]
