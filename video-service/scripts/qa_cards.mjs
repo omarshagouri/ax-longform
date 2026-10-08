@@ -44,4 +44,18 @@ for(const [id,durationSec,values] of cases){
  }
  await renderMedia({composition:comp,serveUrl,codec:"h264",outputLocation:path.join(dir,id+".mp4"),inputProps,concurrency:2});
 }
-console.log("Rendered 19 current VC-LF cards");
+// Extra chapter-divider stress case: realistic long title must fit without clipping.
+{
+ const id="VC-LF-018";
+ const durationSec=3;
+ const durationFrames=90;
+ const values={CHAPTER_NUM:"7",TITLE:"Why Your EV Battery Can Lose Usable Range Overnight Without Permanent Capacity Loss"};
+ const manifest={video_id:"QA-"+id+"-LONG",fps:30,width:1920,height:1080,audio:[],timeline:[{beat:1,component:id,props:values,src:"",startFrame:0,durationFrames,track:"card"}]};
+ const inputProps={manifest};
+ const comp=await selectComposition({serveUrl,id:"AXLongForm",inputProps});
+ const dir=path.join(OUT,id); fs.mkdirSync(dir,{recursive:true});
+ for(const [name,frame] of [["stress_long_1.5s",45],["stress_long_final",88]]){
+  await renderStill({composition:comp,serveUrl,output:path.join(dir,name+".png"),inputProps,frame,imageFormat:"png"});
+ }
+}
+console.log("Rendered 19 current VC-LF cards + VC-LF-018 long-title stress case");
