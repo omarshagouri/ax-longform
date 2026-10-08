@@ -1,54 +1,44 @@
-name: QA long-form cards
+name: QA current long-form cards
 
 on:
   push:
-    branches: [lf-card-qa-v1]
+    branches: [main, visual-library-v2]
     paths:
-      - "video-service/**"
+      - "video-service/Cards/**"
+      - "video-service/src/HtmlCard.tsx"
+      - "video-service/scripts/qa_cards.mjs"
       - ".github/workflows/qa-longform-cards.yml"
   workflow_dispatch:
 
 jobs:
   qa-cards:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-
+    timeout-minutes: 35
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node
-        uses: actions/setup-node@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-
       - name: Install dependencies
         working-directory: video-service
         run: npm install
-
       - name: Regenerate cards
         working-directory: video-service
         run: python3 scripts/extract_cards.py Cards
-
       - name: Typecheck
         working-directory: video-service
         run: npm run typecheck
-
-      - name: Render card QA suite
+      - name: Render current card QA suite
         working-directory: video-service
         run: node scripts/qa_cards.mjs
-
-      - name: Upload card QA renders
+      - name: Upload current card QA
         uses: actions/upload-artifact@v4
         with:
-          name: vc-lf-card-qa-v1
+          name: vc-lf-card-qa-current
           path: video-service/qa-card-output
           retention-days: 7
-
       - name: Build production container
-        run: docker build -t longform-video-card-qa ./video-service
+        run: docker build -t longform-card-qa ./video-service
