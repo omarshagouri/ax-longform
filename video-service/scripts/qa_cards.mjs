@@ -37,7 +37,7 @@ for(const [id,durationSec,values] of cases){
  const durationFrames=Math.max(1,Math.round(durationSec*30));
  const manifest={video_id:"QA-"+id,fps:30,width:1920,height:1080,audio:[],timeline:[{beat:1,component:id,props:values,src:"",startFrame:0,durationFrames,track:"card"}]};
  const inputProps={manifest};
- const comp=await selectComposition({serveUrl,id:"AmpCoreXLongForm",inputProps});
+ const comp=await selectComposition({serveUrl,id:"AXLongForm",inputProps});
  const dir=path.join(OUT,id); fs.mkdirSync(dir,{recursive:true});
  for(const [name,frame] of [["t00_0.5s",Math.min(durationFrames-1,15)],["t01_1.5s",Math.min(durationFrames-1,45)],["t02_final",Math.max(0,durationFrames-2)]]){
   await renderStill({composition:comp,serveUrl,output:path.join(dir,name+".png"),inputProps,frame,imageFormat:"png"});
