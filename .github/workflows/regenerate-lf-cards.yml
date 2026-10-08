@@ -2,7 +2,7 @@ name: Regenerate LF card registry
 
 on:
   push:
-    branches: [main]
+    branches: [main, privacy-hardening]
     paths:
       - "video-service/Cards/VC-LF-*.py"
       - "video-service/scripts/extract_cards.py"
