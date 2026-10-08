@@ -1,4 +1,4 @@
-# VC-LF-003 | AmpCoreX long-form centered layout v2
+# VC-LF-003 | AX long-form centered layout v2
 # 1920x1080. Main content is optically centered; lower subtitle band is protected.
 # Motion remains duration-aware: animate through duration-1s, hold only the final 1s.
 CARD = {
@@ -59,7 +59,7 @@ transform:translate(340px,-38px) scale(.78)!important;transform-origin:540px 540
         </div>
     </div>''',
     "seek": r'''
-/* AmpCoreX LF timing normalization:
+/* AX LF timing normalization:
    real card duration = x
    animation window   = x - 1.0 s
    final 1.0 s        = settled hold
