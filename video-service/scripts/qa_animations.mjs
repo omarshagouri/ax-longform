@@ -235,7 +235,7 @@ for (const test of cases) {
 
   const composition = await selectComposition({
     serveUrl,
-    id: "AmpCoreXAnimationPreview",
+    id: "AXAnimationPreview",
     inputProps,
   });
 
@@ -286,7 +286,7 @@ for (const test of stressCases) {
 
   const composition = await selectComposition({
     serveUrl,
-    id: "AmpCoreXAnimationPreview",
+    id: "AXAnimationPreview",
     inputProps,
   });
 
