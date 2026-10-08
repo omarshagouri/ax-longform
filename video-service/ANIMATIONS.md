@@ -1,4 +1,4 @@
-# AmpCoreX Long-Form Animation Library V2
+# Long-Form Animation Library V2
 
 ID family: VA-LF-*.
 Renderer: video-service / ax-longform-render.

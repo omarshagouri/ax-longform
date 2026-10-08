@@ -1,4 +1,4 @@
-"""AmpCoreX Long Form — Card Lab service.
+"""Long Form — Card Lab service.
 
 Independent from the Shorts services.
 Existing Card Builder can point to this service and keep using POST /render-beat.
@@ -152,7 +152,7 @@ def check_key(req: Request):
 def health():
     return {
         "status": "ok",
-        "service": "ampcorex-longform-card-lab",
+        "service": "lf-card-lab",
         "canvas": f"{WIDTH}x{HEIGHT}",
         "fps": FPS,
         "timing": "duration-aware; final 1s hold",

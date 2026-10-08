@@ -6,7 +6,7 @@
   "scripts": {
     "cards": "python3 scripts/extract_cards.py Cards",
     "studio": "remotion studio",
-    "render": "remotion render AmpCoreXLongForm out/chapter.mp4",
+    "render": "remotion render AXLongForm out/chapter.mp4",
     "typecheck": "tsc --noEmit",
     "server": "node server/index.mjs"
   },

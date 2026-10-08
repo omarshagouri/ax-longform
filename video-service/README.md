@@ -1,4 +1,4 @@
-# AmpCoreX Long Form — Video service
+# Long Form — Video service
 
 Independent 16:9 Remotion renderer for long-form chapters.
 

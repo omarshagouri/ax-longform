@@ -2,7 +2,7 @@ import React from "react";
 import { AbsoluteFill, staticFile, Img } from "remotion";
 import { theme } from "./theme";
 
-/** 1920x1080 AmpCoreX long-form background. */
+/** 1920x1080 AX long-form background. */
 export const Frame: React.FC = () => (
   <AbsoluteFill style={{ backgroundColor: theme.navy }}>
     <Img
