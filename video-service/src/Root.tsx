@@ -22,7 +22,7 @@ const waitForFonts = async () => {
 export const RemotionRoot: React.FC = () => (
   <>
     <Composition
-      id="AmpCoreXLongForm"
+      id="AXLongForm"
       component={Video}
       fps={30}
       width={1920}
@@ -42,7 +42,7 @@ export const RemotionRoot: React.FC = () => (
     />
 
     <Composition
-      id="AmpCoreXAnimationPreview"
+      id="AXAnimationPreview"
       component={AnimationPreview}
       fps={30}
       width={1920}
@@ -73,7 +73,7 @@ export const RemotionRoot: React.FC = () => (
     />
 
     <Still
-      id="AmpCoreXThumbnail"
+      id="AXThumbnail"
       component={Thumbnail}
       width={1280}
       height={720}
