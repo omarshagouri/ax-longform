@@ -1,0 +1,39 @@
+name: QA chapter divider
+on:
+  push:
+    branches: [lf-chapter-card-v3]
+    paths:
+      - "video-service/Cards/VC-LF-018.py"
+      - "video-service/scripts/qa_chapter_card.mjs"
+      - ".github/workflows/qa-chapter-card.yml"
+  workflow_dispatch:
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install
+        working-directory: video-service
+        run: npm install
+      - name: Regenerate cards
+        working-directory: video-service
+        run: python3 scripts/extract_cards.py Cards
+      - name: Typecheck
+        working-directory: video-service
+        run: npm run typecheck
+      - name: Render chapter divider
+        working-directory: video-service
+        run: node scripts/qa_chapter_card.mjs
+      - name: Upload chapter QA
+        uses: actions/upload-artifact@v4
+        with:
+          name: vc-lf-018-chapter-qa
+          path: video-service/qa-chapter-card
+          retention-days: 7
