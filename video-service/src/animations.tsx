@@ -8,6 +8,7 @@ import {
 } from "remotion";
 import { z } from "zod";
 import { theme } from "./theme";
+import { continuousAnimationRegistry } from "./animations-continuous";
 
 const lfTheme = {
   ...theme,
@@ -1377,6 +1378,7 @@ export const VALF007SystemDelta: React.FC<any> = ({
 };
 
 export const animationRegistry: Record<string, AnimEntry> = {
+  ...continuousAnimationRegistry,
   "VA-LF-001": {
     component: VALF001BatteryBuffer,
     schema: batteryBufferSchema,

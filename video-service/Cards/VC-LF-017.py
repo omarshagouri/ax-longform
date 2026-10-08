@@ -3,22 +3,32 @@
 # Motion remains duration-aware: animate through duration-1s, hold only the final 1s.
 CARD = {
     "id": 'VC-LF-017',
-    "slots": ['STEP1', 'STEP2', 'STEP3', 'STEP4'],
+    "slots": ['TITLE', 'C1_LABEL', 'C1_VALUE', 'C2_LABEL', 'C2_VALUE', 'C3_LABEL', 'C3_VALUE', 'SOURCE'],
     "default_duration": 4.5,
-    "css": r'''.pr-wrap{position:absolute;left:96px;top:0;width:888px;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:30px;}
-.pr-step{width:640px;padding:34px 30px;background:rgba(10,22,40,.6);border:1px solid rgba(0,212,170,.4);border-radius:18px;font-family:'Space Grotesk';font-weight:700;font-size:52px;color:#FFFFFF;text-align:center;opacity:0;transform:translateY(34px);}
-.pr-arr{font-size:52px;color:#00D4AA;opacity:0;transform:translateY(10px);line-height:0.6;}
+    "css": r'''.cb-wrap{position:absolute;left:96px;top:0;width:888px;height:100%;display:flex;flex-direction:column;justify-content:center;}
+.cb-title{font-family:'Space Grotesk';font-weight:700;font-size:60px;color:#FFFFFF;text-align:center;margin-bottom:300px;opacity:0;transform:translateY(26px);}
+.cb-plot{display:flex;justify-content:space-evenly;align-items:flex-end;height:520px;border-bottom:3px solid rgba(140,160,184,.4);margin-left:auto;margin-right:auto;}
+.cb-col{display:flex;flex-direction:column;align-items:center;width:220px;}
+.cb-val{font-family:'Space Grotesk';font-weight:700;font-size:56px;color:#FFFFFF;margin-bottom:16px;opacity:0;}
+.cb-bar{width:150px;border-radius:14px 14px 0 0;height:0;}
+.cb-lab{font-family:Inter;font-weight:600;font-size:34px;color:#8CA0B8;margin-top:22px;text-align:center;}
+.src{position:absolute;left:96;bottom:230px;display:flex;align-items:center;gap:20px;opacity:0;}
+.src-bar{width:10px;height:44px;background:#00D4AA;border-radius:3px;}
+.src-txt{font-family:Inter;font-weight:600;font-size:30px;color:#FFFFFF;}
 
 /* --- caption-safe-zone pass: keep all text above y=1180 (caption band y1180-1540) --- */
-.pr-wrap{top:192px !important;height:988px !important;}
+.cb-wrap{top:192px !important;height:988px !important;}.src{bottom:650px !important;;left:96px !important;}
 
 /* ax caption-safe v3: center ~y920, clamp bottom<=1340 (repo band bottom=1540) */
-#axsafe{position:absolute;left:0;top:0;width:1080px;height:1920px;transform:translate(120px,-145px);}
+#axsafe{position:absolute;left:0;top:0;width:1080px;height:1920px;transform:translate(120px,-196px);}
 
-#axsafe{transform:translate(140px,-145px)!important;}
-.pr-wrap{width:930px!important;gap:22px!important;}
-.pr-step{width:700px!important;padding:26px 28px!important;font-size:44px!important;}
-.pr-arr{font-size:44px!important;}
+#axsafe{transform:translate(140px,-196px)!important;}
+.cb-wrap{width:930px!important;}
+.cb-title{font-size:54px!important;margin-bottom:250px!important;}
+.cb-plot{height:470px!important;}
+.cb-val{font-size:50px!important;}
+.cb-lab{font-size:30px!important;}
+.src{left:96px!important;}
 
 /* ===== LF V2 universal centered composition =====
    Optical content center ~= x 880 px.
@@ -26,16 +36,19 @@ CARD = {
    Transform origin y=540 pulls high titles down and low graphics up.
    Approx. bottom 220-250 px remains available for subtitles. */
 #axsafe{position:absolute!important;left:0!important;top:0!important;width:1080px!important;height:1920px!important;
-transform:translate(340px,-145px) scale(.78)!important;transform-origin:540px 540px!important;}
+transform:translate(340px,-196px) scale(.78)!important;transform-origin:540px 540px!important;}
 
 /* LF V2 per-card readability scale */
-#axsafe{transform:translate(340px,-145px) scale(0.88)!important;transform-origin:540px 540px!important;}
+#axsafe{transform:translate(410px,-185px) scale(0.82)!important;transform-origin:540px 540px!important;}
+.src{bottom:760px!important;}
 ''',
-    "body": r'''<div id="axsafe"><div class="pr-wrap">
-<div class="pr-step" id="ps1">__STEP1__</div><div class="pr-arr" id="pa1">&#9660;</div>
-<div class="pr-step" id="ps2">__STEP2__</div><div class="pr-arr" id="pa2">&#9660;</div>
-<div class="pr-step" id="ps3">__STEP3__</div><div class="pr-arr" id="pa3">&#9660;</div>
-<div class="pr-step" id="ps4">__STEP4__</div></div></div>''',
+    "body": r'''<div id="axsafe"><div class="cb-wrap"><div class="cb-title" id="cbTitle">__TITLE__</div>
+<div class="cb-plot">
+<div class="cb-col" id="cbc1"><div class="cb-val" id="cbv1">__C1_VALUE__</div><div class="cb-bar" id="cbb1" style="background:#00D4AA"></div><div class="cb-lab">__C1_LABEL__</div></div>
+<div class="cb-col" id="cbc2"><div class="cb-val" id="cbv2">__C2_VALUE__</div><div class="cb-bar" id="cbb2" style="background:#FF7A3C"></div><div class="cb-lab">__C2_LABEL__</div></div>
+<div class="cb-col" id="cbc3"><div class="cb-val" id="cbv3">__C3_VALUE__</div><div class="cb-bar" id="cbb3" style="background:#00D4AA"></div><div class="cb-lab">__C3_LABEL__</div></div>
+</div></div>
+<div class="src" id="cbSrc"><div class="src-bar"></div><div class="src-txt">SOURCE: __SOURCE__</div></div></div>''',
     "seek": r'''
 /* AmpCoreX LF timing normalization:
    real card duration = x
@@ -65,62 +78,106 @@ while(size>16&&g<240&&(el.scrollWidth>el.clientWidth+0.5||(maxH&&el.scrollHeight
 if(ready){el.dataset.fitpx=size;el.dataset.fitok='1';}}
 };}
 
-__fit(".pr-step",640,160,0,1);
-function show(id,a,b,dy){var e=easeOutCubic(clamp((t-a)/(b-a)));var el=document.getElementById(id);if(el){el.style.opacity=e;el.style.transform='translateY('+(dy*(1-e))+'px)';}}
-function grow(id,a,b){var e=easeOutCubic(clamp((t-a)/(b-a)));var el=document.getElementById(id);if(el){el.style.transform='scaleX('+e+')';}}
-/* Optional process steps:
-   - blank strings and unresolved placeholders are hidden
-   - arrows appear only BETWEEN real steps
-   - entrance timing is recalculated from the number of visible elements */
-var stepIds=['ps1','ps2','ps3','ps4'];
-var arrowIds=['pa1','pa2','pa3'];
+__fit(".cb-title",888,160,0,1);
+__fit(".cb-val",200,0,1,1);
+__fit(".cb-lab",220,120,0,1);
+__fit(".src-txt",820,0,1,0);
+
+/* Dynamic 1/2/3-column handling.
+   Blank VALUE+LABEL pairs disappear completely.
+   Remaining bars are re-centered and resized as a group. */
+var defs=[
+  {col:'cbc1',bar:'cbb1',val:'cbv1'},
+  {col:'cbc2',bar:'cbb2',val:'cbv2'},
+  {col:'cbc3',bar:'cbb3',val:'cbv3'}
+];
+
 var visible=[];
 
-stepIds.forEach(function(id){
-    var el=document.getElementById(id);
-    if(!el){return;}
-    var txt=(el.textContent||'').trim();
-    var empty=(txt.length===0 || txt.indexOf('__')>-1);
-    if(empty){
-        el.style.display='none';
-    }else{
-        el.style.display='';
-        visible.push(el);
+defs.forEach(function(d){
+    var col=document.getElementById(d.col);
+    var val=document.getElementById(d.val);
+    var lab=col?col.querySelector('.cb-lab'):null;
+
+    var valueText=val?(val.textContent||'').trim():'';
+    var labelText=lab?(lab.textContent||'').trim():'';
+
+    var unresolved=(valueText.indexOf('__')>-1 || labelText.indexOf('__')>-1);
+    var empty=(valueText.length===0 && labelText.length===0);
+
+    if(!col || unresolved || empty){
+        if(col){col.style.display='none';}
+        return;
     }
+
+    col.style.display='';
+    var match=valueText.match(/-?[\d.]+/);
+    var num=match?parseFloat(match[0]):0;
+    visible.push({def:d,col:col,val:val,lab:lab,num:isNaN(num)?0:num});
 });
 
-/* Start with every arrow hidden. */
-arrowIds.forEach(function(id){
-    var a=document.getElementById(id);
-    if(a){a.style.display='none';}
-});
+var plot=document.querySelector('.cb-plot');
+var N=visible.length;
 
-/* Show the arrow that follows each visible step except the last one. */
-for(var i=0;i<visible.length-1;i++){
-    var idx=stepIds.indexOf(visible[i].id);
-    if(idx>=0 && idx<arrowIds.length){
-        var a=document.getElementById(arrowIds[idx]);
-        if(a){a.style.display='';}
+/* Keep the baseline only under the real bar group, not across an empty slot. */
+if(plot){
+    if(N===1){
+        plot.style.width='390px';
+        plot.style.justifyContent='center';
+    }else if(N===2){
+        plot.style.width='650px';
+        plot.style.justifyContent='space-evenly';
+    }else{
+        plot.style.width='860px';
+        plot.style.justifyContent='space-evenly';
     }
 }
 
-/* Animate only real steps/arrows, in DOM order. */
-var sequence=[];
-stepIds.forEach(function(id,idx){
-    var el=document.getElementById(id);
-    if(el && el.style.display!=='none'){
-        sequence.push({id:id,dy:34});
-        if(idx<arrowIds.length){
-            var a=document.getElementById(arrowIds[idx]);
-            if(a && a.style.display!=='none'){
-                sequence.push({id:arrowIds[idx],dy:10});
-            }
-        }
+var mx=1;
+visible.forEach(function(v){if(v.num>mx){mx=v.num;}});
+
+/* Timing uses the real active window and holds only the last second. */
+var active=Math.max(0.25,x-HOLD);
+var p=clamp(t/active);
+
+function seg(a,b){
+    return easeOutCubic(clamp((p-a)/(b-a)));
+}
+
+/* Title first. */
+var title=document.getElementById('cbTitle');
+var et=seg(0.00,0.22);
+if(title){
+    title.style.opacity=et;
+    title.style.transform='translateY('+(26*(1-et))+'px)';
+}
+
+/* Bars build one-by-one across the visible set. */
+visible.forEach(function(v,i){
+    var spanStart=0.18 + (N>1 ? i*(0.30/(N-1)) : 0);
+    var spanEnd=Math.min(0.86, spanStart+0.42);
+
+    var eb=seg(spanStart,spanEnd);
+    var height=(v.num/mx)*400;
+
+    var bar=document.getElementById(v.def.bar);
+    if(bar){
+        bar.style.height=(eb*height)+'px';
+    }
+
+    var ev=seg(Math.min(spanStart+0.10,0.80), Math.min(spanEnd+0.10,0.96));
+    if(v.val){
+        v.val.style.opacity=ev;
     }
 });
 
-var N=sequence.length;
-sequence.forEach(function(item,i){
-    show(item.id,S(i,N),E(i,N),item.dy);
-});''',
+/* Optional source. */
+var s=document.getElementById('cbSrc');
+if(s){
+    var source=s.textContent.replace('SOURCE:','').trim();
+    var ok=source.length>0 &&
+           source.indexOf('__')<0 &&
+           source.toUpperCase().indexOf('ILLUSTRATIVE')!==0;
+    s.style.opacity=ok?seg(0.78,1.00):0;
+}''',
 }

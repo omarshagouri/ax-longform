@@ -1,8 +1,8 @@
-# VC-LF-020 | AmpCoreX long-form centered layout v2
+# VC-LF-016 | AmpCoreX long-form centered layout v2
 # 1920x1080. Main content is optically centered; lower subtitle band is protected.
 # Motion remains duration-aware: animate through duration-1s, hold only the final 1s.
 CARD = {
-    "id": 'VC-LF-020',
+    "id": 'VC-LF-016',
     "slots": ['TAG_TEXT'],
     "default_duration": 3.0,
     "css": r'''.tag-chip{position:absolute;left:96px;top:300px;display:inline-flex;align-items:center;gap:16px;background:rgba(10,22,40,.82);border:2px solid #00D4AA;border-radius:14px;padding:20px 30px;opacity:0;transform:translateX(-30px);}

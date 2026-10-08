@@ -3,59 +3,66 @@
 # Motion remains duration-aware: animate through duration-1s, hold only the final 1s.
 CARD = {
     "id": 'VC-LF-018',
-    "slots": ['ITEM1', 'ITEM2', 'ITEM3', 'ITEM4'],
-    "default_duration": 4.5,
-    "css": r'''.ig-wrap{position:absolute;left:96px;top:0;width:888px;height:100%;display:flex;flex-direction:column;justify-content:center;}
-.ig-grid{display:grid;grid-template-columns:1fr 1fr;gap:34px;}
-.ig-cell{background:rgba(10,22,40,.55);border:1px solid rgba(0,212,170,.3);border-radius:20px;padding:44px 30px;display:flex;flex-direction:column;align-items:center;gap:24px;text-align:center;opacity:0;transform:translateY(38px);}
-.ig-mark{width:70px;height:70px;border-radius:18px;background:rgba(0,212,170,.15);border:2px solid #00D4AA;display:flex;align-items:center;justify-content:center;}
-.ig-t{font-family:'Space Grotesk';font-weight:600;font-size:44px;color:#FFFFFF;line-height:1.15;}
+    "slots": ['SERIES', 'HEADLINE', 'SUBHEAD'],
+    "default_duration": 2.0,
+    "css": r'''
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+.tc-root{ position:absolute; inset:0; background:#0A1628; overflow:hidden; }
+.tc-bg{ position:absolute; inset:0; background-image:url("__BG_SRC__");
+        background-size:cover; background-position:center; background-repeat:no-repeat; }
+.tc-veil{ position:absolute; inset:0; background:
+    linear-gradient(180deg, rgba(10,22,40,.72) 0%, rgba(10,22,40,.30) 22%,
+      rgba(10,22,40,.00) 42%, rgba(10,22,40,.00) 60%, rgba(10,22,40,.55) 84%, rgba(10,22,40,.90) 100%); }
+.tc-top{ position:absolute; top:150px; left:0; width:1080px; box-sizing:border-box; padding:0 70px;
+         display:flex; flex-direction:column; align-items:center; text-align:center; gap:18px; }
+.tc-series{ margin:0; font-family:'Space Mono', monospace; font-weight:400; font-size:30px;
+            letter-spacing:5px; color:#b3c6d7; text-transform:uppercase; text-shadow:0 2px 20px rgba(0,0,0,.5);
+            opacity:0; transform:translateY(14px); }
+.tc-head{ margin:0; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:108px;
+          line-height:1.06; letter-spacing:-1px; color:#FFFFFF; text-shadow:0 4px 30px rgba(0,0,0,.5);
+          opacity:0; transform:translateY(20px); }
+.tc-head .key{ color:#00D4AA; }
+.tc-sub{ margin:0; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:44px;
+         line-height:1.18; color:#FFFFFF; text-shadow:0 3px 22px rgba(0,0,0,.5);
+         opacity:0; transform:translateY(18px); }
+.tc-logo{ position:absolute; left:0; bottom:80px; width:1080px; text-align:center; }
+.tc-logo img{ height:180px; width:auto; display:inline-block; filter:drop-shadow(0 4px 20px rgba(0,0,0,.6)); }
 
-/* --- caption-safe-zone pass: keep all text above y=1180 (caption band y1180-1540) --- */
-.ig-wrap{top:192px !important;height:988px !important;}
+/* LF native 16:9 thumbnail/first-frame composition */
+.tc-root{position:absolute!important;inset:0!important;width:1920px!important;height:1080px!important;background:transparent!important;}
+.tc-bg{display:none!important;}
+.tc-veil{background:linear-gradient(90deg,rgba(10,22,40,.82) 0%,rgba(10,22,40,.62) 48%,rgba(10,22,40,.12) 72%,rgba(10,22,40,0) 100%)!important;}
+.tc-top{top:150px!important;left:140px!important;width:1120px!important;padding:0!important;align-items:flex-start!important;text-align:left!important;gap:20px!important;}
+.tc-series{font-size:28px!important;}
+.tc-head{font-size:96px!important;line-height:1.03!important;}
+.tc-sub{font-size:38px!important;max-width:1050px!important;}
+.tc-logo{left:140px!important;bottom:80px!important;width:1120px!important;text-align:left!important;}
+.tc-logo img{height:110px!important;}
 
-/* ax caption-safe v3: center ~y920, clamp bottom<=1340 (repo band bottom=1540) */
-#axsafe{position:absolute;left:0;top:0;width:1080px;height:1920px;transform:translate(120px,-145px);}
-
-#axsafe{transform:translate(140px,-145px)!important;}
-.ig-wrap{width:930px!important;}
-.ig-grid{gap:24px!important;}
-.ig-cell{padding:30px 24px!important;gap:18px!important;}
-.ig-t{font-size:38px!important;}
-
-/* ===== LF V2 universal centered composition =====
-   Optical content center ~= x 880 px.
-   Scale 0.78 reduces Shorts-scale typography/graphics.
-   Transform origin y=540 pulls high titles down and low graphics up.
-   Approx. bottom 220-250 px remains available for subtitles. */
-#axsafe{position:absolute!important;left:0!important;top:0!important;width:1080px!important;height:1920px!important;
-transform:translate(340px,-145px) scale(.78)!important;transform-origin:540px 540px!important;}
-
-/* LF V2 per-card readability scale */
-#axsafe{transform:translate(340px,-145px) scale(0.88)!important;transform-origin:540px 540px!important;}
+/* ===== LF V2 16:9 first-frame composition ===== */
+.tc-root{position:absolute!important;inset:0!important;width:1920px!important;height:1080px!important;background:transparent!important;}
+.tc-bg{display:none!important;}
+.tc-veil{background:linear-gradient(90deg,rgba(10,22,40,.68) 0%,rgba(10,22,40,.52) 53%,rgba(10,22,40,.10) 78%,rgba(10,22,40,0) 100%)!important;}
+.tc-top{position:absolute!important;top:160px!important;left:300px!important;width:1120px!important;padding:0!important;align-items:center!important;text-align:center!important;gap:18px!important;}
+.tc-series{font-size:24px!important;letter-spacing:4px!important;}
+.tc-head{font-size:76px!important;line-height:1.05!important;max-width:1100px!important;}
+.tc-sub{font-size:30px!important;line-height:1.22!important;max-width:980px!important;}
+.tc-logo{left:300px!important;bottom:245px!important;width:1120px!important;text-align:center!important;}
+.tc-logo img{height:82px!important;}
 ''',
-    "body": r'''<div id="axsafe"><div class="ig-wrap"><div class="ig-grid">
-<div class="ig-cell" id="ig1"><div class="ig-mark"><svg width="32" height="32" viewBox="0 0 24 24" fill="#00D4AA"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><div class="ig-t">__ITEM1__</div></div>
-<div class="ig-cell" id="ig2"><div class="ig-mark"><svg width="32" height="32" viewBox="0 0 24 24" fill="#00D4AA"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><div class="ig-t">__ITEM2__</div></div>
-<div class="ig-cell" id="ig3"><div class="ig-mark"><svg width="32" height="32" viewBox="0 0 24 24" fill="#00D4AA"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><div class="ig-t">__ITEM3__</div></div>
-<div class="ig-cell" id="ig4"><div class="ig-mark"><svg width="32" height="32" viewBox="0 0 24 24" fill="#00D4AA"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><div class="ig-t">__ITEM4__</div></div></div></div></div>''',
+    "body": r'''
+<div class="tc-root">
+  <div class="tc-bg" id="tcBg"></div>
+  <div class="tc-veil"></div>
+  <div class="tc-top">
+    <p class="tc-series" id="tcSeries">__SERIES__</p>
+    <h1 class="tc-head" id="tcHead">__HEADLINE__</h1>
+    <p class="tc-sub" id="tcSub">__SUBHEAD__</p>
+  </div>
+  <div class="tc-logo" id="tcLogo"><img id="tcLogoImg" src="__LOGO_SRC__" alt=""></div>
+</div>
+''',
     "seek": r'''
-/* AmpCoreX LF timing normalization:
-   real card duration = x
-   animation window   = x - 1.0 s
-   final 1.0 s        = settled hold
-   The original card motion is remapped into that active window.
-*/
-var __lfRealX=(typeof x!=='undefined'&&x>0)?x:4.5;
-var __lfActive=Math.max(0.25,__lfRealX-1.0);
-var __lfP=clamp(t/__lfActive);
-t=__lfP*3.5;
-x=4.5;
-
-var x=(typeof x!=='undefined'&&x>0)?x:4;
-var HOLD=1,ENTER=0.5;
-function S(i,N){return N<2?0.12*x:0.12*x+(i/(N-1))*((x-HOLD-ENTER)-0.12*x);}
-function E(i,N){return N<2?x-HOLD:S(i,N)+ENTER;}
 if(!window.__fit){window.__fit=function(sel,maxW,maxH,line,center){
 var els=document.querySelectorAll(sel);var ready=(!document.fonts)||document.fonts.status==='loaded';
 for(var i=0;i<els.length;i++){var el=els[i];
@@ -68,67 +75,39 @@ while(size>16&&g<240&&(el.scrollWidth>el.clientWidth+0.5||(maxH&&el.scrollHeight
 if(ready){el.dataset.fitpx=size;el.dataset.fitok='1';}}
 };}
 
-__fit(".ig-t",320,170,0,1);
-function show(id,a,b,dy){var e=easeOutCubic(clamp((t-a)/(b-a)));var el=document.getElementById(id);if(el){el.style.opacity=e;el.style.transform='translateY('+(dy*(1-e))+'px)';}}
-function grow(id,a,b){var e=easeOutCubic(clamp((t-a)/(b-a)));var el=document.getElementById(id);if(el){el.style.transform='scaleX('+e+')';}}
-/* Optional insight-grid items:
-   - blank strings and unresolved placeholders are hidden
-   - the grid reflows for 1, 2, 3 or 4 real items
-   - entrance timing uses the actual visible-item count */
-var ids=['ig1','ig2','ig3','ig4'];
-var visible=[];
+var se=document.getElementById('tcSeries');
+if(se){ var stext=se.textContent.trim(); if(!stext || stext.indexOf('__SERIES')>-1){ se.style.display='none'; } }
 
-ids.forEach(function(id){
-    var el=document.getElementById(id);
-    if(!el){return;}
-    var txtEl=el.querySelector('.ig-t');
-    var txt=txtEl?(txtEl.textContent||'').trim():'';
-    var empty=(txt.length===0 || txt.indexOf('__')>-1);
-    if(empty){
-        el.style.display='none';
-    }else{
-        el.style.display='';
-        visible.push(el);
-    }
-});
+var h=document.getElementById('tcHead');
+if(h && h.dataset.kw!=='1'){ h.innerHTML=h.textContent.replace(/\*([^*]+)\*/g,'<span class="key">$1</span>'); h.dataset.kw='1'; }
 
-var grid=document.querySelector('.ig-grid');
-var N=visible.length;
+var s=document.getElementById('tcSub');
+if(s){ var st=s.textContent.trim(); if(!st || st.indexOf('__SUB')>-1){ s.style.display='none'; } }
 
-if(grid){
-    if(N===1){
-        grid.style.gridTemplateColumns='1fr';
-        grid.style.justifyItems='center';
-        visible[0].style.width='62%';
-        visible[0].style.boxSizing='border-box';
-    }else if(N===2){
-        grid.style.gridTemplateColumns='1fr 1fr';
-        grid.style.justifyItems='stretch';
-        visible.forEach(function(el){
-            el.style.width='';
-            el.style.gridColumn='';
-        });
-    }else if(N===3){
-        grid.style.gridTemplateColumns='1fr 1fr';
-        grid.style.justifyItems='stretch';
-        visible[0].style.gridColumn='1';
-        visible[1].style.gridColumn='2';
-        visible[2].style.gridColumn='1 / span 2';
-        visible[2].style.width='calc(50% - 17px)';
-        visible[2].style.justifySelf='center';
-        visible[2].style.boxSizing='border-box';
-    }else{
-        grid.style.gridTemplateColumns='1fr 1fr';
-        grid.style.justifyItems='stretch';
-        visible.forEach(function(el){
-            el.style.width='';
-            el.style.gridColumn='';
-            el.style.justifySelf='';
-        });
-    }
+var li=document.getElementById('tcLogoImg');
+if(li){ var src=li.getAttribute('src')||''; if(!src || src.indexOf('__LOGO')>-1){ var lw=document.getElementById('tcLogo'); if(lw) lw.style.display='none'; } }
+
+__fit('.tc-head',1100,300,0,1);
+__fit('.tc-sub',980,110,0,1);
+
+function tcShow(el,a,b,dy,scale0){
+  if(!el)return;
+  var p=easeOutCubic(clamp((t-a)/(b-a)));
+  el.style.opacity=p;
+  el.style.transform='translateY('+(dy*(1-p))+'px) scale('+(scale0+(1-scale0)*p)+')';
 }
 
-visible.forEach(function(el,i){
-    show(el.id,S(i,N),E(i,N),38);
-});''',
+/* Short, professional title-card entrance. All information is settled by ~1.4 s,
+   then the card holds cleanly for the narration beat. */
+tcShow(se,0.05,0.48,14,0.98);
+tcShow(h,0.22,0.92,20,0.975);
+tcShow(s,0.62,1.35,18,0.985);
+
+var lw=document.getElementById('tcLogo');
+if(lw && lw.style.display!=='none'){
+  var lp=easeOutCubic(clamp((t-0.85)/0.55));
+  lw.style.opacity=lp;
+  lw.style.transform='translateY('+(12*(1-lp))+'px)';
+}
+''',
 }

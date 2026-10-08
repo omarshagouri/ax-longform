@@ -1,73 +1,252 @@
-# VC-LF-019 | AmpCoreX long-form centered layout v2
-# 1920x1080. Main content is optically centered; lower subtitle band is protected.
-# Motion remains duration-aware: animate through duration-1s, hold only the final 1s.
+# VC-LF-019 | Long-form battery cluster readout
+# 1920x1080. Supports one or two dashboard-style battery readouts.
 CARD = {
-    "id": 'VC-LF-019',
-    "slots": ['QUOTE_TEXT', 'SOURCE_NAME'],
-    "default_duration": 4.5,
-    "css": r'''.q-wrap{position:absolute;left:96px;top:0;width:888px;height:100%;display:flex;flex-direction:column;justify-content:center;}
-.q-mark{font-family:'Space Grotesk';font-weight:700;font-size:200px;line-height:0.6;color:#00D4AA;height:120px;opacity:0;transform:translateY(20px);}
-.q-text{font-family:'Space Grotesk';font-weight:600;font-size:64px;line-height:1.24;color:#FFFFFF;opacity:0;transform:translateY(30px);}
-.q-src{display:flex;align-items:center;gap:20px;margin-top:44px;opacity:0;transform:translateY(20px);}
-.q-bar{width:52px;height:4px;background:#00D4AA;border-radius:2px;}
-.q-name{font-family:Inter;font-weight:600;font-size:38px;color:#8CA0B8;letter-spacing:.02em;}
-
-/* --- caption-safe-zone pass: keep all text above y=1180 (caption band y1180-1540) --- */
-.q-wrap{top:192px !important;height:988px !important;}
-
-/* ax caption-safe v3: center ~y920, clamp bottom<=1340 (repo band bottom=1540) */
-#axsafe{position:absolute;left:0;top:0;width:1080px;height:1920px;transform:translate(120px,-142px);}
-
-#axsafe{transform:translate(140px,-142px)!important;}
-.q-wrap{width:930px!important;}
-.q-mark{font-size:180px!important;height:105px!important;}
-.q-text{font-size:58px!important;}
-.q-name{font-size:34px!important;}
-
-/* ===== LF V2 universal centered composition =====
-   Optical content center ~= x 880 px.
-   Scale 0.78 reduces Shorts-scale typography/graphics.
-   Transform origin y=540 pulls high titles down and low graphics up.
-   Approx. bottom 220-250 px remains available for subtitles. */
-#axsafe{position:absolute!important;left:0!important;top:0!important;width:1080px!important;height:1920px!important;
-transform:translate(340px,-142px) scale(.78)!important;transform-origin:540px 540px!important;}
-
-/* LF V2 per-card readability scale */
-#axsafe{transform:translate(340px,-142px) scale(0.85)!important;transform-origin:540px 540px!important;}
+    "id": "VC-LF-019",
+    "slots": [
+        "TITLE",
+        "LEFT_LABEL", "LEFT_SOH", "LEFT_USABLE",
+        "RIGHT_LABEL", "RIGHT_SOH", "RIGHT_USABLE",
+        "FOOTER", "SOURCE"
+    ],
+    "default_duration": 5.5,
+    "css": r'''
+#cluster{
+  position:absolute;
+  left:150px;
+  top:100px;
+  width:1620px;
+  height:790px;
+}
+.cl-title{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:70px;
+  line-height:1.05;
+  font-weight:700;
+  color:#FFFFFF;
+  text-align:center;
+  margin-bottom:48px;
+  opacity:0;
+  transform:translateY(22px);
+}
+.cards{
+  display:flex;
+  justify-content:center;
+  gap:48px;
+}
+.readout{
+  width:690px;
+  min-height:475px;
+  box-sizing:border-box;
+  padding:42px 46px 36px;
+  border-radius:30px;
+  background:linear-gradient(180deg,rgba(20,36,64,.96),rgba(10,22,40,.92));
+  border:2px solid #24375A;
+  box-shadow:0 24px 80px rgba(0,0,0,.25);
+  opacity:0;
+  transform:translateY(24px) scale(.98);
+}
+.readout.left{border-top:8px solid #00D4AA;}
+.readout.right{border-top:8px solid #FF8A4C;}
+.r-label{
+  font-family:Inter,sans-serif;
+  font-size:29px;
+  font-weight:700;
+  letter-spacing:2.5px;
+  color:#8CA0B8;
+  text-transform:uppercase;
+  text-align:center;
+  margin-bottom:24px;
+}
+.soh-line{
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  gap:14px;
+  margin-top:4px;
+}
+.soh{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:128px;
+  line-height:.92;
+  font-weight:700;
+  color:#FFFFFF;
+}
+.pct{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:54px;
+  line-height:1;
+  font-weight:700;
+  color:#00D4AA;
+  margin-bottom:8px;
+}
+.right .pct{color:#FF8A4C;}
+.metric-name{
+  font-family:Inter,sans-serif;
+  font-size:26px;
+  font-weight:700;
+  color:#8CA0B8;
+  text-align:center;
+  margin-top:10px;
+}
+.usable{
+  margin:34px auto 0;
+  width:86%;
+  padding:23px 26px;
+  box-sizing:border-box;
+  border-radius:18px;
+  background:rgba(140,160,184,.10);
+  border:1px solid rgba(140,160,184,.18);
+  text-align:center;
+}
+.usable .v{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:52px;
+  line-height:1;
+  font-weight:700;
+  color:#FFFFFF;
+}
+.usable .l{
+  margin-top:7px;
+  font-family:Inter,sans-serif;
+  font-size:23px;
+  font-weight:600;
+  color:#8CA0B8;
+}
+.footer{
+  margin:34px auto 0;
+  max-width:1450px;
+  text-align:center;
+  font-family:Inter,sans-serif;
+  font-size:31px;
+  line-height:1.25;
+  font-weight:600;
+  color:#FFFFFF;
+  opacity:0;
+}
+.source{
+  position:absolute;
+  left:10px;
+  bottom:-60px;
+  border-left:8px solid #00D4AA;
+  padding-left:14px;
+  font-family:Inter,sans-serif;
+  font-size:23px;
+  font-weight:600;
+  color:#8CA0B8;
+  opacity:0;
+}
 ''',
-    "body": r'''<div id="axsafe"><div class="q-wrap"><div class="q-mark" id="qMark">&#8220;</div><div class="q-text" id="qText">__QUOTE_TEXT__</div>
-<div class="q-src" id="qSrc"><div class="q-bar"></div><div class="q-name">__SOURCE_NAME__</div></div></div></div>''',
+    "body": r'''
+<div id="cluster">
+  <div class="cl-title" id="clTitle">__TITLE__</div>
+  <div class="cards" id="clCards">
+    <div class="readout left" id="clLeft">
+      <div class="r-label" id="clLeftLabel">__LEFT_LABEL__</div>
+      <div class="soh-line"><div class="soh" id="clLeftSoh">__LEFT_SOH__</div><div class="pct">%</div></div>
+      <div class="metric-name">State of Health</div>
+      <div class="usable"><div class="v" id="clLeftUsable">__LEFT_USABLE__</div><div class="l">usable capacity</div></div>
+    </div>
+    <div class="readout right" id="clRight">
+      <div class="r-label" id="clRightLabel">__RIGHT_LABEL__</div>
+      <div class="soh-line"><div class="soh" id="clRightSoh">__RIGHT_SOH__</div><div class="pct">%</div></div>
+      <div class="metric-name">State of Health</div>
+      <div class="usable"><div class="v" id="clRightUsable">__RIGHT_USABLE__</div><div class="l">usable capacity</div></div>
+    </div>
+  </div>
+  <div class="footer" id="clFooter">__FOOTER__</div>
+  <div class="source" id="clSource">SOURCE: __SOURCE__</div>
+</div>
+''',
     "seek": r'''
-/* AmpCoreX LF timing normalization:
-   real card duration = x
-   animation window   = x - 1.0 s
-   final 1.0 s        = settled hold
-   The original card motion is remapped into that active window.
-*/
-var __lfRealX=(typeof x!=='undefined'&&x>0)?x:4.5;
-var __lfActive=Math.max(0.25,__lfRealX-1.0);
-var __lfP=clamp(t/__lfActive);
-t=__lfP*3.5;
-x=4.5;
+var x=(typeof x!=='undefined'&&x>0)?x:5.5;
+var HOLD=1.0;
+var active=Math.max(.4,x-HOLD);
 
-var x=(typeof x!=='undefined'&&x>0)?x:4;
-var HOLD=1,ENTER=0.5;
-function S(i,N){return N<2?0.12*x:0.12*x+(i/(N-1))*((x-HOLD-ENTER)-0.12*x);}
-function E(i,N){return N<2?x-HOLD:S(i,N)+ENTER;}
 if(!window.__fit){window.__fit=function(sel,maxW,maxH,line,center){
-var els=document.querySelectorAll(sel);var ready=(!document.fonts)||document.fonts.status==='loaded';
-for(var i=0;i<els.length;i++){var el=els[i];
-if(el.dataset.fitok==='1'){el.style.fontSize=el.dataset.fitpx+'px';continue;}
-if(!el.dataset.fbase){el.dataset.fbase=(parseFloat(getComputedStyle(el).fontSize)||40);}
-if(maxW){el.style.maxWidth=maxW+'px';if(center){el.style.marginLeft='auto';el.style.marginRight='auto';}}
-el.style.whiteSpace=line?'nowrap':'normal';if(!line){el.style.overflowWrap='break-word';el.style.wordBreak='break-word';}
-var size=parseFloat(el.dataset.fbase);el.style.fontSize=size+'px';var g=0;
-while(size>16&&g<240&&(el.scrollWidth>el.clientWidth+0.5||(maxH&&el.scrollHeight>maxH+0.5))){size-=2;el.style.fontSize=size+'px';g++;}
-if(ready){el.dataset.fitpx=size;el.dataset.fitok='1';}}
+  var els=document.querySelectorAll(sel);
+  for(var i=0;i<els.length;i++){
+    var el=els[i];
+    if(!el.dataset.fbase)el.dataset.fbase=(parseFloat(getComputedStyle(el).fontSize)||32);
+    if(maxW){el.style.maxWidth=maxW+'px';if(center){el.style.marginLeft='auto';el.style.marginRight='auto';}}
+    el.style.whiteSpace=line?'nowrap':'normal';
+    if(!line){el.style.overflowWrap='break-word';el.style.wordBreak='break-word';}
+    var size=parseFloat(el.dataset.fbase),g=0;
+    while(size>18&&g<180&&(el.scrollWidth>el.clientWidth+1||(maxH&&el.scrollHeight>maxH+1))){
+      size-=2;el.style.fontSize=size+'px';g++;
+    }
+  }
 };}
 
-__fit(".q-text",888,520,0,0);__fit(".q-name",740,0,1,0);
-function show(id,a,b,dy){var e=easeOutCubic(clamp((t-a)/(b-a)));var el=document.getElementById(id);if(el){el.style.opacity=e;el.style.transform='translateY('+(dy*(1-e))+'px)';}}
-function grow(id,a,b){var e=easeOutCubic(clamp((t-a)/(b-a)));var el=document.getElementById(id);if(el){el.style.transform='scaleX('+e+')';}}
-show('qMark',S(0,3),E(0,3),20);show('qText',S(1,3),E(1,3),30);(function(){var qs=document.getElementById('qSrc');var nm=qs?(qs.textContent||'').trim():'';if(nm.length>0 && nm.indexOf('__')<0 && nm.toUpperCase().indexOf('ILLUSTRATIVE')!==0){show('qSrc',S(2,3),E(2,3),20);}else if(qs){qs.style.opacity=0;}})();''',
+__fit('.cl-title',1500,110,0,1);
+__fit('.r-label',610,70,0,1);
+__fit('.soh',440,140,1,1);
+__fit('.usable .v',520,70,0,1);
+__fit('.footer',1450,100,0,1);
+__fit('.source',1450,50,1,0);
+
+function ep(a,b){return easeOutCubic(clamp((t-a)/(b-a)));}
+function revealCard(el,a,b){
+  var p=ep(a,b);
+  el.style.opacity=p;
+  el.style.transform='translateY('+(24*(1-p))+'px) scale('+(0.98+0.02*p)+')';
 }
+function reveal(el,a,b,dy){
+  var p=ep(a,b);
+  el.style.opacity=p;
+  el.style.transform='translateY('+(dy*(1-p))+'px)';
+}
+
+reveal(document.getElementById('clTitle'),.04*active,.22*active,22);
+
+var left=document.getElementById('clLeft');
+var right=document.getElementById('clRight');
+var cards=document.getElementById('clCards');
+
+function value(id){
+  var el=document.getElementById(id);
+  return el?(el.textContent||'').trim():'';
+}
+function panelOk(prefix){
+  var parts=[
+    value(prefix+'Label'),
+    value(prefix+'Soh'),
+    value(prefix+'Usable')
+  ];
+  var unresolved=parts.some(function(s){return s.indexOf('__')>-1;});
+  var empty=parts.join('').trim().length===0;
+  return !unresolved && !empty;
+}
+
+var leftOk=panelOk('clLeft');
+var rightOk=panelOk('clRight');
+
+if(!leftOk)left.style.display='none';
+if(!rightOk)right.style.display='none';
+
+if(leftOk && !rightOk){
+  left.style.width='820px';
+  cards.style.gap='0';
+}
+if(rightOk && !leftOk){
+  right.style.width='820px';
+  cards.style.gap='0';
+}
+
+if(leftOk)revealCard(left,.20*active,.48*active);
+if(rightOk){
+  var ra=leftOk ? .36*active : .20*active;
+  var rb=leftOk ? .64*active : .48*active;
+  revealCard(right,ra,rb);
+}
+
+var footer=document.getElementById('clFooter');
+var ft=(footer.textContent||'').trim();
+var footerOk=ft.length>0 && ft.indexOf('__')<0;
+footer.style.opacity=footerOk?ep(.62*active,.82*active):0;
+
+var source=document.getElementById('clSource');
+var st=(source.textContent||'').replace('SOURCE:','').trim();
+var sourceOk=st.length>0 && st.indexOf('__')<0 && st.toUpperCase().indexOf('ILLUSTRATIVE')!==0;
+source.style.opacity=sourceOk?ep(.74*active,.94*active):0;
+'''
+};
