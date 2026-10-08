@@ -2,7 +2,7 @@ name: QA current long-form cards
 
 on:
   push:
-    branches: [main, visual-library-v2, lf-chapter-card-v3]
+    branches: [main]
     paths:
       - "video-service/Cards/**"
       - "video-service/src/HtmlCard.tsx"
