@@ -1,4 +1,4 @@
-# AmpCoreX Long Form — Card Lab service
+# Long Form — Card Lab service
 
 A completely separate 16:9 authoring service for long-form cards.
 
