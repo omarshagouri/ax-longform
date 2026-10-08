@@ -1,0 +1,44 @@
+name: QA continuous long-form animations
+
+on:
+  push:
+    branches: [visual-library-v2]
+    paths:
+      - "video-service/src/animations-continuous.tsx"
+      - "video-service/src/animations.tsx"
+      - "video-service/scripts/qa_continuous_animations.mjs"
+      - ".github/workflows/qa-continuous-animations.yml"
+  workflow_dispatch:
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        working-directory: video-service
+        run: npm install
+      - name: Regenerate cards
+        working-directory: video-service
+        run: python3 scripts/extract_cards.py Cards
+      - name: Typecheck
+        working-directory: video-service
+        run: npm run typecheck
+      - name: Render continuous animation QA
+        working-directory: video-service
+        run: node scripts/qa_continuous_animations.mjs
+      - name: Upload continuous animation QA
+        uses: actions/upload-artifact@v4
+        with:
+          name: va-lf-continuous-v2
+          path: video-service/qa-continuous-v2
+          retention-days: 7
+      - name: Build production container
+        run: docker build -t longform-visual-library-v2 ./video-service
