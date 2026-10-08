@@ -131,32 +131,34 @@ export const VALF008PacketStream:React.FC<any> = ({title,nodes,flowLabel,intensi
 
 export const VALF009ThrottleGate:React.FC<any> = ({title,inputLabel,gateLabel,outputLabel,inputRate,outputRate,footer}) => {
   const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
-  const left=155,W=1610,y=575,xIn=220,xGate=780,xOut=1170;
-  const gate=Math.max(18,Math.min(100,Number(outputRate)));
-  const inCount=7, outCount=Math.max(2,Math.round(2+6*Number(outputRate)/100));
-  const inPeriod=Math.round(fps*(1.25+1.2*(1-Number(inputRate)/100)));
-  const outPeriod=Math.round(fps*(1.5+1.6*(1-Number(outputRate)/100)));
+  const W=1610, cy=348, inputEnd=370, gateL=696, gateR=914, outputStart=1240;
+  const pct=clamp01(Number(outputRate)/100);
+  const period=Math.max(30,Math.round(fps*2));
+  const inCount=Math.max(1,Math.round(2+Number(inputRate)*.055));
+  const outCount=Math.max(0,Math.round(inCount*pct));
   return <AbsoluteFill>
     <Title title={title||"The BMS can throttle power"} kicker="Control gate"/>
-    <Panel style={{position:"absolute",left,top:285,width:W,height:620,opacity:p}}>
-      <svg width={W} height="620">
-        <line x1={xIn} y1={y} x2={xGate-80} y2={y} stroke={C.line} strokeWidth="10" strokeLinecap="round"/>
-        <line x1={xGate+80} y1={y} x2={xOut+210} y2={y} stroke={C.line} strokeWidth="10" strokeLinecap="round"/>
-        {[...Array(inCount)].map((_,i)=>{const q=loop01(f,inPeriod,Math.round(i*inPeriod/inCount));return <circle key={"i"+i} cx={xIn+(xGate-90-xIn)*q} cy={y} r="8" fill={C.teal}/>;})}
-        {[...Array(outCount)].map((_,i)=>{const q=loop01(f,outPeriod,Math.round(i*outPeriod/outCount));return <circle key={"o"+i} cx={xGate+90+(xOut+120-(xGate+90))*q} cy={y} r="8" fill={C.heat}/>;})}
+    <Panel style={{position:"absolute",left:155,top:285,width:W,height:620,opacity:p}}>
+      <div style={{position:"absolute",top:56,left:90,right:90,display:"flex",justifyContent:"center",gap:80,fontFamily:"Inter,Arial",fontSize:29,fontWeight:750}}>
+        <span style={{color:C.teal}}>REQUEST {Math.round(inputRate)}%</span>
+        <span style={{color:C.heat}}>ALLOWED {Math.round(outputRate)}%</span>
+      </div>
+      <svg width={W} height="620" style={{position:"absolute",inset:0}}>
+        <line x1={inputEnd} y1={cy} x2={gateL} y2={cy} stroke={C.line} strokeWidth="9" strokeLinecap="round"/>
+        <line x1={gateR} y1={cy} x2={outputStart} y2={cy} stroke={C.line} strokeWidth="9" strokeLinecap="round"/>
+        {[...Array(inCount)].map((_,i)=>{const q=loop01(f,period,Math.round(i*period/inCount));return <circle key={"in"+i} cx={inputEnd+(gateL-inputEnd)*q} cy={cy} r={8} fill={C.teal}/>;})}
+        {[...Array(outCount)].map((_,i)=>{const q=loop01(f,period,Math.round(i*period/outCount));return <circle key={"out"+i} cx={gateR+(outputStart-gateR)*q} cy={cy} r={8} fill={C.heat}/>;})}
       </svg>
-      <NodeBox label={inputLabel} x={70} y={330} width={300} accent={C.teal}/>
-      <div style={{position:"absolute",left:xGate-95,top:300,width:190,height:250,border:`2px solid ${C.heat}88`,borderRadius:26,background:"rgba(20,36,64,.96)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-        <div style={{fontFamily:"Space Grotesk,Arial",fontSize:30,fontWeight:700,color:C.white,textAlign:"center",padding:"0 14px"}}>{gateLabel}</div>
-        <div style={{marginTop:24,width:110,height:110,border:`3px solid ${C.slate}`,borderRadius:18,display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <div style={{width:70,height:Math.max(12,70*gate/100),background:C.heat,borderRadius:8,boxShadow:`0 0 22px ${C.heat}44`}}/>
+      <NodeBox label={inputLabel} x={70} y={cy-75} width={300} accent={C.teal}/>
+      <div style={{position:"absolute",left:gateL,top:cy-130,width:gateR-gateL,height:260,border:`2px solid ${C.heat}88`,borderRadius:26,background:"rgba(20,36,64,.97)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",boxSizing:"border-box"}}>
+        <div style={{fontFamily:"Space Grotesk,Arial",fontSize:29,fontWeight:700,color:C.white,textAlign:"center",padding:"0 15px"}}>{gateLabel}</div>
+        <div style={{marginTop:23,width:125,height:38,border:`2px solid ${C.slate}`,borderRadius:10,padding:5,boxSizing:"border-box",background:C.navy}}>
+          <div style={{width:`${pct*100}%`,height:"100%",background:C.heat,borderRadius:5,boxShadow:`0 0 16px ${C.heat}66`}}/>
         </div>
-        <div style={{fontFamily:"Inter,Arial",fontSize:24,fontWeight:750,color:C.heat,marginTop:14}}>{Math.round(gate)}% OPEN</div>
+        <div style={{fontFamily:"Inter,Arial",fontSize:23,fontWeight:750,color:C.heat,marginTop:17}}>{Math.round(Number(outputRate))}% OPEN</div>
       </div>
-      <NodeBox label={outputLabel} x={1240} y={330} width={300} accent={C.heat}/>
-      <div style={{position:"absolute",left:100,right:100,top:65,display:"flex",justifyContent:"center",gap:70,fontFamily:"Inter,Arial",fontSize:28,fontWeight:700}}>
-        <span style={{color:C.teal}}>REQUEST {Math.round(inputRate)}%</span><span style={{color:C.heat}}>ALLOWED {Math.round(outputRate)}%</span>
-      </div>
+      <NodeBox label={outputLabel} x={outputStart} y={cy-75} width={300} accent={C.heat}/>
+      <div style={{position:"absolute",left:90,right:90,bottom:40,textAlign:"center",fontFamily:"Inter,Arial",fontSize:25,color:C.slate}}>The BMS limits delivered power when operating conditions require it.</div>
     </Panel><Footer text={footer}/>
   </AbsoluteFill>;
 };
@@ -215,26 +217,29 @@ export const VALF011CalibrationShift:React.FC<any> = ({title,displayedStart,disp
 
 export const VALF012DataDecision:React.FC<any> = ({title,sensors,decisionLabel,actionLabel,footer}) => {
   const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
-  const W=1610,left=155,centerX=805,centerY=390;
-  const ys=sensors.map((_:string,i:number)=>225+i*(240/Math.max(1,sensors.length-1)));
-  const period=Math.round(fps*1.8);
-  const centralPulse=.92+.08*Math.sin(f/fps*Math.PI*2*1.25);
+  const W=1610, sx=85, sensorW=275, sensorH=90, cy=350, cx=815, centerW=250, actionX=1230;
+  const spacing=112, ys=sensors.map((_:string,i:number)=>cy+(i-(sensors.length-1)/2)*spacing);
+  const period=Math.max(30,Math.round(fps*1.9));
+  const centralPulse=1+.016*Math.sin(f/fps*Math.PI*2*1.2);
   return <AbsoluteFill>
     <Title title={title||"Data becomes a battery decision"} kicker="Live BMS logic"/>
-    <Panel style={{position:"absolute",left,top:285,width:W,height:620,opacity:p}}>
+    <Panel style={{position:"absolute",left:155,top:285,width:W,height:620,opacity:p}}>
+      <div style={{position:"absolute",left:80,right:80,top:48,textAlign:"center",fontFamily:"Inter,Arial",fontSize:27,fontWeight:700,color:C.slate}}>SENSORS → ESTIMATE → DECIDE → ACT</div>
       <svg width={W} height="620" style={{position:"absolute",inset:0}}>
         {ys.map((y:number,i:number)=>{
           const q=loop01(f,period,Math.round(i*period/sensors.length));
-          const sx=330,ex=centerX-120;
-          return <g key={i}><line x1={sx} y1={y} x2={ex} y2={centerY} stroke={C.line} strokeWidth="5"/><circle cx={sx+(ex-sx)*q} cy={y+(centerY-y)*q} r="8" fill={i%2?C.cold:C.teal}/></g>;
+          const from=sx+sensorW,to=cx-centerW/2;
+          return <g key={i}>
+            <line x1={from} y1={y} x2={to} y2={cy} stroke={C.line} strokeWidth="5"/>
+            <circle cx={from+(to-from)*q} cy={y+(cy-y)*q} r="8" fill={i%2?C.cold:C.teal}/>
+          </g>;
         })}
-        <line x1={centerX+120} y1={centerY} x2={1320} y2={centerY} stroke={C.line} strokeWidth="7"/>
-        {[0,1,2].map(i=>{const q=loop01(f,Math.round(fps*1.55),i*16);return <circle key={"out"+i} cx={centerX+130+(1190-centerX)*q} cy={centerY} r="9" fill={C.heat}/>;})}
+        <line x1={cx+centerW/2} y1={cy} x2={actionX} y2={cy} stroke={C.line} strokeWidth="8" strokeLinecap="round"/>
+        {[0,1,2].map(i=>{const q=loop01(f,Math.round(fps*1.65),i*16);return <circle key={"out"+i} cx={cx+centerW/2+(actionX-cx-centerW/2)*q} cy={cy} r="9" fill={C.heat}/>;})}
       </svg>
-      {sensors.map((s:string,i:number)=><NodeBox key={s+i} label={s} x={80} y={ys[i]-60} width={250} accent={i%2?C.cold:C.teal}/>)}
-      <div style={{position:"absolute",left:centerX-120,top:centerY-120,width:240,height:240,borderRadius:38,border:`3px solid ${C.teal}`,background:"rgba(20,36,64,.96)",display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",padding:25,boxSizing:"border-box",fontFamily:"Space Grotesk,Arial",fontSize:32,fontWeight:750,color:C.white,transform:`scale(${centralPulse})`,boxShadow:`0 0 34px ${C.teal}33`}}>{decisionLabel}</div>
-      <NodeBox label={actionLabel} x={1230} y={centerY-75} width={300} accent={C.heat}/>
-      <div style={{position:"absolute",left:100,right:100,top:55,textAlign:"center",fontFamily:"Inter,Arial",fontSize:27,fontWeight:650,color:C.slate}}>SENSORS → ESTIMATE → DECIDE → ACT</div>
+      {sensors.map((label:string,i:number)=><div key={i} style={{position:"absolute",left:sx,top:ys[i]-sensorH/2,width:sensorW,height:sensorH,boxSizing:"border-box",border:`2px solid ${i%2?C.cold:C.teal}88`,borderRadius:20,background:"rgba(20,36,64,.97)",display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 15px",fontFamily:"Space Grotesk,Arial",fontSize:label.length>17?25:31,fontWeight:700,color:C.white,textAlign:"center"}}>{label}</div>)}
+      <div style={{position:"absolute",left:cx-centerW/2,top:cy-100,width:centerW,height:200,boxSizing:"border-box",borderRadius:30,border:`3px solid ${C.teal}`,background:"rgba(20,36,64,.97)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,textAlign:"center",fontFamily:"Space Grotesk,Arial",fontSize:30,fontWeight:750,color:C.white,transform:`scale(${centralPulse})`,boxShadow:`0 0 30px ${C.teal}33`}}>{decisionLabel}</div>
+      <NodeBox label={actionLabel} x={actionX} y={cy-75} width={300} accent={C.heat}/>
     </Panel><Footer text={footer}/>
   </AbsoluteFill>;
 };
