@@ -11,7 +11,7 @@ cd card-service
 
 gcloud run deploy ax-longform-card \
   --source . \
-  --project ampcorex \
+  --project "$GCP_PROJECT" \
   --region europe-west1 \
   --allow-unauthenticated \
   --memory 2Gi \
@@ -56,13 +56,13 @@ cd ../video-service
 
 gcloud run deploy ax-longform-video \
   --source . \
-  --project ampcorex \
+  --project "$GCP_PROJECT" \
   --region europe-west1 \
   --allow-unauthenticated \
   --memory 4Gi \
   --cpu 4 \
   --timeout 900 \
-  --service-account ax-render@ampcorex.iam.gserviceaccount.com \
+  --service-account "$RENDER_SERVICE_ACCOUNT" \
   --set-env-vars LONGFORM_RENDER_API_KEY=REPLACE_ME
 ```
 
