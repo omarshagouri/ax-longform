@@ -101,7 +101,7 @@ const NodeBox:React.FC<{label:string;x:number;y:number;width:number;accent?:stri
 
 export const VALF008PacketStream:React.FC<any> = ({title,nodes,flowLabel,intensity,footer}) => {
   const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
-  const W=1610,left=155,inner=95,y=540,n=nodes.length,gap=n<=3?100:66,nodeW=Math.min(250,(W-190-gap*(n-1))/n);
+  const W=1610,left=155,inner=95,y=440,n=nodes.length,gap=n<=3?100:66,nodeW=Math.min(250,(W-190-gap*(n-1))/n);
   const xs=nodes.map((_:string,i:number)=>inner+i*(nodeW+gap));
   const x0=xs[0]+nodeW, x1=xs[n-1], span=Math.max(1,x1-x0);
   const count=Math.max(3,Math.min(8,Number(intensity||3)+3));
@@ -163,7 +163,7 @@ export const VALF009ThrottleGate:React.FC<any> = ({title,inputLabel,gateLabel,ou
 
 export const VALF010ThermalField:React.FC<any> = ({title,heatLevel,hotspotRow,hotspotCol,cooling,note,footer}) => {
   const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
-  const rows=5,cols=8,cellW=125,cellH=92,gap=14,startX=260,startY=375;
+  const rows=5,cols=8,cellW=120,cellH=70,gap=12,startX=280,startY=180;
   const wave=loop01(f,Math.round(fps*3.2));
   const pulse=(Math.sin(f/fps*Math.PI*2*.75)+1)/2;
   return <AbsoluteFill>
@@ -180,7 +180,7 @@ export const VALF010ThermalField:React.FC<any> = ({title,heatLevel,hotspotRow,ho
         return <div key={r+"-"+c} style={{position:"absolute",left:startX+c*(cellW+gap),top:startY+r*(cellH+gap),width:cellW,height:cellH,border:`2px solid ${border}`,borderRadius:16,background:bg,boxShadow:hot>.45?`0 0 ${20+30*hot}px ${C.heat}44`:"none",transition:"none",opacity:.98}}/>;
       }))}
       {cooling?<div style={{position:"absolute",left:startX+wave*((cols-1)*(cellW+gap))-25,top:startY-20,width:50,height:rows*(cellH+gap)-gap+40,background:"linear-gradient(90deg,rgba(77,166,255,0),rgba(77,166,255,.28),rgba(77,166,255,0))",filter:"blur(5px)",borderRadius:30}}/>:null}
-      <div style={{position:"absolute",right:160,bottom:42,fontFamily:"Inter,Arial",fontSize:26,fontWeight:700,color:cooling?C.cold:C.heat}}>{cooling?"COOLING SWEEP ACTIVE":"HEAT PROPAGATION"}</div>
+      <div style={{position:"absolute",right:125,top:125,fontFamily:"Inter,Arial",fontSize:25,fontWeight:700,color:cooling?C.cold:C.heat}}>{cooling?"COOLING SWEEP ACTIVE":"HEAT PROPAGATION"}</div>
     </Panel><Footer text={footer}/>
   </AbsoluteFill>;
 };
@@ -215,8 +215,8 @@ export const VALF011CalibrationShift:React.FC<any> = ({title,displayedStart,disp
 
 export const VALF012DataDecision:React.FC<any> = ({title,sensors,decisionLabel,actionLabel,footer}) => {
   const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
-  const W=1610,left=155,centerX=805,centerY=580;
-  const ys=sensors.map((_:string,i:number)=>390+i*(380/Math.max(1,sensors.length-1)));
+  const W=1610,left=155,centerX=805,centerY=390;
+  const ys=sensors.map((_:string,i:number)=>225+i*(240/Math.max(1,sensors.length-1)));
   const period=Math.round(fps*1.8);
   const centralPulse=.92+.08*Math.sin(f/fps*Math.PI*2*1.25);
   return <AbsoluteFill>
