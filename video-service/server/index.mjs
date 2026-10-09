@@ -34,7 +34,7 @@ const getServeUrl = () => {
 let authClientPromise = null;
 const getAuthClient = () => {
   if (!authClientPromise) {
-    authClientPromise = new GoogleAuth({ scopes: ["https://www.googleapis.com/auth/drive.readonly"] }).getClient();
+    authClientPromise = new GoogleAuth({ scopes: ["https://www.googleapis.com/auth/drive"] }).getClient();
   }
   return authClientPromise;
 };
@@ -52,6 +52,32 @@ async function driveDownload(fileId, destNoExt) {
   const dest = destNoExt + ext;
   fs.writeFileSync(dest, buf);
   return { buf, name: path.basename(dest) };
+}
+
+async function driveUploadVideo(filePath, filename, folderId) {
+  if (!folderId || !String(folderId).trim()) throw new Error("folder_id is required for direct Drive upload");
+  const client = await getAuthClient();
+  const metadata = { name: filename, mimeType: "video/mp4", parents: [String(folderId).trim()] };
+  const size = fs.statSync(filePath).size;
+  // Resumable upload sends the MP4 as a stream, not in an HTTP response to Make.
+  const session = await client.request({
+    url: "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&supportsAllDrives=true&fields=id,name,webViewLink",
+    method: "POST",
+    headers: { "Content-Type": "application/json; charset=UTF-8", "X-Upload-Content-Type": "video/mp4", "X-Upload-Content-Length": String(size) },
+    data: metadata,
+  });
+  const location = session.headers?.location;
+  if (!location) throw new Error("Drive did not return a resumable upload URL");
+  const uploaded = await client.request({
+    url: location, method: "PUT",
+    headers: { "Content-Type": "video/mp4", "Content-Length": String(size) },
+    data: fs.createReadStream(filePath),
+    maxBodyLength: Infinity,
+    maxContentLength: Infinity,
+  });
+  const id = uploaded.data?.id;
+  if (!id) throw new Error("Drive upload succeeded without a file ID");
+  return { file_id: id, filename: uploaded.data?.name || filename, drive_url: uploaded.data?.webViewLink || `https://drive.google.com/file/d/${id}/view` };
 }
 
 async function durationSec(buf) {
@@ -180,7 +206,7 @@ async function renderManifest(manifest) {
   return { filename: `${safe}.mp4`, file_base64: b64 };
 }
 
-async function assembleApprovedChapters(video_id, chapters, endClipId, thumbnailFileId = "") {
+async function assembleApprovedChapters(video_id, chapters, endClipId, thumbnailFileId = "", folderId = "") {
   const safe = String(video_id || "video").replace(/[^A-Za-z0-9_-]/g, "");
   const normalized = [...chapters].map((x, i) => ({
     chapter: Number(x?.chapter) || i + 1,
@@ -263,75 +289,15 @@ async function assembleApprovedChapters(video_id, chapters, endClipId, thumbnail
     throw new Error(`ffmpeg assembly failed: ${ff.stderr || ff.stdout || "unknown error"}`);
   }
 
-  const b64 = fs.readFileSync(out).toString("base64");
-  fs.unlinkSync(out);
-  return {
-    filename: `${safe}_FINAL.mp4`,
-    file_base64: b64,
-    chapter_count: ordered.length,
-    end_clip_included: Boolean(endId),
-    thumbnail_intro_included: Boolean(thumbId),
-    thumbnail_intro_seconds: thumbId ? 1 : 0,
+  try {
+    const uploaded = await driveUploadVideo(out, `${safe}_FINAL.mp4`, folderId);
+    return {
+      ...uploaded,
+      chapter_count: ordered.length,
+      end_clip_included: Boolean(endId),
+      thumbnail_intro_included: Boolean(thumbId),
+      thumbnail_intro_seconds: thumbId ? 1 : 0,
+    };
+  } finally {
+    try { fs.unlinkSync(out); } catch {}
   };
-}
-
-const ok = (req) => req.headers["x-api-key"] === API_KEY;
-
-app.get("/", (_req, res) => res.json({ status: "ok", service: "ax-longform-video", width: WIDTH, height: HEIGHT, fps: 30 }));
-
-app.post("/render-video", async (req, res) => {
-  if (!ok(req)) return res.status(401).json({ error: "bad api key" });
-  const manifest = req.body?.manifest ?? req.body;
-  if (!manifest || !Array.isArray(manifest.timeline)) return res.status(400).json({ error: "need manifest.timeline[]" });
-  manifest.width = WIDTH;
-  manifest.height = HEIGHT;
-  try { return res.json({ status: "ok", ...(await renderManifest(manifest)) }); }
-  catch (e) { console.error(e); return res.status(500).json({ error: String(e?.stack || e) }); }
-});
-
-app.post(["/build-and-render", "/render-chapter"], async (req, res) => {
-  if (!ok(req)) return res.status(401).json({ error: "bad api key" });
-  const { video_id, fps = 30, beats, audio_file_ids = [] } = req.body || {};
-  if (!Array.isArray(beats) || beats.length === 0) return res.status(400).json({ error: "need non-empty beats[]" });
-  try {
-    const F = Number(fps) || 30;
-    const manifest = await buildChapter(video_id, F, beats, audio_file_ids);
-    return res.json({
-      status: "ok",
-      visual_beats: manifest.timeline.length,
-      card_beats: manifest.timeline.filter((x) => x.track === "card").length,
-      animation_beats: manifest.timeline.filter((x) => x.track === "anim").length,
-      audio_tracks: manifest.audio.length,
-      ...(await renderManifest(manifest)),
-    });
-  } catch (e) { console.error(e); return res.status(500).json({ error: String(e?.stack || e) }); }
-});
-
-app.post("/thumbnail", async (req, res) => {
-  if (!ok(req)) return res.status(401).json({ error: "bad api key" });
-  try {
-    return res.json({ status: "ok", ...(await renderThumbnail(req.body || {})) });
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: String(e?.stack || e) });
-  }
-});
-
-app.post("/assemble-video", async (req, res) => {
-  if (!ok(req)) return res.status(401).json({ error: "bad api key" });
-  const { video_id, chapters = [], end_clip_file_id = "", thumbnail_file_id = "" } = req.body || {};
-  if (!Array.isArray(chapters) || chapters.length === 0) {
-    return res.status(400).json({ error: "need non-empty chapters[]" });
-  }
-  try {
-    return res.json({
-      status: "ok",
-      ...(await assembleApprovedChapters(video_id, chapters, end_clip_file_id, thumbnail_file_id)),
-    });
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: String(e?.stack || e) });
-  }
-});
-
-app.listen(PORT, () => console.log(`ax-longform-video listening on ${PORT}`));
