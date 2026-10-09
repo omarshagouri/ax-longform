@@ -51,6 +51,26 @@ async function signedReadURL({ client, bucket, objectName, signerEmail }) {
   };
 }
 
+// google-auth-library's Gaxios response uses a Fetch Headers instance, not
+// an axios-style plain header dictionary. Keep a plain-object fallback for
+// alternate transports and avoid printing the sensitive upload-session URI.
+export function getResumableSessionURL(session) {
+  const headers = session?.headers;
+  const location = typeof headers?.get === "function"
+    ? headers.get("location")
+    : headers?.location ?? headers?.Location;
+  if (!location) {
+    throw new Error(`Cloud Storage resumable upload session is missing a Location header (HTTP ${session?.status ?? "unknown"})`);
+  }
+  let parsed;
+  try { parsed = new URL(location); }
+  catch { throw new Error("Cloud Storage returned an invalid resumable upload session URL"); }
+  if (parsed.protocol !== "https:") {
+    throw new Error("Cloud Storage returned a non-HTTPS resumable upload session URL");
+  }
+  return location;
+}
+
 export async function uploadFinalAssemblyToGCS(filePath, filename, videoId) {
   const bucket = String(process.env.AXLF_ASSEMBLY_GCS_BUCKET || "").trim();
   if (!bucket) throw new Error("AXLF_ASSEMBLY_GCS_BUCKET is not configured");
@@ -75,8 +95,7 @@ export async function uploadFinalAssemblyToGCS(filePath, filename, videoId) {
     },
     data: { name: objectName, contentType: "video/mp4" },
   });
-  const sessionURL = session.headers?.location;
-  if (!sessionURL) throw new Error("Cloud Storage did not return a resumable upload session");
+  const sessionURL = getResumableSessionURL(session);
   const uploaded = await client.request({
     url: sessionURL,
     method: "PUT",
