@@ -7,6 +7,7 @@ import { Thumbnail } from "./Thumbnail";
 import { AnimationPreview, AnimationPreviewProps } from "./AnimationPreview";
 import { sampleManifest } from "./sample-manifest";
 import { totalFrames, VideoManifest } from "./manifest";
+import { validateTimeline } from "./registry";
 
 const { waitUntilDone: waitSpace } = loadSpaceGrotesk("normal", {
   weights: ["500", "600", "700"],
@@ -32,6 +33,10 @@ export const RemotionRoot: React.FC = () => (
       calculateMetadata={async ({ props }) => {
         await waitForFonts();
         const m = props.manifest as VideoManifest;
+        const errors = validateTimeline(m.timeline);
+        if (errors.length) {
+          throw new Error("Invalid LF visual plan: " + errors.slice(0, 12).join("; "));
+        }
         return {
           durationInFrames: totalFrames(m),
           fps: m.fps,
