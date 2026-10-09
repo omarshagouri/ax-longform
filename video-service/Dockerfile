@@ -11,6 +11,8 @@ RUN npm ci --omit=dev || npm install --omit=dev
 COPY . .
 # Fail the image build if the HTTP server contains invalid JavaScript.
 RUN node --check server/index.mjs
+RUN node --check server/chapter-timing.mjs
+RUN node --test server/chapter-timing.test.mjs
 RUN node --check server/assembly-gcs.mjs
 RUN node --test server/assembly-gcs.test.mjs
 RUN bash -n scripts/setup-lf-assembly-gcs.sh
