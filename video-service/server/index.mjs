@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 import { spawnSync } from "child_process";
 import { bundle } from "@remotion/bundler";
 import { selectComposition, renderMedia, renderStill } from "@remotion/renderer";
-import { GoogleAuth } from "google-auth-library";
+import { GoogleAuth, OAuth2Client } from "google-auth-library";
 import { parseBuffer } from "music-metadata";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -39,6 +39,26 @@ const getAuthClient = () => {
   return authClientPromise;
 };
 
+// Use the Google account owner for My Drive writes; service accounts have no My Drive quota.
+let uploadAuthClient = null;
+function getDriveUploadClient() {
+  if (!uploadAuthClient) {
+    const raw = process.env.AXLF_DRIVE_OAUTH_JSON;
+    if (!raw) throw new Error("Missing AXLF_DRIVE_OAUTH_JSON: configure user OAuth in Secret Manager to upload to personal My Drive");
+    let creds;
+    try { creds = JSON.parse(raw); }
+    catch { throw new Error("AXLF_DRIVE_OAUTH_JSON must be valid JSON"); }
+    const { client_id, client_secret, refresh_token } = creds || {};
+    if (![client_id, client_secret, refresh_token].every((v) => typeof v === "string" && v.trim())) {
+      throw new Error("AXLF_DRIVE_OAUTH_JSON must contain client_id, client_secret, and refresh_token");
+    }
+    const client = new OAuth2Client(client_id, client_secret);
+    client.setCredentials({ refresh_token });
+    uploadAuthClient = client;
+  }
+  return uploadAuthClient;
+}
+
 async function driveDownload(fileId, destNoExt) {
   const client = await getAuthClient();
   const res = await client.request({
@@ -56,7 +76,7 @@ async function driveDownload(fileId, destNoExt) {
 
 async function driveUploadVideo(filePath, filename, folderId) {
   if (!folderId || !String(folderId).trim()) throw new Error("folder_id is required for direct Drive upload");
-  const client = await getAuthClient();
+  const client = getDriveUploadClient();
   const metadata = { name: filename, mimeType: "video/mp4", parents: [String(folderId).trim()] };
   const size = fs.statSync(filePath).size;
   // Resumable upload sends the MP4 as a stream, not in an HTTP response to Make.
