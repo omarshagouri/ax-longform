@@ -9,6 +9,8 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci --omit=dev || npm install --omit=dev
 COPY . .
+# Fail the image build if the HTTP server contains invalid JavaScript.
+RUN node --check server/index.mjs
 RUN python3 scripts/extract_cards.py Cards
 RUN npx remotion browser ensure
 ENV NODE_ENV=production
