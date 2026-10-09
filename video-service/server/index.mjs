@@ -372,6 +372,9 @@ app.post("/assemble-video", async (req, res) => {
     return res.status(400).json({ error: "need non-empty chapters[]" });
   }
   if (!String(folder_id).trim()) return res.status(400).json({ error: "folder_id is required" });
+  // Fail before downloading/assembling large videos if user OAuth is not configured.
+  try { getDriveUploadClient(); }
+  catch (e) { return res.status(503).json({ error: String(e?.message || e) }); }
   try {
     return res.json({
       status: "ok",
