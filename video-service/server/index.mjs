@@ -9,6 +9,7 @@ import { bundle } from "@remotion/bundler";
 import { selectComposition, renderMedia, renderStill } from "@remotion/renderer";
 import { GoogleAuth } from "google-auth-library";
 import { uploadFinalAssemblyToGCS } from "./assembly-gcs.mjs";
+import { assertChapterTimelineMatchesAudio } from "./chapter-timing.mjs";
 import { parseBuffer } from "music-metadata";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -56,11 +57,17 @@ async function driveDownload(fileId, destNoExt) {
 }
 
 async function durationSec(buf) {
-  try { return (await parseBuffer(buf)).format.duration || 0; } catch { return 0; }
+  const meta = await parseBuffer(buf);
+  const dur = Number(meta.format.duration);
+  if (!Number.isFinite(dur) || dur <= 0) throw new Error("Narration audio duration is missing or invalid; cannot synchronize visuals");
+  return dur;
 }
 
 function parseBeat(b, i, fps, cursor) {
-  const durSec = parseFloat(String(b.duration)) || 3;
+  const durSec = Number(b.duration);
+  if (!Number.isFinite(durSec) || durSec <= 0) {
+    throw new Error(`beat ${i + 1}: duration must be a positive number of seconds`);
+  }
   const durationFrames = Math.max(1, Math.round(durSec * fps));
   const beat = Number(b.beat) || i + 1;
   const id = String(b.card_id || b.visual_id || "").trim();
@@ -133,6 +140,8 @@ async function buildChapter(video_id, fps, beats, audioIds) {
     acur += df;
   }
 
+  const timing = assertChapterTimelineMatchesAudio({ timeline, audio, fps });
+  console.log(`Chapter timing validated: video=${video_id} visual=${timing.visual_seconds.toFixed(2)}s audio=${timing.audio_seconds.toFixed(2)}s`);
   return { video_id: video_id || "chapter", fps, width: WIDTH, height: HEIGHT, timeline, audio };
 }
 
@@ -308,6 +317,24 @@ app.post(["/build-and-render", "/render-chapter"], async (req, res) => {
       ...(await renderManifest(manifest)),
     });
   } catch (e) { console.error(e); return res.status(500).json({ error: String(e?.stack || e) }); }
+});
+
+// Small, authenticated duration probe for the Visual Plan Agent. It returns
+// no audio bytes, so Make can map the measured duration before calling Claude.
+app.post("/probe-audio", async (req, res) => {
+  if (!ok(req)) return res.status(401).json({ error: "bad api key" });
+  const fileId = String(req.body?.audio_file_id || "").trim();
+  if (!fileId || !/^[A-Za-z0-9_-]{12,}$/.test(fileId)) {
+    return res.status(400).json({ error: "audio_file_id must be a Google Drive file ID" });
+  }
+  try {
+    const { buf } = await driveDownload(fileId, path.join(ASSETS, `probe_${Date.now()}`));
+    const duration = await durationSec(buf);
+    return res.json({ status: "ok", audio_file_id: fileId, duration_seconds: Math.round(duration * 1000) / 1000 });
+  } catch (e) {
+    console.error("Audio duration probe failed:", e?.message || e);
+    return res.status(422).json({ error: String(e?.message || e) });
+  }
 });
 
 app.post("/thumbnail", async (req, res) => {
