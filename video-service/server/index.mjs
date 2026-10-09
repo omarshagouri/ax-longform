@@ -300,4 +300,67 @@ async function assembleApprovedChapters(video_id, chapters, endClipId, thumbnail
     };
   } finally {
     try { fs.unlinkSync(out); } catch {}
-  };
+  }
+}
+
+const ok = (req) => req.headers["x-api-key"] === API_KEY;
+
+app.get("/", (_req, res) => res.json({ status: "ok", service: "ax-longform-video", width: WIDTH, height: HEIGHT, fps: 30 }));
+
+app.post("/render-video", async (req, res) => {
+  if (!ok(req)) return res.status(401).json({ error: "bad api key" });
+  const manifest = req.body?.manifest ?? req.body;
+  if (!manifest || !Array.isArray(manifest.timeline)) return res.status(400).json({ error: "need manifest.timeline[]" });
+  manifest.width = WIDTH;
+  manifest.height = HEIGHT;
+  try { return res.json({ status: "ok", ...(await renderManifest(manifest)) }); }
+  catch (e) { console.error(e); return res.status(500).json({ error: String(e?.stack || e) }); }
+});
+
+app.post(["/build-and-render", "/render-chapter"], async (req, res) => {
+  if (!ok(req)) return res.status(401).json({ error: "bad api key" });
+  const { video_id, fps = 30, beats, audio_file_ids = [] } = req.body || {};
+  if (!Array.isArray(beats) || beats.length === 0) return res.status(400).json({ error: "need non-empty beats[]" });
+  try {
+    const F = Number(fps) || 30;
+    const manifest = await buildChapter(video_id, F, beats, audio_file_ids);
+    return res.json({
+      status: "ok",
+      visual_beats: manifest.timeline.length,
+      card_beats: manifest.timeline.filter((x) => x.track === "card").length,
+      animation_beats: manifest.timeline.filter((x) => x.track === "anim").length,
+      audio_tracks: manifest.audio.length,
+      ...(await renderManifest(manifest)),
+    });
+  } catch (e) { console.error(e); return res.status(500).json({ error: String(e?.stack || e) }); }
+});
+
+app.post("/thumbnail", async (req, res) => {
+  if (!ok(req)) return res.status(401).json({ error: "bad api key" });
+  try {
+    return res.json({ status: "ok", ...(await renderThumbnail(req.body || {})) });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: String(e?.stack || e) });
+  }
+});
+
+app.post("/assemble-video", async (req, res) => {
+  if (!ok(req)) return res.status(401).json({ error: "bad api key" });
+  const { video_id, chapters = [], end_clip_file_id = "", thumbnail_file_id = "", folder_id = "" } = req.body || {};
+  if (!Array.isArray(chapters) || chapters.length === 0) {
+    return res.status(400).json({ error: "need non-empty chapters[]" });
+  }
+  if (!String(folder_id).trim()) return res.status(400).json({ error: "folder_id is required" });
+  try {
+    return res.json({
+      status: "ok",
+      ...(await assembleApprovedChapters(video_id, chapters, end_clip_file_id, thumbnail_file_id, folder_id)),
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: String(e?.stack || e) });
+  }
+});
+
+app.listen(PORT, () => console.log(`ax-longform-video listening on ${PORT}`));
