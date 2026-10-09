@@ -12,6 +12,7 @@ COPY . .
 # Fail the image build if the HTTP server contains invalid JavaScript.
 RUN node --check server/index.mjs
 RUN node --check server/assembly-gcs.mjs
+RUN bash -n scripts/setup-lf-assembly-gcs.sh
 RUN python3 scripts/extract_cards.py Cards
 RUN npx remotion browser ensure
 ENV NODE_ENV=production
