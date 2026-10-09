@@ -7,7 +7,8 @@ import { fileURLToPath } from "url";
 import { spawnSync } from "child_process";
 import { bundle } from "@remotion/bundler";
 import { selectComposition, renderMedia, renderStill } from "@remotion/renderer";
-import { GoogleAuth, OAuth2Client } from "google-auth-library";
+import { GoogleAuth } from "google-auth-library";
+import { uploadFinalAssemblyToGCS } from "./assembly-gcs.mjs";
 import { parseBuffer } from "music-metadata";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -39,26 +40,6 @@ const getAuthClient = () => {
   return authClientPromise;
 };
 
-// Use the Google account owner for My Drive writes; service accounts have no My Drive quota.
-let uploadAuthClient = null;
-function getDriveUploadClient() {
-  if (!uploadAuthClient) {
-    const raw = process.env.AXLF_DRIVE_OAUTH_JSON;
-    if (!raw) throw new Error("Missing AXLF_DRIVE_OAUTH_JSON: configure user OAuth in Secret Manager to upload to personal My Drive");
-    let creds;
-    try { creds = JSON.parse(raw); }
-    catch { throw new Error("AXLF_DRIVE_OAUTH_JSON must be valid JSON"); }
-    const { client_id, client_secret, refresh_token } = creds || {};
-    if (![client_id, client_secret, refresh_token].every((v) => typeof v === "string" && v.trim())) {
-      throw new Error("AXLF_DRIVE_OAUTH_JSON must contain client_id, client_secret, and refresh_token");
-    }
-    const client = new OAuth2Client(client_id, client_secret);
-    client.setCredentials({ refresh_token });
-    uploadAuthClient = client;
-  }
-  return uploadAuthClient;
-}
-
 async function driveDownload(fileId, destNoExt) {
   const client = await getAuthClient();
   const res = await client.request({
@@ -72,32 +53,6 @@ async function driveDownload(fileId, destNoExt) {
   const dest = destNoExt + ext;
   fs.writeFileSync(dest, buf);
   return { buf, name: path.basename(dest) };
-}
-
-async function driveUploadVideo(filePath, filename, folderId) {
-  if (!folderId || !String(folderId).trim()) throw new Error("folder_id is required for direct Drive upload");
-  const client = getDriveUploadClient();
-  const metadata = { name: filename, mimeType: "video/mp4", parents: [String(folderId).trim()] };
-  const size = fs.statSync(filePath).size;
-  // Resumable upload sends the MP4 as a stream, not in an HTTP response to Make.
-  const session = await client.request({
-    url: "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&supportsAllDrives=true&fields=id,name,webViewLink",
-    method: "POST",
-    headers: { "Content-Type": "application/json; charset=UTF-8", "X-Upload-Content-Type": "video/mp4", "X-Upload-Content-Length": String(size) },
-    data: metadata,
-  });
-  const location = session.headers?.location;
-  if (!location) throw new Error("Drive did not return a resumable upload URL");
-  const uploaded = await client.request({
-    url: location, method: "PUT",
-    headers: { "Content-Type": "video/mp4", "Content-Length": String(size) },
-    data: fs.createReadStream(filePath),
-    maxBodyLength: Infinity,
-    maxContentLength: Infinity,
-  });
-  const id = uploaded.data?.id;
-  if (!id) throw new Error("Drive upload succeeded without a file ID");
-  return { file_id: id, filename: uploaded.data?.name || filename, drive_url: uploaded.data?.webViewLink || `https://drive.google.com/file/d/${id}/view` };
 }
 
 async function durationSec(buf) {
@@ -310,7 +265,7 @@ async function assembleApprovedChapters(video_id, chapters, endClipId, thumbnail
   }
 
   try {
-    const uploaded = await driveUploadVideo(out, `${safe}_FINAL.mp4`, folderId);
+    const uploaded = await uploadFinalAssemblyToGCS(out, `${safe}_FINAL.mp4`, video_id);
     return {
       ...uploaded,
       chapter_count: ordered.length,
@@ -372,9 +327,10 @@ app.post("/assemble-video", async (req, res) => {
     return res.status(400).json({ error: "need non-empty chapters[]" });
   }
   if (!String(folder_id).trim()) return res.status(400).json({ error: "folder_id is required" });
-  // Fail before downloading/assembling large videos if user OAuth is not configured.
-  try { getDriveUploadClient(); }
-  catch (e) { return res.status(503).json({ error: String(e?.message || e) }); }
+  // Prevent unnecessary chapter downloads when the dedicated staging bucket is absent.
+  if (!process.env.AXLF_ASSEMBLY_GCS_BUCKET) {
+    return res.status(503).json({ error: "AXLF_ASSEMBLY_GCS_BUCKET is not configured" });
+  }
   try {
     return res.json({
       status: "ok",
