@@ -328,8 +328,10 @@ app.post("/probe-audio", async (req, res) => {
     return res.status(400).json({ error: "audio_file_id must be a Google Drive file ID" });
   }
   try {
-    const { buf } = await driveDownload(fileId, path.join(ASSETS, `probe_${Date.now()}`));
-    const duration = await durationSec(buf);
+    const { buf, name } = await driveDownload(fileId, path.join(ASSETS, `probe_${Date.now()}`));
+    let duration;
+    try { duration = await durationSec(buf); }
+    finally { try { fs.unlinkSync(path.join(ASSETS, name)); } catch {} }
     return res.json({ status: "ok", audio_file_id: fileId, duration_seconds: Math.round(duration * 1000) / 1000 });
   } catch (e) {
     console.error("Audio duration probe failed:", e?.message || e);
