@@ -1,6 +1,6 @@
 # AmpCoreX LF assembly: upload final MP4 to personal Google My Drive
 
-## Why this is necessary
+> **DEPRECATED — DO NOT FOLLOW FOR CURRENT LF ASSEMBLY.** The active workflow uses private Cloud Storage staging and your existing Make Google Drive connection. See [FINAL_ASSEMBLY_GCS_SETUP.md](FINAL_ASSEMBLY_GCS_SETUP.md). No personal Drive OAuth credentials are required.\n\n## Why this is necessary
 
 Cloud Run's service account can download source chapters, but a service account has no
 personal My Drive storage quota. The assembly upload uses an OAuth 2.0 refresh token
