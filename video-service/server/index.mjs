@@ -180,7 +180,7 @@ async function renderManifest(manifest) {
   return { filename: `${safe}.mp4`, file_base64: b64 };
 }
 
-async function assembleApprovedChapters(video_id, chapters, endClipId) {
+async function assembleApprovedChapters(video_id, chapters, endClipId, thumbnailFileId = "") {
   const safe = String(video_id || "video").replace(/[^A-Za-z0-9_-]/g, "");
   const normalized = [...chapters].map((x, i) => ({
     chapter: Number(x?.chapter) || i + 1,
@@ -203,6 +203,27 @@ async function assembleApprovedChapters(video_id, chapters, endClipId) {
   }
 
   const inputs = [];
+  const thumbId = String(thumbnailFileId || "").trim();
+  // A one-second 1920x1080 silent intro. We encode an AAC silence track so that
+  // the following chapters' audio begins at t=1s during MP4 concatenation.
+  if (thumbId) {
+    const { name } = await driveDownload(thumbId, path.join(ASSETS, `${safe}_assembly_thumbnail`));
+    const thumbPath = path.join(ASSETS, name);
+    const introPath = path.join("/tmp", `${safe}_thumbnail_intro.mp4`);
+    const intro = spawnSync("ffmpeg", [
+      "-y", "-loop", "1", "-framerate", "30", "-i", thumbPath,
+      "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=48000",
+      "-t", "1", "-map", "0:v:0", "-map", "1:a:0",
+      "-vf", "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,format=yuv420p",
+      "-r", "30", "-c:v", "libx264", "-preset", "fast", "-crf", "18",
+      "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
+      "-movflags", "+faststart", "-shortest", introPath
+    ], { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 });
+    if (intro.status !== 0 || !fs.existsSync(introPath)) {
+      throw new Error(`thumbnail intro generation failed: ${intro.stderr || intro.stdout || "unknown error"}`);
+    }
+    inputs.push(introPath);
+  }
   for (let i = 0; i < ordered.length; i++) {
     const { name } = await driveDownload(
       ordered[i].file_id,
@@ -249,6 +270,8 @@ async function assembleApprovedChapters(video_id, chapters, endClipId) {
     file_base64: b64,
     chapter_count: ordered.length,
     end_clip_included: Boolean(endId),
+    thumbnail_intro_included: Boolean(thumbId),
+    thumbnail_intro_seconds: thumbId ? 1 : 0,
   };
 }
 
@@ -296,14 +319,14 @@ app.post("/thumbnail", async (req, res) => {
 
 app.post("/assemble-video", async (req, res) => {
   if (!ok(req)) return res.status(401).json({ error: "bad api key" });
-  const { video_id, chapters = [], end_clip_file_id = "" } = req.body || {};
+  const { video_id, chapters = [], end_clip_file_id = "", thumbnail_file_id = "" } = req.body || {};
   if (!Array.isArray(chapters) || chapters.length === 0) {
     return res.status(400).json({ error: "need non-empty chapters[]" });
   }
   try {
     return res.json({
       status: "ok",
-      ...(await assembleApprovedChapters(video_id, chapters, end_clip_file_id)),
+      ...(await assembleApprovedChapters(video_id, chapters, end_clip_file_id, thumbnail_file_id)),
     });
   } catch (e) {
     console.error(e);
