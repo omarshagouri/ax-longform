@@ -12,6 +12,22 @@ export function validatedJobRequest(body) {
   for (const [i, beat] of beats.entries()) {
     if (!beat || !/^(VC|VA)-LF-\d{3}$/.test(String(beat.card_id || '')) || !(Number(beat.duration) > 0)) throw new Error(`beat ${i + 1}: invalid component or duration`);
   }
+  // Early guard: the Visual Plan must cover the measured narration before a Cloud Task starts.
+  // The renderer independently checks the actual audio file again at execution time.
+  const hasExpectedDuration = body?.audio_duration_sec !== undefined && body?.audio_duration_sec !== null;
+  if (hasExpectedDuration) {
+    const audioDuration = Number(body.audio_duration_sec);
+    if (!Number.isFinite(audioDuration) || audioDuration <= 0) {
+      throw new Error('audio_duration_sec must be a positive number');
+    }
+    const visualFrames = beats.reduce((sum, beat) => sum + Math.max(1, Math.round(Number(beat.duration) * fps)), 0);
+    const audioFrames = Math.max(1, Math.round(audioDuration * fps));
+    const drift = Math.abs(visualFrames - audioFrames) / fps;
+    if (drift > 0.75) {
+      throw new Error(`Visual Plan timing mismatch before queueing: visuals=${(visualFrames / fps).toFixed(2)}s, audio=${(audioFrames / fps).toFixed(2)}s, delta=${drift.toFixed(2)}s`);
+    }
+    return { video_id, fps, beats, audio_file_ids, audio_duration_sec: audioDuration };
+  }
   return { video_id, fps, beats, audio_file_ids };
 }
 export function renderJobId(payload) {
