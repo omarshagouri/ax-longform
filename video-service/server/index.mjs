@@ -333,12 +333,13 @@ app.post("/render-chapter-worker", async (req, res) => {
   try { validateJobId(req.body?.job_id); }
   catch (error) { return res.status(400).json({error:String(error?.message || error)}); }
   try {
+    const retryCount = Number(req.get("X-CloudTasks-TaskRetryCount") || 0);
     const result = await processRenderJob(req.body.job_id, async ({video_id, fps, beats, audio_file_ids}) => {
       const manifest = await buildChapter(video_id, fps, beats, audio_file_ids);
       const rendered = await renderManifestFile(manifest);
       try { return await uploadFinalAssemblyToGCS(rendered.path, rendered.filename, video_id); }
       finally { try { fs.unlinkSync(rendered.path); } catch {} }
-    });
+    }, retryCount);
     return res.json(result);
   } catch (error) { console.error("Async chapter worker failed:",error); return res.status(500).json({error:"render job failed; inspect Cloud Run stderr"}); }
 });
