@@ -17,3 +17,17 @@ test('invalid jobs fail before enqueueing',()=>{
 test('different payload -> different id',()=>{
  assert.notEqual(renderJobId(validatedJobRequest(valid)),renderJobId(validatedJobRequest({...valid,beats:[{card_id:'VC-LF-005',duration:12}]})));
 });
+
+test('rejects short visual coverage before queueing the long Remotion job',()=>{
+ const short={...valid,audio_duration_sec:24.525};
+ assert.throws(()=>validatedJobRequest(short),/Visual Plan timing mismatch before queueing/);
+});
+test('accepts measured audio match including frame rounding',()=>{
+ const match={...valid,audio_duration_sec:12.525};
+ const result=validatedJobRequest(match);
+ assert.equal(result.audio_duration_sec,12.525);
+ assert.ok(renderJobId(result));
+});
+test('rejects missing numeric duration when supplied',()=>{
+ assert.throws(()=>validatedJobRequest({...valid,audio_duration_sec:''}),/audio_duration_sec/);
+});
