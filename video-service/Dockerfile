@@ -15,7 +15,11 @@ RUN node --check server/chapter-timing.mjs
 RUN node --test server/chapter-timing.test.mjs
 RUN node --check server/assembly-gcs.mjs
 RUN node --test server/assembly-gcs.test.mjs
+RUN node --check server/chapter-jobs-core.mjs
+RUN node --check server/chapter-jobs.mjs
+RUN node --test server/chapter-jobs-core.test.mjs
 RUN bash -n scripts/setup-lf-assembly-gcs.sh
+RUN bash -n scripts/setup-chapter-jobs.sh
 RUN python3 scripts/extract_cards.py Cards
 RUN npx remotion browser ensure
 ENV NODE_ENV=production
