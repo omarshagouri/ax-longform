@@ -119,3 +119,16 @@ export async function uploadFinalAssemblyToGCS(filePath, filename, videoId) {
     ...signed,
   };
 }
+
+
+// Re-sign an existing private object when a chapter collector checks later.
+// A stored one-hour signed URL would expire during unattended operation.
+export async function createSignedReadURL(bucket, objectName) {
+  if (!bucket || !objectName) throw new Error("bucket and object name are required");
+  const auth = new GoogleAuth({ scopes: [API_SCOPE] });
+  const client = await auth.getClient();
+  const credentials = await auth.getCredentials();
+  const signerEmail = String(process.env.AXLF_SIGNER_SERVICE_ACCOUNT_EMAIL || credentials.client_email || "").trim();
+  if (!signerEmail) throw new Error("Cannot identify service account for signing chapter download URL");
+  return signedReadURL({ client, bucket, objectName, signerEmail });
+}
