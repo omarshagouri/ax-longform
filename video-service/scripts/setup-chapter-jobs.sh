@@ -26,7 +26,7 @@ printf '%s\n' '{"rule":[{"action":{"type":"Delete"},"condition":{"age":7}}]}' > 
 gcloud storage buckets update "gs://$BUCKET" --lifecycle-file="$LIFECYCLE_FILE"
 gcloud storage buckets add-iam-policy-binding "gs://$BUCKET" --member="serviceAccount:$RUNTIME_SA" --role=roles/storage.objectAdmin
 gcloud iam service-accounts add-iam-policy-binding "$RUNTIME_SA" --project="$PROJECT" --member="serviceAccount:$RUNTIME_SA" --role=roles/iam.serviceAccountTokenCreator
-gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:$RUNTIME_SA" --role=roles/cloudtasks.enqueuer >/dev/null
+gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:$RUNTIME_SA" --role=roles/cloudtasks.enqueuer --condition=None >/dev/null
 
 echo "Deploying ONLY $SERVICE; existing LONGFORM_RENDER_API_KEY is preserved."
 gcloud run deploy "$SERVICE" --source ./video-service --project="$PROJECT" --region="$REGION" \
