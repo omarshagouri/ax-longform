@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validatedJobRequest, renderJobId, validateJobId } from './chapter-jobs-core.mjs';
-const valid = {video_id:'AX-LF-003_CH4',fps:30,beats:[{beat:1,card_id:'VC-LF-004',duration:'10',values:'{"HOOK":"Hi"'+'}'},{beat:2,card_id:'VA-LF-004',duration:'2.525',values:{title:'Test'}}],audio_file_ids:['1xUSQ2q7wW7Ye17gRIVOQfkExIG9Tm18L']};
+const valid = {video_id:'AX-LF-003_CH4',fps:30,beats:[{beat:1,card_id:'VC-LF-004',duration:'10',values:'{"HOOK":"Hi"'+'}'},{beat:2,card_id:'VA-LF-004',duration:'2.525',values:{title:'Test'}}],audio_file_ids:['exampleDriveAudioId_1234567890']};
 test('valid request yields stable id',()=>{
  const p=validatedJobRequest(valid);
  assert.deepEqual(p,valid);
