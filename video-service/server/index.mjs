@@ -10,6 +10,8 @@ import { selectComposition, renderMedia, renderStill } from "@remotion/renderer"
 import { GoogleAuth } from "google-auth-library";
 import { uploadFinalAssemblyToGCS } from "./assembly-gcs.mjs";
 import { assertChapterTimelineMatchesAudio } from "./chapter-timing.mjs";
+import { validatedJobRequest, validateJobId } from "./chapter-jobs-core.mjs";
+import { submitRenderJob, processRenderJob, renderJobStatus } from "./chapter-jobs.mjs";
 import { parseBuffer } from "music-metadata";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -179,15 +181,21 @@ async function renderThumbnail({ background_base64, headline, subhead = "", seri
   return { filename: path.basename(out), file_base64: b64, width: 1280, height: 720 };
 }
 
-async function renderManifest(manifest) {
+async function renderManifestFile(manifest) {
   const serveUrl = await getServeUrl();
   const safe = String(manifest.video_id || "chapter").replace(/[^A-Za-z0-9_-]/g, "");
   const out = path.join("/tmp", `${safe}.mp4`);
   const composition = await selectComposition({ serveUrl, id: "AXLongForm", inputProps: { manifest } });
   await renderMedia({ composition, serveUrl, codec: "h264", outputLocation: out, inputProps: { manifest } });
-  const b64 = fs.readFileSync(out).toString("base64");
-  fs.unlinkSync(out);
-  return { filename: `${safe}.mp4`, file_base64: b64 };
+  return { path: out, filename: `${safe}.mp4` };
+}
+async function renderManifest(manifest) {
+  const out = await renderManifestFile(manifest);
+  try {
+    return { filename: out.filename, file_base64: fs.readFileSync(out.path).toString("base64") };
+  } finally {
+    try { fs.unlinkSync(out.path); } catch {}
+  }
 }
 
 async function assembleApprovedChapters(video_id, chapters, endClipId, thumbnailFileId = "", folderId = "") {
@@ -299,6 +307,40 @@ app.post("/render-video", async (req, res) => {
   manifest.height = HEIGHT;
   try { return res.json({ status: "ok", ...(await renderManifest(manifest)) }); }
   catch (e) { console.error(e); return res.status(500).json({ error: String(e?.stack || e) }); }
+});
+
+// Asynchronous render jobs: Make never waits for the MP4 in these endpoints.
+app.post("/render-chapter-submit", async (req, res) => {
+  if (!ok(req)) return res.status(401).json({error:"bad api key"});
+  try { validatedJobRequest(req.body); }
+  catch (error) { return res.status(400).json({error:String(error?.message || error)}); }
+  try { return res.status(202).json(await submitRenderJob(req.body)); }
+  catch (error) { console.error("Async chapter submission failed:",error); return res.status(503).json({error:String(error?.message || error)}); }
+});
+
+app.post("/render-chapter-status", async (req, res) => {
+  if (!ok(req)) return res.status(401).json({error:"bad api key"});
+  try { validateJobId(req.body?.job_id); }
+  catch (error) { return res.status(400).json({error:String(error?.message || error)}); }
+  try {
+    const result = await renderJobStatus(req.body.job_id);
+    return result ? res.json(result) : res.status(404).json({error:"render job not found"});
+  } catch (error) { console.error("Async chapter status failed:",error); return res.status(503).json({error:"cannot check render job"}); }
+});
+
+app.post("/render-chapter-worker", async (req, res) => {
+  if (!ok(req)) return res.status(401).json({error:"bad api key"});
+  try { validateJobId(req.body?.job_id); }
+  catch (error) { return res.status(400).json({error:String(error?.message || error)}); }
+  try {
+    const result = await processRenderJob(req.body.job_id, async ({video_id, fps, beats, audio_file_ids}) => {
+      const manifest = await buildChapter(video_id, fps, beats, audio_file_ids);
+      const rendered = await renderManifestFile(manifest);
+      try { return await uploadFinalAssemblyToGCS(rendered.path, rendered.filename, video_id); }
+      finally { try { fs.unlinkSync(rendered.path); } catch {} }
+    });
+    return res.json(result);
+  } catch (error) { console.error("Async chapter worker failed:",error); return res.status(500).json({error:"render job failed; inspect Cloud Run stderr"}); }
 });
 
 app.post(["/build-and-render", "/render-chapter"], async (req, res) => {
