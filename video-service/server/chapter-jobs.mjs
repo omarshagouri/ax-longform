@@ -90,7 +90,7 @@ export async function renderJobStatus(jobId) {
   if (record.status === 'failed') result.error = record.error;
   return result;
 }
-export async function processRenderJob(jobId, renderToGCS) {
+export async function processRenderJob(jobId, renderToGCS, retryCount = 0) {
   let record = await getJobRecord(jobId);
   if (!record) throw new Error('render job was not found');
   if (record.status === 'completed') return {job_id:jobId,status:'completed',already_done:true};
@@ -104,7 +104,11 @@ export async function processRenderJob(jobId, renderToGCS) {
     return {job_id:jobId,status:'completed'};
   } catch (error) {
     const message = String(error?.message || error).slice(0,700);
-    try { await saveJobRecord({...record,status:'failed',error:message,failed_at:new Date().toISOString()}); }
+    // Cloud Tasks is configured for three attempts (retry counts 0, 1, 2).
+    // Intermediate failures must not be exposed as terminal failures to Make.
+    const finalAttempt = Number(retryCount) >= 2;
+    const nextStatus = finalAttempt ? 'failed' : 'retrying';
+    try { await saveJobRecord({...record,status:nextStatus,error:message,failed_at:new Date().toISOString()}); }
     catch (storageError) { console.error('Cannot persist failed job:',storageError); }
     throw error;
   }
