@@ -10,7 +10,7 @@ import { selectComposition, renderMedia, renderStill } from "@remotion/renderer"
 import { GoogleAuth } from "google-auth-library";
 import { uploadFinalAssemblyToGCS } from "./assembly-gcs.mjs";
 import { assertChapterTimelineMatchesAudio } from "./chapter-timing.mjs";
-import { validatedJobRequest, validateJobId } from "./chapter-jobs-core.mjs";
+import { validatedJobRequest, validateJobId, validateVisualPlanTiming } from "./chapter-jobs-core.mjs";
 import { submitRenderJob, processRenderJob, renderJobStatus } from "./chapter-jobs.mjs";
 import { parseBuffer } from "music-metadata";
 
@@ -310,6 +310,13 @@ app.post("/render-video", async (req, res) => {
 });
 
 // Asynchronous render jobs: Make never waits for the MP4 in these endpoints.
+// Quick visual timing preflight, before inserting any Visual_Plan rows in Make.
+app.post("/validate-visual-plan", (req, res) => {
+  if (!ok(req)) return res.status(401).json({error:"bad api key"});
+  try { return res.json({ status:"ok", ...validateVisualPlanTiming(req.body) }); }
+  catch (error) { return res.status(422).json({error:String(error?.message || error)}); }
+});
+
 app.post("/render-chapter-submit", async (req, res) => {
   if (!ok(req)) return res.status(401).json({error:"bad api key"});
   try { validatedJobRequest(req.body); }
