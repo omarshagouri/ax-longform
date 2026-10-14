@@ -37,3 +37,20 @@ export function validateJobId(jobId) {
   if (!/^[a-f0-9]{40}$/.test(String(jobId || ''))) throw new Error('invalid job_id');
   return jobId;
 }
+
+export function validateVisualPlanTiming(body) {
+  const audio = Number(body?.audio_duration_sec);
+  const visuals = Number(body?.planned_duration_sec);
+  const count = Number(body?.beat_count);
+  if (!Number.isFinite(audio) || audio <= 0 || !Number.isFinite(visuals) || visuals <= 0) {
+    throw new Error('audio_duration_sec and planned_duration_sec must be positive numbers');
+  }
+  if (!Number.isSafeInteger(count) || count < 1 || count > 200) {
+    throw new Error('beat_count must be a positive integer (1-200)');
+  }
+  const delta = Math.abs(audio - visuals);
+  if (delta > 0.5) {
+    throw new Error(`Visual Plan timing mismatch: visuals=${visuals.toFixed(2)}s audio=${audio.toFixed(2)}s delta=${delta.toFixed(2)}s. Do not mark the chapter Visualized.`);
+  }
+  return { valid: true, audio_duration_sec: audio, planned_duration_sec: visuals, beat_count: count, delta_seconds: delta };
+}
