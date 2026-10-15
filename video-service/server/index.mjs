@@ -10,6 +10,7 @@ import { selectComposition, renderMedia, renderStill } from "@remotion/renderer"
 import { GoogleAuth } from "google-auth-library";
 import { uploadFinalAssemblyToGCS } from "./assembly-gcs.mjs";
 import { assertChapterTimelineMatchesAudio } from "./chapter-timing.mjs";
+import { NATIVE_CLIP_IDS, assertNativeClipDuration, assertNativeMotionMix } from "./native-motion.mjs";
 import { parseBuffer } from "music-metadata";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -73,9 +74,11 @@ function parseBeat(b, i, fps, cursor) {
   const id = String(b.card_id || b.visual_id || "").trim();
   const isCard = id.startsWith("VC-LF-");
   const isAnimation = id.startsWith("VA-LF-");
-  if (!isCard && !isAnimation) {
-    throw new Error(`beat ${beat}: long-form renderer accepts VC-LF-* cards or VA-LF-* animations (got ${id})`);
+  const isClip = NATIVE_CLIP_IDS.includes(id);
+  if (!isCard && !isAnimation && !isClip) {
+    throw new Error(`beat ${beat}: unsupported visual ${id}; use VC-LF-*, VA-LF-* or native VV-LF-001..004`);
   }
+  if (isClip) assertNativeClipDuration(id, durationFrames, fps);
   let props = {};
   const v = b.values;
   if (typeof v === "string") {
@@ -86,7 +89,7 @@ function parseBeat(b, i, fps, cursor) {
   }
   return {
     beat,
-    track: isAnimation ? "anim" : "card",
+    track: isClip ? "clip" : (isAnimation ? "anim" : "card"),
     component: id,
     props,
     startFrame: cursor,
@@ -129,6 +132,8 @@ async function buildChapter(video_id, fps, beats, audioIds) {
     cursor += item.durationFrames;
   }
   timeline = coalesce(timeline);
+  assertNativeMotionMix(timeline);
+
 
   let acur = 0;
   for (let i = 0; i < (audioIds || []).length; i++) {

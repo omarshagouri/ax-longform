@@ -1,0 +1,44 @@
+name: QA native 3s motion clips
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'video-service/src/clips.tsx'
+      - 'video-service/src/Root.tsx'
+      - '.github/workflows/qa-native-motion-clips.yml'
+  workflow_dispatch:
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm install
+        working-directory: video-service
+      - run: python3 scripts/extract_cards.py Cards
+        working-directory: video-service
+      - run: npx remotion browser ensure
+        working-directory: video-service
+      - name: Install FFmpeg for media validation
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg >/dev/null
+      - name: Render four clips exactly 90 frames at 1080p
+        working-directory: video-service
+        run: |
+          mkdir -p out/native-clips
+          for ID in VV-LF-001 VV-LF-002 VV-LF-003 VV-LF-004; do
+            npx remotion render AXClipPreview "out/native-clips/${ID}.mp4" \
+              --props "{\"clipId\":\"${ID}\",\"title\":\"\",\"footer\":\"\"}" \
+              --codec h264 --crf 24 --concurrency 2 --log error
+            ffprobe -v error -select_streams v:0 -show_entries stream=duration,nb_frames,width,height -of default=noprint_wrappers=1 "out/native-clips/${ID}.mp4"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AXLF-4x-3s-Native-Motion-Clips
+          path: video-service/out/native-clips/*.mp4
+          if-no-files-found: error
+          retention-days: 14

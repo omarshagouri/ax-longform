@@ -3,6 +3,7 @@ import { Composition, Still } from "remotion";
 import { loadFont as loadSpaceGrotesk } from "@remotion/google-fonts/SpaceGrotesk";
 import { loadFont as loadInter } from "@remotion/google-fonts/Inter";
 import { Video } from "./Video";
+import { nativeClips } from "./clips";
 import { Thumbnail } from "./Thumbnail";
 import { AnimationPreview, AnimationPreviewProps } from "./AnimationPreview";
 import { sampleManifest } from "./sample-manifest";
@@ -75,6 +76,16 @@ export const RemotionRoot: React.FC = () => (
           height: 1080,
         };
       }}
+    />
+
+    <Composition
+      id="AXClipPreview"
+      component={({ clipId, title, footer }: { clipId: string; title?: string; footer?: string }) => {
+        const Clip = nativeClips[clipId]?.component ?? nativeClips["VV-LF-001"].component;
+        return <Clip title={title} footer={footer} />;
+      }}
+      fps={30} width={1920} height={1080} durationInFrames={90}
+      defaultProps={{ clipId: "VV-LF-001", title: "Inside a battery pack", footer: "" }}
     />
 
     <Still

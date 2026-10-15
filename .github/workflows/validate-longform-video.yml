@@ -2,7 +2,12 @@ name: Validate long-form video service
 
 on:
   push:
-    branches: [main, lf-animation-library-v1, privacy-hardening, animation-backgrounds]
+    branches: [main, lf-animation-library-v1, privacy-hardening, animation-backgrounds, refactor/sync-two-part-chapters-clips]
+    paths:
+      - "video-service/**"
+      - ".github/workflows/validate-longform-video.yml"
+  pull_request:
+    branches: [main]
     paths:
       - "video-service/**"
       - ".github/workflows/validate-longform-video.yml"
