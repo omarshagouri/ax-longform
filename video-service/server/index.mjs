@@ -10,6 +10,7 @@ import { selectComposition, renderMedia, renderStill } from "@remotion/renderer"
 import { GoogleAuth } from "google-auth-library";
 import { uploadFinalAssemblyToGCS } from "./assembly-gcs.mjs";
 import { assertChapterTimelineMatchesAudio } from "./chapter-timing.mjs";
+import { NATIVE_CLIP_IDS, assertNativeClipDuration, assertNativeMotionMix } from "./native-motion.mjs";
 import { parseBuffer } from "music-metadata";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -73,13 +74,11 @@ function parseBeat(b, i, fps, cursor) {
   const id = String(b.card_id || b.visual_id || "").trim();
   const isCard = id.startsWith("VC-LF-");
   const isAnimation = id.startsWith("VA-LF-");
-  const isClip = ["VV-LF-001", "VV-LF-002", "VV-LF-003", "VV-LF-004"].includes(id);
+  const isClip = NATIVE_CLIP_IDS.includes(id);
   if (!isCard && !isAnimation && !isClip) {
     throw new Error(`beat ${beat}: unsupported visual ${id}; use VC-LF-*, VA-LF-* or native VV-LF-001..004`);
   }
-  if (isClip && Math.abs(durationFrames - fps * 3) > 0) {
-    throw new Error(`beat ${beat}: native ${id} clips must be exactly 3.000 seconds`);
-  }
+  if (isClip) assertNativeClipDuration(id, durationFrames, fps);
   let props = {};
   const v = b.values;
   if (typeof v === "string") {
@@ -133,12 +132,7 @@ async function buildChapter(video_id, fps, beats, audioIds) {
     cursor += item.durationFrames;
   }
   timeline = coalesce(timeline);
-  // A balanced MP4 must include physical motion and a technical animation,
-  // not only text cards. Each rendered part independently obeys this rule.
-  if (!timeline.some((item) => item.track === "clip") ||
-      !timeline.some((item) => item.track === "anim")) {
-    throw new Error("Visual mix requirement: each MP4 needs >=1 VV-LF native clip (3s) and >=1 VA-LF animation");
-  }
+  assertNativeMotionMix(timeline);
 
 
   let acur = 0;
