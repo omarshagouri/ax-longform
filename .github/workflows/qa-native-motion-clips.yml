@@ -24,6 +24,8 @@ jobs:
         working-directory: video-service
       - run: npx remotion browser ensure
         working-directory: video-service
+      - name: Install FFmpeg for media validation
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg >/dev/null
       - name: Render four clips exactly 90 frames at 1080p
         working-directory: video-service
         run: |
