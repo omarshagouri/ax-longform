@@ -73,8 +73,12 @@ function parseBeat(b, i, fps, cursor) {
   const id = String(b.card_id || b.visual_id || "").trim();
   const isCard = id.startsWith("VC-LF-");
   const isAnimation = id.startsWith("VA-LF-");
-  if (!isCard && !isAnimation) {
-    throw new Error(`beat ${beat}: long-form renderer accepts VC-LF-* cards or VA-LF-* animations (got ${id})`);
+  const isClip = ["VV-LF-001", "VV-LF-002", "VV-LF-003", "VV-LF-004"].includes(id);
+  if (!isCard && !isAnimation && !isClip) {
+    throw new Error(`beat ${beat}: unsupported visual ${id}; use VC-LF-*, VA-LF-* or native VV-LF-001..004`);
+  }
+  if (isClip && Math.abs(durationFrames - fps * 3) > 0) {
+    throw new Error(`beat ${beat}: native ${id} clips must be exactly 3.000 seconds`);
   }
   let props = {};
   const v = b.values;
@@ -86,7 +90,7 @@ function parseBeat(b, i, fps, cursor) {
   }
   return {
     beat,
-    track: isAnimation ? "anim" : "card",
+    track: isClip ? "clip" : (isAnimation ? "anim" : "card"),
     component: id,
     props,
     startFrame: cursor,
@@ -129,6 +133,13 @@ async function buildChapter(video_id, fps, beats, audioIds) {
     cursor += item.durationFrames;
   }
   timeline = coalesce(timeline);
+  // A balanced MP4 must include physical motion and a technical animation,
+  // not only text cards. Each rendered part independently obeys this rule.
+  if (!timeline.some((item) => item.track === "clip") ||
+      !timeline.some((item) => item.track === "anim")) {
+    throw new Error("Visual mix requirement: each MP4 needs >=1 VV-LF native clip (3s) and >=1 VA-LF animation");
+  }
+
 
   let acur = 0;
   for (let i = 0; i < (audioIds || []).length; i++) {
