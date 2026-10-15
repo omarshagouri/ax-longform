@@ -3,13 +3,14 @@ import { z } from "zod";
 import { makeHtmlCard, schemaFromSlots } from "./HtmlCard";
 import { allCards } from "./cards/generated/allCards";
 import { animationRegistry } from "./animations";
+import { nativeClips } from "./clips";
 
 export type CardEntry = {
   component: React.FC<any>;
   schema: z.ZodTypeAny;
 };
 
-export const registry: Record<string, CardEntry> = { ...animationRegistry };
+export const registry: Record<string, CardEntry> = { ...animationRegistry, ...nativeClips };
 for (const id of Object.keys(allCards)) {
   const data = allCards[id];
   registry[id] = {
