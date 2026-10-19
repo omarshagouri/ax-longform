@@ -4,6 +4,7 @@ import { loadFont as loadSpaceGrotesk } from "@remotion/google-fonts/SpaceGrotes
 import { loadFont as loadInter } from "@remotion/google-fonts/Inter";
 import { Video } from "./Video";
 import { nativeClips } from "./clips";
+import { Dashboard, DashboardProps } from "./Dashboard";
 import { Thumbnail } from "./Thumbnail";
 import { AnimationPreview, AnimationPreviewProps } from "./AnimationPreview";
 import { sampleManifest } from "./sample-manifest";
@@ -86,6 +87,35 @@ export const RemotionRoot: React.FC = () => (
       }}
       fps={30} width={1920} height={1080} durationInFrames={90}
       defaultProps={{ clipId: "VV-LF-001", title: "Inside a battery pack", footer: "" }}
+    />
+
+    <Composition
+      id="AXDashboardPreview"
+      component={Dashboard}
+      fps={30}
+      width={1920}
+      height={1080}
+      durationInFrames={180}
+      defaultProps={{
+        title: "SETTINGS",
+        subtitle: "Update in progress",
+        mainValue: "",
+        mainUnit: "",
+        progress: 38,
+        detail: "SYSTEM CHECK",
+        status: "READY",
+        backgroundSrc: "",
+        __holdFrames: 180,
+      }}
+      calculateMetadata={async ({ props }) => {
+        await waitForFonts();
+        const p = props as DashboardProps;
+        const frames = Math.round(Number(p.__holdFrames ?? 180));
+        if (!Number.isInteger(frames) || frames < 90 || frames > 450) {
+          throw new Error("Dashboard duration must be 90–450 frames at 30 fps");
+        }
+        return { durationInFrames: frames, fps: 30, width: 1920, height: 1080 };
+      }}
     />
 
     <Still

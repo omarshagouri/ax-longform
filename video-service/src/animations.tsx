@@ -9,6 +9,7 @@ import {
 import { z } from "zod";
 import { theme } from "./theme";
 import { continuousAnimationRegistry } from "./animations-continuous";
+import { Dashboard, dashboardSchema } from "./Dashboard";
 
 const lfTheme = {
   ...theme,
@@ -1379,6 +1380,13 @@ export const VALF007SystemDelta: React.FC<any> = ({
 
 export const animationRegistry: Record<string, AnimEntry> = {
   ...continuousAnimationRegistry,
+  "VA-LF-014": {
+    component: Dashboard,
+    schema: dashboardSchema,
+    description: "Image-backed dashboard with a deterministic sequence of on-screen data slots.",
+    slots: ["title", "subtitle", "mainValue", "mainUnit", "progress", "detail", "status", "backgroundFileId"],
+    defaultDurationSec: 6,
+  },
   "VA-LF-001": {
     component: VALF001BatteryBuffer,
     schema: batteryBufferSchema,
