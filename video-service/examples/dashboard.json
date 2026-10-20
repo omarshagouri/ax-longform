@@ -4,6 +4,5 @@
   "progress": 38,
   "detail": "BATTERY MODEL CALIBRATION",
   "status": "READY",
-  "duration_sec": 6,
-  "background_file_id": "REPLACE_WITH_PRIVATE_DRIVE_FILE_ID"
+  "duration_sec": 6
 }
