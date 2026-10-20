@@ -1,0 +1,41 @@
+name: QA dashboard preview
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'video-service/src/Dashboard.tsx'
+      - 'video-service/src/Root.tsx'
+      - 'video-service/src/animations.tsx'
+      - 'video-service/server/index.mjs'
+      - '.github/workflows/qa-dashboard-preview.yml'
+  workflow_dispatch:
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+        working-directory: video-service
+      - run: python3 scripts/extract_cards.py Cards
+        working-directory: video-service
+      - run: npm run typecheck
+        working-directory: video-service
+      - run: node --check server/index.mjs
+        working-directory: video-service
+      - run: npx remotion browser ensure
+        working-directory: video-service
+      - name: Render six-second dashboard smoke test
+        working-directory: video-service
+        run: |
+          mkdir -p out
+          npx remotion render AXDashboardPreview out/dashboard-smoke.mp4 \
+            --codec h264 --crf 24 --concurrency 2 --log error
+          ffprobe -v error -select_streams v:0 -show_entries stream=nb_frames,width,height -of default=noprint_wrappers=1 out/dashboard-smoke.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-smoke-preview
+          path: video-service/out/dashboard-smoke.mp4
+          retention-days: 7
