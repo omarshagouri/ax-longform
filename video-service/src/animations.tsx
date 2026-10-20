@@ -1384,7 +1384,7 @@ export const animationRegistry: Record<string, AnimEntry> = {
     component: Dashboard,
     schema: dashboardSchema,
     description: "Image-backed dashboard with a deterministic sequence of on-screen data slots.",
-    slots: ["title", "subtitle", "mainValue", "mainUnit", "progress", "detail", "status", "backgroundFileId"],
+    slots: ["title", "subtitle", "mainValue", "mainUnit", "progress", "detail", "status"],
     defaultDurationSec: 6,
   },
   "VA-LF-001": {

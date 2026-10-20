@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Img, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Img, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { z } from "zod";
 
 // Fixed 1920x1080 slot geometry. The supplied image owns all baked-in dashboard labels.
@@ -44,11 +44,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#02090F", overflow: "hidden" }}>
-      {backgroundSrc ? (
-        <Img src={backgroundSrc} style={{
-          width: "100%", height: "100%", objectFit: "fill",
-        }} />
-      ) : null}
+      <Img src={backgroundSrc || staticFile("dashboard-bg.png")} style={{
+        width: "100%", height: "100%", objectFit: "fill",
+      }} />
       {/* Coordinates are local to the empty center screen; all other baked UI stays untouched. */}
       <div style={{
         position: "absolute", left: 610, top: 292, width: 820, height: 582,

@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'video-service/src/Dashboard.tsx'
+      - 'video-service/public/dashboard-bg.png'
       - 'video-service/src/Root.tsx'
       - 'video-service/src/animations.tsx'
       - 'video-service/server/index.mjs'
@@ -20,6 +21,11 @@ jobs:
       - run: npm ci
         working-directory: video-service
       - run: python3 scripts/extract_cards.py Cards
+        working-directory: video-service
+      - name: Check bundled background
+        run: |
+          test -s public/dashboard-bg.png
+          file public/dashboard-bg.png | grep -q '1920 x 1080'
         working-directory: video-service
       - run: npm run typecheck
         working-directory: video-service
