@@ -2,6 +2,7 @@
 // Native canvas: 1920x1080. This service never calls or modifies Shorts services.
 import express from "express";
 import fs from "fs";
+import { randomUUID } from "node:crypto";
 import path from "path";
 import { fileURLToPath } from "url";
 import { spawnSync } from "child_process";
@@ -351,6 +352,76 @@ app.post("/thumbnail", async (req, res) => {
   } catch (e) {
     console.error(e);
     return res.status(500).json({ error: String(e?.stack || e) });
+  }
+});
+
+
+// Isolated visual preview. The branded image is kept outside the public repository.
+app.post("/render-dashboard", async (req, res) => {
+  if (!ok(req)) return res.status(401).json({ error: "bad api key" });
+  const body = req.body || {};
+  const {
+    title, subtitle = "", mainValue = "", mainUnit = "",
+    progress, detail = "", status = "",
+    background_file_id = "", background_base64 = "", duration_sec = 6,
+  } = body;
+  const fields = [[title, 22, true], [subtitle, 36], [mainValue, 12],
+    [mainUnit, 10], [detail, 38], [status, 24]];
+  if (fields.some(([v, max, required]) =>
+    typeof v !== "string" || v.length > max || (required && !v.trim()))) {
+    return res.status(400).json({ error: "invalid text slot (type, required title or length)" });
+  }
+  if (progress !== undefined && (typeof progress !== "number" || !Number.isFinite(progress) || progress < 0 || progress > 100)) {
+    return res.status(400).json({ error: "progress must be a number from 0 to 100" });
+  }
+  const frames = Math.round(Number(duration_sec) * 30);
+  if (!Number.isFinite(frames) || frames < 90 || frames > 450) {
+    return res.status(400).json({ error: "duration_sec must be from 3 to 15 seconds" });
+  }
+  if (Boolean(background_file_id) === Boolean(background_base64)) {
+    return res.status(400).json({ error: "provide exactly one of background_file_id or background_base64" });
+  }
+  if (background_file_id && !/^[A-Za-z0-9_-]{12,}$/.test(background_file_id)) {
+    return res.status(400).json({ error: "invalid Google Drive image ID" });
+  }
+  const job = randomUUID();
+  let bgPath = "";
+  const outPath = path.join("/tmp", "dashboard-" + job + ".mp4");
+  try {
+    let bgName;
+    if (background_file_id) {
+      const file = await driveDownload(background_file_id, path.join(ASSETS, "dashboard-" + job));
+      bgName = file.name;
+      bgPath = path.join(ASSETS, bgName);
+      if (!/\.(png|jpe?g)$/i.test(bgName)) throw new Error("background must be a PNG or JPEG");
+    } else {
+      const raw = String(background_base64).replace(/^data:image\/(png|jpeg);base64,/, "");
+      const buf = Buffer.from(raw, "base64");
+      const png = buf.subarray(0, 8).equals(Buffer.from("89504e470d0a1a0a", "hex"));
+      const jpeg = buf[0] === 255 && buf[1] === 216 && buf[2] === 255;
+      if ((!png && !jpeg) || buf.length < 100 || buf.length > 10 * 1024 * 1024) {
+        return res.status(400).json({ error: "background_base64 must be a PNG or JPEG (maximum 10 MB)" });
+      }
+      bgName = "dashboard-" + job + (png ? ".png" : ".jpg");
+      bgPath = path.join(ASSETS, bgName);
+      fs.writeFileSync(bgPath, buf);
+    }
+    const inputProps = { title, subtitle, mainValue, mainUnit, progress,
+      detail, status, backgroundSrc: BASE + "/assets/" + bgName, __holdFrames: frames };
+    const serveUrl = await getServeUrl();
+    const comp = await selectComposition({ serveUrl, id: "AXDashboardPreview", inputProps });
+    await renderMedia({ composition: comp, serveUrl, codec: "h264",
+      outputLocation: outPath, inputProps });
+    const encoded = fs.readFileSync(outPath).toString("base64");
+    return res.json({ status: "ok", template_id: "VA-LF-014",
+      filename: "dashboard-preview.mp4", file_base64: encoded,
+      duration_frames: frames, fps: 30, width: WIDTH, height: HEIGHT });
+  } catch (e) {
+    console.error("Dashboard preview failed:", e);
+    return res.status(500).json({ error: String(e?.message || e) });
+  } finally {
+    if (bgPath) { try { fs.unlinkSync(bgPath); } catch {} }
+    try { fs.unlinkSync(outPath); } catch {}
   }
 });
 
