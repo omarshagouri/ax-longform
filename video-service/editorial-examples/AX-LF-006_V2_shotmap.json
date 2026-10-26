@@ -1,0 +1,1128 @@
+{
+  "version": "AX-LF-006_V2",
+  "approach": "director-first; preserve approved narration exactly; no new asset types or media; planned beats from old contiguous narration rows but all new visual reasoning/values/timing",
+  "chapters": {
+    "1": [
+      {
+        "endBeat": 1,
+        "id": "VC-LF-018",
+        "props": {},
+        "intent": "Orientation: battery appears to age even when driven little"
+      },
+      {
+        "endBeat": 2,
+        "id": "VC-LF-004",
+        "props": {
+          "KICKER": "THE PARKED-EV PARADOX",
+          "HOOK": "Less driving does not stop aging"
+        },
+        "intent": "Hook: raise the parking contradiction"
+      },
+      {
+        "endBeat": 3,
+        "id": "VV-LF-033",
+        "props": {},
+        "intent": "Concrete parked EV, never a claim of hot weather"
+      },
+      {
+        "endBeat": 4,
+        "id": "VC-LF-008",
+        "props": {
+          "CORRECT_LABEL": "REALITY",
+          "CORRECT_ITEM": "Time also changes batteries",
+          "WRONG_LABEL": "ASSUMPTION",
+          "WRONG_ITEM": "Only charging causes wear"
+        },
+        "intent": "Make the reversal explicit"
+      },
+      {
+        "endBeat": 5,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "Two different clocks",
+          "leftLabel": "Cycle aging",
+          "rightLabel": "Calendar aging",
+          "leftValue": "Use",
+          "rightValue": "Time",
+          "leftIntensity": 48,
+          "rightIntensity": 48,
+          "metricLabel": "Two pathways, not measured rates",
+          "footer": "Conceptual comparison — no quantified rates"
+        },
+        "intent": "Show two independent aging pathways while narrator reveals time"
+      },
+      {
+        "endBeat": 6,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "The clock runs even while parked."
+        },
+        "intent": "Simple beat/refrain, not 4 factors in tiny type"
+      },
+      {
+        "endBeat": 7,
+        "id": "VA-LF-008",
+        "props": {
+          "title": "What charging cycles do",
+          "nodes": [
+            "Charge / discharge",
+            "Cell reactions",
+            "Wear"
+          ],
+          "flowLabel": "Cycling pathway",
+          "intensity": 3,
+          "footer": "Mechanism schematic; not a measured rate"
+        },
+        "intent": "Only use flowing-packets for actual cycling process"
+      },
+      {
+        "endBeat": 9,
+        "id": "VA-LF-007",
+        "props": {
+          "title": "A bigger picture than charging habits",
+          "beforeLabel": "Most discussed",
+          "afterLabel": "Often overlooked",
+          "beforeItems": [
+            "Fast charging",
+            "Deep cycling"
+          ],
+          "afterItems": [
+            "Time in storage",
+            "Calendar aging"
+          ],
+          "footer": "Two relevant pathways; not ranked quantitatively"
+        },
+        "intent": "Explain conventional charging focus and second pathway"
+      },
+      {
+        "endBeat": 10,
+        "id": "VA-LF-004",
+        "props": {
+          "title": "The cycling clock",
+          "nodes": [
+            "Charging cycles",
+            "Cell stress",
+            "Gradual wear"
+          ],
+          "centerLabel": "ONE PATHWAY",
+          "direction": "forward",
+          "footer": "Simplified mechanistic illustration"
+        },
+        "intent": "Single three-node visual for cycle-driven process"
+      },
+      {
+        "endBeat": 11,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "The second clock keeps running",
+          "leftLabel": "Driving",
+          "rightLabel": "Parked",
+          "leftValue": "Cycles vary",
+          "rightValue": "Time passes",
+          "leftIntensity": 40,
+          "rightIntensity": 40,
+          "metricLabel": "Activity is not the same as elapsed time",
+          "footer": "Illustrative activity only; no aging-rate claim"
+        },
+        "intent": "Viewer learns no-drive is not zero aging"
+      },
+      {
+        "endBeat": 12,
+        "id": "VV-LF-016",
+        "props": {},
+        "intent": "Lab cell testing establishes physical chemistry"
+      },
+      {
+        "endBeat": 13,
+        "id": "VA-LF-004",
+        "props": {
+          "title": "Slow reactions during storage",
+          "nodes": [
+            "Cell interfaces",
+            "Side reactions",
+            "Capacity over time"
+          ],
+          "centerLabel": "CHEMISTRY CONTINUES",
+          "direction": "forward",
+          "footer": "Conceptual chemistry; no specific quantitative rate"
+        },
+        "intent": "Only mechanism shot depicting electrochemistry"
+      },
+      {
+        "endBeat": 14,
+        "id": "VC-LF-006",
+        "props": {
+          "TERM": "Side reactions",
+          "DEFINITION": "Cell reactions can continue at rest"
+        },
+        "intent": "Name the chemistry mechanism concisely"
+      },
+      {
+        "endBeat": 15,
+        "id": "VA-LF-003",
+        "props": {
+          "title": "Why elapsed time matters",
+          "seriesALabel": "Illustrative capacity trend",
+          "seriesA": [
+            100,
+            99,
+            98,
+            97,
+            96
+          ],
+          "xLabel": "Time passing",
+          "yLabel": "Relative capacity (schematic)",
+          "footer": "Illustrative declining trend only — NOT measured battery data"
+        },
+        "intent": "One diagram shows time trend rather than another flowchart"
+      },
+      {
+        "endBeat": 16,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "Not a defect unique to one brand."
+        },
+        "intent": "Discard unreadable three-column card"
+      },
+      {
+        "endBeat": 17,
+        "id": "VA-LF-008",
+        "props": {
+          "title": "Low mileage is not zero aging",
+          "nodes": [
+            "Calendar time",
+            "Cell chemistry",
+            "Capacity retention"
+          ],
+          "flowLabel": "AGING CAN CONTINUE AT REST",
+          "intensity": 3,
+          "footer": "Conceptual progression; no measured magnitudes"
+        },
+        "intent": "Close with low-mileage viewer relevance"
+      }
+    ],
+    "2": [
+      {
+        "endBeat": 1,
+        "id": "VC-LF-018",
+        "props": {},
+        "intent": "Second chapter opens immediately with audio"
+      },
+      {
+        "endBeat": 2,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "Storage stress: heat + charge level."
+        },
+        "intent": "Two main controlling variables, no four-factor grid"
+      },
+      {
+        "endBeat": 3,
+        "id": "VA-LF-010",
+        "props": {
+          "title": "Heat changes cell conditions",
+          "heatLevel": 65,
+          "hotspotRow": 2,
+          "hotspotCol": 5,
+          "cooling": false,
+          "note": "Illustrative heat distribution, not measured",
+          "footer": "Schematic battery heat only; no actual vehicle thermal data"
+        },
+        "intent": "Actual heat-related chemistry mechanism"
+      },
+      {
+        "endBeat": 4,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "Different storage conditions",
+          "leftLabel": "Hot + high SoC",
+          "rightLabel": "Mild + moderate SoC",
+          "leftValue": "More stress",
+          "rightValue": "Less stress",
+          "leftIntensity": 75,
+          "rightIntensity": 35,
+          "metricLabel": "Qualitative comparison, not measured rates",
+          "footer": "Illustrative relative stress; no universal charge target"
+        },
+        "intent": "Directly compare narrator's conditions"
+      },
+      {
+        "endBeat": 5,
+        "id": "VV-LF-003",
+        "props": {},
+        "intent": "Real pack construction during physical battery explanation"
+      },
+      {
+        "endBeat": 6,
+        "id": "VC-LF-008",
+        "props": {
+          "CORRECT_LABEL": "CONTEXT",
+          "CORRECT_ITEM": "Heat and SoC both matter",
+          "WRONG_LABEL": "OVERCLAIM",
+          "WRONG_ITEM": "One universal safe SoC"
+        },
+        "intent": "Short comparison to qualify generalization"
+      },
+      {
+        "endBeat": 7,
+        "id": "VA-LF-007",
+        "props": {
+          "title": "From mechanism to real-world evidence",
+          "beforeLabel": "Controlled insight",
+          "afterLabel": "Fleet observation",
+          "beforeItems": [
+            "Heat can affect reactions"
+          ],
+          "afterItems": [
+            "Geotab: many EVs"
+          ],
+          "footer": "Real-world fleet includes usage and calendar effects"
+        },
+        "intent": "Introduce source methodology not a BMS flow"
+      },
+      {
+        "endBeat": 8,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "Geotab: 22k+ EVs across 21 models",
+          "leftLabel": "Mild climate",
+          "rightLabel": "Hot climate",
+          "leftValue": "Reference",
+          "rightValue": "Faster decline",
+          "leftIntensity": 45,
+          "rightIntensity": 58,
+          "metricLabel": "Fleet association across actual ownership",
+          "footer": "Geotab fleet; comparison is qualitative, intensities illustrative"
+        },
+        "intent": "Show study cohorts as narrated"
+      },
+      {
+        "endBeat": 9,
+        "id": "VA-LF-003",
+        "props": {
+          "title": "What a 0.4 pp/year gap can mean",
+          "seriesALabel": "Mild baseline (schematic)",
+          "seriesA": [
+            100,
+            99,
+            98,
+            97,
+            96
+          ],
+          "seriesBLabel": "Hot = 0.4 pp/yr extra loss",
+          "seriesB": [
+            100,
+            98.6,
+            97.2,
+            95.8,
+            94.4
+          ],
+          "xLabel": "Years (illustrative extrapolation)",
+          "yLabel": "Illustrative health index",
+          "footer": "Schematic derived illustration; ONLY 0.4 pp/yr gap is cited. Not Geotab raw trajectories."
+        },
+        "intent": "Make claimed gap visually comprehensible while disclosing modeled baseline"
+      },
+      {
+        "endBeat": 10,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "Observed fleet data, not a lab forecast."
+        },
+        "intent": "Method qualifier, short"
+      },
+      {
+        "endBeat": 11,
+        "id": "VA-LF-007",
+        "props": {
+          "title": "What the study can and cannot isolate",
+          "beforeLabel": "What it measures",
+          "afterLabel": "What it does NOT isolate",
+          "beforeItems": [
+            "Overall battery health",
+            "Real vehicle use"
+          ],
+          "afterItems": [
+            "Calendar aging by itself"
+          ],
+          "footer": "Observational fleet result ≠ single-cause experiment"
+        },
+        "intent": "Explicit scientific evidence boundary"
+      },
+      {
+        "endBeat": 12,
+        "id": "VC-LF-008",
+        "props": {
+          "CORRECT_LABEL": "SUPPORTED",
+          "CORRECT_ITEM": "Overall fleet association",
+          "WRONG_LABEL": "NOT ESTABLISHED",
+          "WRONG_ITEM": "Pure calendar-only rate"
+        },
+        "intent": "Don't exaggerate study claim"
+      },
+      {
+        "endBeat": 13,
+        "id": "VA-LF-010",
+        "props": {
+          "title": "Physical heat exposure",
+          "heatLevel": 55,
+          "hotspotRow": 1,
+          "hotspotCol": 4,
+          "cooling": true,
+          "note": "Why climate remains a relevant context",
+          "footer": "Simulated heat field; NOT a Geotab observation"
+        },
+        "intent": "Return visually from research to hot battery mechanism"
+      },
+      {
+        "endBeat": 14,
+        "id": "VV-LF-028",
+        "props": {},
+        "intent": "Researcher/lab footage signals engineering interpretation, not claimed Geotab scene"
+      },
+      {
+        "endBeat": 15,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "Small annual differences can accumulate",
+          "leftLabel": "One year",
+          "rightLabel": "Several years",
+          "leftValue": "Small gap",
+          "rightValue": "Larger gap",
+          "leftIntensity": 35,
+          "rightIntensity": 65,
+          "metricLabel": "Time compounds persistent differences",
+          "footer": "Conceptual illustration, not an ownership prediction"
+        },
+        "intent": "Move from observed gap to owner impact"
+      },
+      {
+        "endBeat": 16,
+        "id": "VC-LF-003",
+        "props": {
+          "TAG": "ENGINEER'S NOTE",
+          "STATEMENT": "Small annual differences add up.",
+          "ROLE": "Interpretation of cited fleet association"
+        },
+        "intent": "A real concise credibility beat"
+      },
+      {
+        "endBeat": 17,
+        "id": "VA-LF-004",
+        "props": {
+          "title": "How capacity affects daily ownership",
+          "nodes": [
+            "Usable capacity",
+            "Range available",
+            "Ownership value"
+          ],
+          "centerLabel": "LONG-TERM CONSEQUENCE",
+          "direction": "forward",
+          "footer": "Engineering interpretation; vehicle-dependent"
+        },
+        "intent": "Connect capacity to range and resale"
+      },
+      {
+        "endBeat": 19,
+        "id": "VA-LF-007",
+        "props": {
+          "title": "Use the study without overpredicting",
+          "beforeLabel": "Good inference",
+          "afterLabel": "Not proven",
+          "beforeItems": [
+            "Climate is relevant"
+          ],
+          "afterItems": [
+            "A specific car's future loss"
+          ],
+          "footer": "Warranty and individual rates depend on vehicle and use"
+        },
+        "intent": "Finish evidence caveat, not tiny three-column card"
+      }
+    ],
+    "3": [
+      {
+        "endBeat": 1,
+        "id": "VC-LF-018",
+        "props": {},
+        "intent": "Chapter title"
+      },
+      {
+        "endBeat": 2,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "Dashboard range is an estimate."
+        },
+        "intent": "Clear hook; no multi-factor graphic"
+      },
+      {
+        "endBeat": 3,
+        "id": "VA-LF-011",
+        "props": {
+          "title": "A displayed estimate can move",
+          "displayedStart": 80,
+          "displayedEnd": 65,
+          "usablePct": 80,
+          "displayedLabel": "Estimated range index",
+          "usableLabel": "Reference capacity index",
+          "footer": "All index figures illustrative; NOT actual vehicle readings"
+        },
+        "intent": "Visual reveal of changing estimate versus stable conceptual capacity"
+      },
+      {
+        "endBeat": 4,
+        "id": "VV-LF-024",
+        "props": {},
+        "intent": "Real night/winter driving establishes context"
+      },
+      {
+        "endBeat": 5,
+        "id": "VC-LF-008",
+        "props": {
+          "CORRECT_LABEL": "WHAT CHANGES",
+          "CORRECT_ITEM": "Estimated trip distance",
+          "WRONG_LABEL": "DO NOT ASSUME",
+          "WRONG_ITEM": "Permanent battery loss"
+        },
+        "intent": "Viewer's wrong conclusion corrected"
+      },
+      {
+        "endBeat": 6,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "Two fundamentally different measures",
+          "leftLabel": "Range estimate",
+          "rightLabel": "Battery capacity",
+          "leftValue": "Conditions today",
+          "rightValue": "Long-term health",
+          "leftIntensity": 60,
+          "rightIntensity": 25,
+          "metricLabel": "Not interchangeable measurements",
+          "footer": "Activity bars schematic, not quantitative readings"
+        },
+        "intent": "Show key semantic distinction"
+      },
+      {
+        "endBeat": 7,
+        "id": "VC-LF-006",
+        "props": {
+          "TERM": "Range estimate",
+          "DEFINITION": "A condition-dependent forecast"
+        },
+        "intent": "Quick term reveal"
+      },
+      {
+        "endBeat": 8,
+        "id": "VA-LF-012",
+        "props": {
+          "title": "How the car estimates current range",
+          "sensors": [
+            "Temperature",
+            "Energy use",
+            "SoC"
+          ],
+          "decisionLabel": "BMS/Range estimate",
+          "actionLabel": "Display",
+          "footer": "Simplified onboard-estimation pathway; model-dependent"
+        },
+        "intent": "BMS diagram used only where actual sensor logic narrated"
+      },
+      {
+        "endBeat": 9,
+        "id": "VA-LF-008",
+        "props": {
+          "title": "Operating inputs keep changing",
+          "nodes": [
+            "Driving demands",
+            "Recent consumption",
+            "Range estimate"
+          ],
+          "flowLabel": "CURRENT OPERATION SIGNALS",
+          "intensity": 3,
+          "footer": "Simplified estimator signal path"
+        },
+        "intent": "Process of inputs flowing into estimate"
+      },
+      {
+        "endBeat": 10,
+        "id": "VV-LF-049",
+        "props": {},
+        "intent": "Actual in-car controls as subject switches to cold dashboard"
+      },
+      {
+        "endBeat": 11,
+        "id": "VA-LF-011",
+        "props": {
+          "title": "Cold conditions affect the estimate",
+          "displayedStart": 76,
+          "displayedEnd": 59,
+          "usablePct": 76,
+          "displayedLabel": "Displayed estimate index",
+          "usableLabel": "Capacity reference index",
+          "footer": "ILLUSTRATIVE INDEX, NOT measured SoH or real weather test"
+        },
+        "intent": "Warm versus cold current estimate—avoid heat field"
+      },
+      {
+        "endBeat": 12,
+        "id": "VC-LF-008",
+        "props": {
+          "CORRECT_LABEL": "COLD-MORNING CHANGE",
+          "CORRECT_ITEM": "Current performance varies",
+          "WRONG_LABEL": "NOT EVIDENCE",
+          "WRONG_ITEM": "Permanent fade overnight"
+        },
+        "intent": "Moment of audience realization"
+      },
+      {
+        "endBeat": 13,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "One cold day, two timescales",
+          "leftLabel": "Today",
+          "rightLabel": "Over years",
+          "leftValue": "Operating state",
+          "rightValue": "Capacity trend",
+          "leftIntensity": 70,
+          "rightIntensity": 30,
+          "metricLabel": "Real-time conditions ≠ structural loss",
+          "footer": "Qualitative timescale comparison"
+        },
+        "intent": "Thermodynamics distinct from degradation"
+      },
+      {
+        "endBeat": 14,
+        "id": "VA-LF-007",
+        "props": {
+          "title": "From temporary condition to lasting change",
+          "beforeLabel": "Current condition",
+          "afterLabel": "Permanent loss",
+          "beforeItems": [
+            "Temperature-sensitive"
+          ],
+          "afterItems": [
+            "Persistent capacity change"
+          ],
+          "footer": "Different diagnostic meanings"
+        },
+        "intent": "Short visual definition pair"
+      },
+      {
+        "endBeat": 15,
+        "id": "VA-LF-012",
+        "props": {
+          "title": "BMS reports the present operating state",
+          "sensors": [
+            "Temperature",
+            "Current",
+            "SoC"
+          ],
+          "decisionLabel": "Current estimate",
+          "actionLabel": "Range now",
+          "footer": "Does not establish long-term capacity health"
+        },
+        "intent": "Appropriate BMS explanation"
+      },
+      {
+        "endBeat": 16,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "Short-term change ≠ slow structural fade."
+        },
+        "intent": "Readable one-line consequence"
+      },
+      {
+        "endBeat": 17,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "Two paths to different conclusions",
+          "leftLabel": "Range fluctuation",
+          "rightLabel": "Aging trend",
+          "leftValue": "Today / tomorrow",
+          "rightValue": "Months / years",
+          "leftIntensity": 70,
+          "rightIntensity": 28,
+          "metricLabel": "Do not diagnose SOH from one range display",
+          "footer": "Illustrative comparison, not measured capacity"
+        },
+        "intent": "Closing distinction and bridge to ch4 diagnostics"
+      },
+      {
+        "endBeat": 18,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "One cold reading cannot diagnose battery health."
+        },
+        "intent": "Final sentence payoff"
+      }
+    ],
+    "4": [
+      {
+        "endBeat": 1,
+        "id": "VC-LF-018",
+        "props": {},
+        "intent": "Chapter opens on diagnostic question"
+      },
+      {
+        "endBeat": 2,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "Compare like with like."
+        },
+        "intent": "Editorial answer up front"
+      },
+      {
+        "endBeat": 3,
+        "id": "VA-LF-006",
+        "props": {
+          "title": "Recurrent's real-world scope",
+          "value": 30000,
+          "suffix": "+",
+          "label": "US drivers in battery dataset",
+          "decimals": 0,
+          "footer": "Recurrent dataset reference, as cited in narration"
+        },
+        "intent": "Research context reveal, not a BMS data stream"
+      },
+      {
+        "endBeat": 4,
+        "id": "VV-LF-018",
+        "props": {},
+        "intent": "Range dashboard footage during range confusion"
+      },
+      {
+        "endBeat": 5,
+        "id": "VC-LF-008",
+        "props": {
+          "CORRECT_LABEL": "BETTER EVIDENCE",
+          "CORRECT_ITEM": "Repeated comparable readings",
+          "WRONG_LABEL": "MISLEADING",
+          "WRONG_ITEM": "One winter dashboard value"
+        },
+        "intent": "Clarify evidence test"
+      },
+      {
+        "endBeat": 6,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "Only compare matching conditions",
+          "leftLabel": "Comparable readings",
+          "rightLabel": "Unmatched readings",
+          "leftValue": "Same conditions",
+          "rightValue": "Different inputs",
+          "leftIntensity": 45,
+          "rightIntensity": 75,
+          "metricLabel": "Temperature · SoC · driving style",
+          "footer": "Schematic comparison, not measured battery health"
+        },
+        "intent": "Compare controlled and uncontrolled measurement"
+      },
+      {
+        "endBeat": 7,
+        "id": "VA-LF-003",
+        "props": {
+          "title": "A trend matters more than a single value",
+          "seriesALabel": "Temporary variation (schematic)",
+          "seriesA": [
+            80,
+            60,
+            82,
+            68,
+            81
+          ],
+          "seriesBLabel": "Reference range",
+          "seriesB": [
+            80,
+            80,
+            80,
+            80,
+            80
+          ],
+          "xLabel": "Repeated comparable observations",
+          "yLabel": "Illustrative index only",
+          "footer": "Schematic demonstration, not vehicle measurements"
+        },
+        "intent": "Show noisy real-time value and stable trend"
+      },
+      {
+        "endBeat": 8,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "A cold Tuesday is only one reading."
+        },
+        "intent": "Pause with comprehensible line"
+      },
+      {
+        "endBeat": 9,
+        "id": "VA-LF-011",
+        "props": {
+          "title": "Seasonal range estimates can recover",
+          "displayedStart": 60,
+          "displayedEnd": 80,
+          "usablePct": 80,
+          "displayedLabel": "Estimate index",
+          "usableLabel": "Capacity reference index",
+          "footer": "Illustrative recovery; no measured vehicle data"
+        },
+        "intent": "Illustrate recovery in warmer conditions"
+      },
+      {
+        "endBeat": 10,
+        "id": "VV-LF-036",
+        "props": {},
+        "intent": "Driving-range footage when narration compares years"
+      },
+      {
+        "endBeat": 11,
+        "id": "VC-LF-008",
+        "props": {
+          "CORRECT_LABEL": "WORTH CHECKING",
+          "CORRECT_ITEM": "Persistent warm-day decline",
+          "WRONG_LABEL": "NOT ENOUGH",
+          "WRONG_ITEM": "One unusually cold trip"
+        },
+        "intent": "Consequence of long-run comparable readings"
+      },
+      {
+        "endBeat": 12,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "Persistent change vs temporary swing",
+          "leftLabel": "Short-lived dip",
+          "rightLabel": "Lasting decline",
+          "leftValue": "Can recover",
+          "rightValue": "Worth tracking",
+          "leftIntensity": 55,
+          "rightIntensity": 45,
+          "metricLabel": "Check equal temperature and SoC",
+          "footer": "Conceptual trend comparison, not telemetry"
+        },
+        "intent": "Show why persistent trend needs follow up"
+      },
+      {
+        "endBeat": 13,
+        "id": "VA-LF-011",
+        "props": {
+          "title": "Health metric differs from trip range",
+          "displayedStart": 75,
+          "displayedEnd": 67,
+          "usablePct": 75,
+          "displayedLabel": "Trip range estimate",
+          "usableLabel": "SOH reference",
+          "footer": "Illustrative display indices; not a measured health result"
+        },
+        "intent": "Clear visual distinction between two readouts"
+      },
+      {
+        "endBeat": 14,
+        "id": "VA-LF-007",
+        "props": {
+          "title": "Two numbers, two purposes",
+          "beforeLabel": "Range",
+          "afterLabel": "SOH",
+          "beforeItems": [
+            "Trip planning today"
+          ],
+          "afterItems": [
+            "Capacity trend over time"
+          ],
+          "footer": "Definitions differ by vehicle"
+        },
+        "intent": "Concise before/after comparison"
+      },
+      {
+        "endBeat": 15,
+        "id": "VA-LF-008",
+        "props": {
+          "title": "Why the dashboard predicts distance",
+          "nodes": [
+            "Current demand",
+            "Range model",
+            "Trip forecast"
+          ],
+          "flowLabel": "DRIVING RANGE, NOT CAPACITY TEST",
+          "intensity": 3,
+          "footer": "Simplified estimate logic"
+        },
+        "intent": "Use a flow only for real computational flow"
+      },
+      {
+        "endBeat": 16,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "Range answers: how far can I drive now?"
+        },
+        "intent": "Final on-topic answer"
+      }
+    ],
+    "5": [
+      {
+        "endBeat": 1,
+        "id": "VC-LF-018",
+        "props": {},
+        "intent": "Chapter starts"
+      },
+      {
+        "endBeat": 2,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "Practical choices, without battery anxiety."
+        },
+        "intent": "Promise useful ownership context"
+      },
+      {
+        "endBeat": 3,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "When storage lasts longer",
+          "leftLabel": "Days parked",
+          "rightLabel": "Weeks parked",
+          "leftValue": "Short exposure",
+          "rightValue": "Repeated exposure",
+          "leftIntensity": 32,
+          "rightIntensity": 64,
+          "metricLabel": "Duration matters alongside SoC",
+          "footer": "Illustrative duration comparison — not a measured degradation rate"
+        },
+        "intent": "Time emphasis before first clip"
+      },
+      {
+        "endBeat": 4,
+        "id": "VV-LF-030",
+        "props": {},
+        "intent": "Vehicle parking/owner decision footage when discussing long storage"
+      },
+      {
+        "endBeat": 5,
+        "id": "VC-LF-008",
+        "props": {
+          "CORRECT_LABEL": "REAL CONCERN",
+          "CORRECT_ITEM": "Extended storage pattern",
+          "WRONG_LABEL": "OVERREACTION",
+          "WRONG_ITEM": "A single full weekend"
+        },
+        "intent": "Separate long-term from weekend"
+      },
+      {
+        "endBeat": 6,
+        "id": "VA-LF-004",
+        "props": {
+          "title": "Why stored charge matters over time",
+          "nodes": [
+            "Long parked period",
+            "High stored SoC",
+            "Calendar stress"
+          ],
+          "centerLabel": "STORAGE EXPOSURE",
+          "direction": "forward",
+          "footer": "Illustrative chemical-stress pathway, not a prescribed charge target"
+        },
+        "intent": "One legitimate process mechanism"
+      },
+      {
+        "endBeat": 7,
+        "id": "VA-LF-007",
+        "props": {
+          "title": "Do not confuse duration with certainty",
+          "beforeLabel": "A weekend",
+          "afterLabel": "Long-term habit",
+          "beforeItems": [
+            "One brief exposure"
+          ],
+          "afterItems": [
+            "Repeated high-stress periods"
+          ],
+          "footer": "No claim of measurable damage from one weekend"
+        },
+        "intent": "Make caveat visually obvious"
+      },
+      {
+        "endBeat": 8,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "Exposure is about patterns",
+          "leftLabel": "Brief episode",
+          "rightLabel": "Extended routine",
+          "leftValue": "Not destiny",
+          "rightValue": "Worth managing",
+          "leftIntensity": 28,
+          "rightIntensity": 70,
+          "metricLabel": "Context, not single-event damage",
+          "footer": "Qualitative guidance from narration only"
+        },
+        "intent": "Long vs short pattern comparison"
+      },
+      {
+        "endBeat": 9,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "Climate also changes the equation."
+        },
+        "intent": "Bridge into heat"
+      },
+      {
+        "endBeat": 10,
+        "id": "VV-LF-002",
+        "props": {},
+        "intent": "Battery thermal-stress footage represents heat, not a specific Geotab vehicle or runaway outcome"
+      },
+      {
+        "endBeat": 11,
+        "id": "VA-LF-010",
+        "props": {
+          "title": "Why ambient heat matters",
+          "heatLevel": 62,
+          "hotspotRow": 2,
+          "hotspotCol": 5,
+          "cooling": true,
+          "note": "Heat stress can change a parked pack's context",
+          "footer": "Illustrative heat map, not a recorded measurement"
+        },
+        "intent": "Actual thermal mechanism for hot climate"
+      },
+      {
+        "endBeat": 12,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "Thermal management varies by vehicle."
+        },
+        "intent": "Keep short versus unreadable three-column table"
+      },
+      {
+        "endBeat": 13,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "Owner decisions should match the vehicle",
+          "leftLabel": "General evidence",
+          "rightLabel": "Your EV guidance",
+          "leftValue": "Climate + storage",
+          "rightValue": "OEM instructions",
+          "leftIntensity": 50,
+          "rightIntensity": 50,
+          "metricLabel": "Use model-specific storage recommendations",
+          "footer": "No universal charge percentage prescribed"
+        },
+        "intent": "Actionable owner conclusion"
+      }
+    ],
+    "6": [
+      {
+        "endBeat": 1,
+        "id": "VC-LF-018",
+        "props": {},
+        "intent": "Last chapter opener"
+      },
+      {
+        "endBeat": 2,
+        "id": "VC-LF-008",
+        "props": {
+          "CORRECT_LABEL": "GOOD USE",
+          "CORRECT_ITEM": "Plan the next trip",
+          "WRONG_LABEL": "BAD INFERENCE",
+          "WRONG_ITEM": "Range equals SOH"
+        },
+        "intent": "Conclude mismatch concisely"
+      },
+      {
+        "endBeat": 3,
+        "id": "VV-LF-047",
+        "props": {},
+        "intent": "Real EV interior, owner-facing dashboard"
+      },
+      {
+        "endBeat": 4,
+        "id": "VA-LF-011",
+        "props": {
+          "title": "A different reference for battery health",
+          "displayedStart": 74,
+          "displayedEnd": 65,
+          "usablePct": 74,
+          "displayedLabel": "Estimated range index",
+          "usableLabel": "Health reference index",
+          "footer": "Illustrative indices; real SOH requires vehicle-specific diagnostics"
+        },
+        "intent": "Demonstrate difference between unstable estimate and reference"
+      },
+      {
+        "endBeat": 5,
+        "id": "VA-LF-008",
+        "props": {
+          "title": "Use evidence over single numbers",
+          "nodes": [
+            "Comparable readings",
+            "Long-term monitoring",
+            "Capacity trend"
+          ],
+          "flowLabel": "DIAGNOSTIC DATA PROCESS",
+          "intensity": 3,
+          "footer": "Simplified ownership assessment; not actual BMS path"
+        },
+        "intent": "Show actual monitoring sequence, not fake BMS decision"
+      },
+      {
+        "endBeat": 6,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "Calendar aging: real, gradual, manageable."
+        },
+        "intent": "Simple meaningful beat"
+      },
+      {
+        "endBeat": 7,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "Focus on factors you can manage",
+          "leftLabel": "Unhelpful",
+          "rightLabel": "Useful",
+          "leftValue": "Watch every %",
+          "rightValue": "Follow evidence",
+          "leftIntensity": 75,
+          "rightIntensity": 35,
+          "metricLabel": "Own the routine, not every single number",
+          "footer": "Practical ownership interpretation"
+        },
+        "intent": "Emotional shift anxiety to evidence"
+      },
+      {
+        "endBeat": 8,
+        "id": "VV-LF-040",
+        "props": {},
+        "intent": "Normal ownership visual as narrator de-escalates anxiety"
+      },
+      {
+        "endBeat": 9,
+        "id": "VA-LF-007",
+        "props": {
+          "title": "Owner decisions, not BMS commands",
+          "beforeLabel": "React to a reading",
+          "afterLabel": "Follow the evidence",
+          "beforeItems": [
+            "One cold-day range number"
+          ],
+          "afterItems": [
+            "Consistent conditions",
+            "Vehicle instructions"
+          ],
+          "footer": "Reasoned owner guidance, no hidden metrics"
+        },
+        "intent": "Human action not SENSOR→ESTIMATE BMS animation"
+      },
+      {
+        "endBeat": 10,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "Track trends. Ignore one cold-day scare."
+        },
+        "intent": "Short punchy ownership checklist, readable"
+      },
+      {
+        "endBeat": 11,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "The dashboard shows today—not a lifetime."
+        },
+        "intent": "Final callback to two clocks"
+      }
+    ]
+  }
+}
