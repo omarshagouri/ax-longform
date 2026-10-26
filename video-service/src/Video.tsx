@@ -32,6 +32,7 @@ export const Video: React.FC<{ manifest: VideoManifest }> = ({ manifest }) => {
             </Sequence>
           );
         }
+        if (item.track === "clip") throw new Error(`Drive footage ${item.component} was not resolved to a real MP4 source`);
         const entry = registry[item.component];
         if (!entry) return null;
         const Card = entry.component;
