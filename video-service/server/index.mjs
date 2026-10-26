@@ -76,7 +76,7 @@ function parseBeat(b, i, fps, cursor) {
   const id = String(b.card_id || b.visual_id || "").trim();
   const isCard = id.startsWith("VC-LF-");
   const isAnimation = id.startsWith("VA-LF-");
-  const isClip = CLIP_ID.test(id) || /^VV-LF-\\d{3,}\\.mp4$/i.test(id);
+  const isClip = CLIP_ID.test(id) || /^VV-LF-\d{3,}\.mp4$/i.test(id);
   if (!isCard && !isAnimation && !isClip) {
     throw new Error(`beat ${beat}: unsupported visual ${id}; use a catalog Ready VC-LF, VA-LF or VV-LF entry`);
   }
