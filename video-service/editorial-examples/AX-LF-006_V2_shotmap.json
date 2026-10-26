@@ -362,11 +362,11 @@
       },
       {
         "endBeat": 10,
-        "id": "VC-LF-005",
+        "id": "VC-LF-016",
         "props": {
-          "BEAT_LINE": "Observed fleet data, not a lab forecast."
+          "TAG_TEXT": "GEOTAB · REAL-WORLD FLEET DATA"
         },
-        "intent": "Method qualifier, short"
+        "intent": "Micro source-context chip prevents repeated identical caption slides"
       },
       {
         "endBeat": 11.1,
