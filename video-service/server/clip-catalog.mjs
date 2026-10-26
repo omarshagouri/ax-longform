@@ -4,7 +4,7 @@
 // service account to have Sheets permission; the Drive asset itself must remain readable.
 const CATALOG_ID = process.env.AXLF_VISUAL_CATALOG_SHEET_ID || "1n_BoKTFc1EUIVjNPU5hRhGo2FJ3uZfVqoTf2CPjhf78";
 const DRIVE_ID = /^[A-Za-z0-9_-]{12,}$/;
-export const CLIP_ID = /^VV-LF-\\d{3,}$/;
+export const CLIP_ID = /^VV-LF-\d{3,}$/;
 
 export function parseClipCatalog(values) {
   if (!Array.isArray(values) || !values.length) throw new Error("Clips catalog is empty");
