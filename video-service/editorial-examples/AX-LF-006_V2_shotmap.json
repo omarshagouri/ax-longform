@@ -1,5 +1,5 @@
 {
-  "version": "AX-LF-006_V2",
+  "version": "AX-LF-006_V2_directed_v2",
   "approach": "director-first; preserve approved narration exactly; no new asset types or media; planned beats from old contiguous narration rows but all new visual reasoning/values/timing",
   "chapters": {
     "1": [
@@ -158,11 +158,27 @@
         "intent": "Name the chemistry mechanism concisely"
       },
       {
-        "endBeat": 15,
+        "endBeat": 15.1,
+        "id": "VA-LF-008",
+        "props": {
+          "title": "Chemistry does not stop when current stops",
+          "nodes": [
+            "Parked cell",
+            "Ongoing reactions",
+            "Gradual aging"
+          ],
+          "flowLabel": "REACTIONS AT REST",
+          "intensity": 3,
+          "footer": "Conceptual process; not measured cell chemistry"
+        },
+        "intent": "Visualize continuing cell processes without active driving"
+      },
+      {
+        "endBeat": 15.2,
         "id": "VA-LF-003",
         "props": {
-          "title": "Why elapsed time matters",
-          "seriesALabel": "Illustrative capacity trend",
+          "title": "Age-related loss is not brand-specific",
+          "seriesALabel": "Illustrative capacity direction",
           "seriesA": [
             100,
             99,
@@ -170,11 +186,11 @@
             97,
             96
           ],
-          "xLabel": "Time passing",
-          "yLabel": "Relative capacity (schematic)",
-          "footer": "Illustrative declining trend only — NOT measured battery data"
+          "xLabel": "Elapsed years (schematic)",
+          "yLabel": "Relative capacity index",
+          "footer": "Schematic trend, not evidence for an individual EV"
         },
-        "intent": "One diagram shows time trend rather than another flowchart"
+        "intent": "Switch from reaction to long-term consequence"
       },
       {
         "endBeat": 16,
@@ -264,64 +280,84 @@
         "intent": "Short comparison to qualify generalization"
       },
       {
-        "endBeat": 7,
+        "endBeat": 7.1,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "This is backed by real fleet evidence."
+        },
+        "intent": "Establish pivot from chemistry into observational evidence"
+      },
+      {
+        "endBeat": 7.2,
         "id": "VA-LF-007",
         "props": {
-          "title": "From mechanism to real-world evidence",
-          "beforeLabel": "Controlled insight",
-          "afterLabel": "Fleet observation",
+          "title": "From mechanism to real-world observation",
+          "beforeLabel": "Chemistry",
+          "afterLabel": "Fleet vehicles",
           "beforeItems": [
-            "Heat can affect reactions"
+            "Heat affects reactions"
           ],
           "afterItems": [
-            "Geotab: many EVs"
+            "Geotab compares EVs"
           ],
-          "footer": "Real-world fleet includes usage and calendar effects"
+          "footer": "Observational fleet evidence ≠ isolated calendar loss"
         },
-        "intent": "Introduce source methodology not a BMS flow"
+        "intent": "Show what the source measures"
       },
       {
-        "endBeat": 8,
+        "endBeat": 8.1,
+        "id": "VA-LF-006",
+        "props": {
+          "title": "Geotab fleet sample",
+          "value": 22000,
+          "suffix": "+",
+          "decimals": 0,
+          "label": "EVs across 21 makes / models",
+          "footer": "Narrated claim: more than 22,000 EVs in Geotab analysis"
+        },
+        "intent": "Sample-size figure appears during the spoken sample size"
+      },
+      {
+        "endBeat": 8.2,
         "id": "VA-LF-013",
         "props": {
-          "title": "Geotab: 22k+ EVs across 21 models",
-          "leftLabel": "Mild climate",
-          "rightLabel": "Hot climate",
-          "leftValue": "Reference",
-          "rightValue": "Faster decline",
-          "leftIntensity": 45,
-          "rightIntensity": 58,
-          "metricLabel": "Fleet association across actual ownership",
-          "footer": "Geotab fleet; comparison is qualitative, intensities illustrative"
+          "title": "Fleets in different climates",
+          "leftLabel": "Mild-climate vehicles",
+          "rightLabel": "Hot-climate vehicles",
+          "leftValue": "Baseline",
+          "rightValue": "Faster health decline",
+          "leftIntensity": 40,
+          "rightIntensity": 60,
+          "metricLabel": "Observed association (illustrative lanes)",
+          "footer": "Geotab comparison; intensity values are NOT data"
         },
-        "intent": "Show study cohorts as narrated"
+        "intent": "Shift focus from sample to comparison"
       },
       {
-        "endBeat": 9,
-        "id": "VA-LF-003",
+        "endBeat": 9.1,
+        "id": "VC-LF-001",
         "props": {
-          "title": "What a 0.4 pp/year gap can mean",
-          "seriesALabel": "Mild baseline (schematic)",
-          "seriesA": [
-            100,
-            99,
-            98,
-            97,
-            96
-          ],
-          "seriesBLabel": "Hot = 0.4 pp/yr extra loss",
-          "seriesB": [
-            100,
-            98.6,
-            97.2,
-            95.8,
-            94.4
-          ],
-          "xLabel": "Years (illustrative extrapolation)",
-          "yLabel": "Illustrative health index",
-          "footer": "Schematic derived illustration; ONLY 0.4 pp/yr gap is cited. Not Geotab raw trajectories."
+          "KICKER": "GEOTAB HOT vs MILD / PER YEAR",
+          "NUM": "0.4",
+          "PCT": "pp faster decline"
         },
-        "intent": "Make claimed gap visually comprehensible while disclosing modeled baseline"
+        "intent": "Display the cited measured association at the moment 0.4 is spoken"
+      },
+      {
+        "endBeat": 9.2,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "What the annual difference compares",
+          "leftLabel": "Hot-climate fleet",
+          "rightLabel": "Mild-climate fleet",
+          "leftValue": "0.4 pp/yr faster",
+          "rightValue": "Reference group",
+          "leftIntensity": 60,
+          "rightIntensity": 42,
+          "metricLabel": "Fleet-average association, not a single-EV forecast",
+          "footer": "Geotab observational result; lane intensities are schematic"
+        },
+        "intent": "Clarify relative comparison and non-causality"
       },
       {
         "endBeat": 10,
@@ -332,22 +368,30 @@
         "intent": "Method qualifier, short"
       },
       {
-        "endBeat": 11,
+        "endBeat": 11.1,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "Observed vehicles—not a lab projection."
+        },
+        "intent": "Source-study qualifier"
+      },
+      {
+        "endBeat": 11.2,
         "id": "VA-LF-007",
         "props": {
-          "title": "What the study can and cannot isolate",
-          "beforeLabel": "What it measures",
-          "afterLabel": "What it does NOT isolate",
+          "title": "What fleet data includes",
+          "beforeLabel": "Can observe",
+          "afterLabel": "Cannot isolate",
           "beforeItems": [
-            "Overall battery health",
-            "Real vehicle use"
+            "Real driving",
+            "Climate associations"
           ],
           "afterItems": [
-            "Calendar aging by itself"
+            "Calendar aging alone"
           ],
-          "footer": "Observational fleet result ≠ single-cause experiment"
+          "footer": "Fleet result combines multiple aging mechanisms"
         },
-        "intent": "Explicit scientific evidence boundary"
+        "intent": "Show real observation vs isolation limit"
       },
       {
         "endBeat": 12,
@@ -672,17 +716,34 @@
         "intent": "Editorial answer up front"
       },
       {
-        "endBeat": 3,
+        "endBeat": 3.1,
+        "id": "VA-LF-007",
+        "props": {
+          "title": "Check the persistent pattern",
+          "beforeLabel": "One observation",
+          "afterLabel": "Real trend",
+          "beforeItems": [
+            "Range today"
+          ],
+          "afterItems": [
+            "Comparable data over time"
+          ],
+          "footer": "Answer to the practical diagnostic question"
+        },
+        "intent": "Establish why the research question matters"
+      },
+      {
+        "endBeat": 3.2,
         "id": "VA-LF-006",
         "props": {
-          "title": "Recurrent's real-world scope",
+          "title": "Recurrent monitors battery trends",
           "value": 30000,
           "suffix": "+",
-          "label": "US drivers in battery dataset",
           "decimals": 0,
-          "footer": "Recurrent dataset reference, as cited in narration"
+          "label": "US drivers in dataset",
+          "footer": "Recurrent, as described in approved narration"
         },
-        "intent": "Research context reveal, not a BMS data stream"
+        "intent": "Study sample size appears when narrated"
       },
       {
         "endBeat": 4,
@@ -718,19 +779,19 @@
         "intent": "Compare controlled and uncontrolled measurement"
       },
       {
-        "endBeat": 7,
+        "endBeat": 7.1,
         "id": "VA-LF-003",
         "props": {
-          "title": "A trend matters more than a single value",
-          "seriesALabel": "Temporary variation (schematic)",
+          "title": "What one outlier cannot establish",
+          "seriesALabel": "Illustrative fluctuating range",
           "seriesA": [
-            80,
+            83,
             60,
-            82,
-            68,
-            81
+            80,
+            77,
+            82
           ],
-          "seriesBLabel": "Reference range",
+          "seriesBLabel": "Stable reference illustration",
           "seriesB": [
             80,
             80,
@@ -738,11 +799,27 @@
             80,
             80
           ],
-          "xLabel": "Repeated comparable observations",
-          "yLabel": "Illustrative index only",
-          "footer": "Schematic demonstration, not vehicle measurements"
+          "xLabel": "Repeated observations",
+          "yLabel": "Schematic index, not EV telemetry",
+          "footer": "No original vehicle measurements implied"
         },
-        "intent": "Show noisy real-time value and stable trend"
+        "intent": "Show how a single cold day differs from a trend"
+      },
+      {
+        "endBeat": 7.2,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "Temporary cold-week variation",
+          "leftLabel": "Cold week",
+          "rightLabel": "Comparable warm day",
+          "leftValue": "Estimate drops",
+          "rightValue": "Can recover",
+          "leftIntensity": 68,
+          "rightIntensity": 40,
+          "metricLabel": "Conditions must be comparable",
+          "footer": "Illustrative lanes, not measured fleet data"
+        },
+        "intent": "Frame the return to warmer conditions"
       },
       {
         "endBeat": 8,
@@ -920,21 +997,28 @@
         "intent": "One legitimate process mechanism"
       },
       {
-        "endBeat": 7,
-        "id": "VA-LF-007",
+        "endBeat": 7.1,
+        "id": "VA-LF-013",
         "props": {
-          "title": "Do not confuse duration with certainty",
-          "beforeLabel": "A weekend",
-          "afterLabel": "Long-term habit",
-          "beforeItems": [
-            "One brief exposure"
-          ],
-          "afterItems": [
-            "Repeated high-stress periods"
-          ],
-          "footer": "No claim of measurable damage from one weekend"
+          "title": "Context changes calendar exposure",
+          "leftLabel": "Short period",
+          "rightLabel": "Repeated storage",
+          "leftValue": "Brief",
+          "rightValue": "Cumulative",
+          "leftIntensity": 34,
+          "rightIntensity": 70,
+          "metricLabel": "No single event predicts capacity loss",
+          "footer": "Illustrative stress comparison"
         },
-        "intent": "Make caveat visually obvious"
+        "intent": "Distinguish cumulative stress concept"
+      },
+      {
+        "endBeat": 7.2,
+        "id": "VC-LF-005",
+        "props": {
+          "BEAT_LINE": "One full-charge weekend is not a diagnosis."
+        },
+        "intent": "Keep the non-alarmist caveat on screen"
       },
       {
         "endBeat": 8,
@@ -1090,22 +1174,37 @@
         "intent": "Normal ownership visual as narrator de-escalates anxiety"
       },
       {
-        "endBeat": 9,
+        "endBeat": 9.1,
         "id": "VA-LF-007",
         "props": {
-          "title": "Owner decisions, not BMS commands",
-          "beforeLabel": "React to a reading",
-          "afterLabel": "Follow the evidence",
+          "title": "Replace anxiety with context",
+          "beforeLabel": "Unhelpful",
+          "afterLabel": "Useful",
           "beforeItems": [
-            "One cold-day range number"
+            "React to one charge level"
           ],
           "afterItems": [
-            "Consistent conditions",
-            "Vehicle instructions"
+            "Make informed choices"
           ],
-          "footer": "Reasoned owner guidance, no hidden metrics"
+          "footer": "Human decisions, not BMS processing"
         },
-        "intent": "Human action not SENSOR→ESTIMATE BMS animation"
+        "intent": "Convey emotional transition"
+      },
+      {
+        "endBeat": 9.2,
+        "id": "VA-LF-013",
+        "props": {
+          "title": "Decisions should follow evidence",
+          "leftLabel": "Single reading",
+          "rightLabel": "Long-term evidence",
+          "leftValue": "Momentary",
+          "rightValue": "Meaningful trend",
+          "leftIntensity": 75,
+          "rightIntensity": 34,
+          "metricLabel": "Trust comparable observations",
+          "footer": "Illustrative lanes, not a numerical claim"
+        },
+        "intent": "Build toward closing argument"
       },
       {
         "endBeat": 10,
@@ -1117,12 +1216,41 @@
       },
       {
         "endBeat": 11,
-        "id": "VC-LF-005",
+        "id": "VA-LF-013",
         "props": {
-          "BEAT_LINE": "The dashboard shows today—not a lifetime."
+          "title": "Two clocks, one calm takeaway",
+          "leftLabel": "Range today",
+          "rightLabel": "Capacity over time",
+          "leftValue": "Current conditions",
+          "rightValue": "Long-term health",
+          "leftIntensity": 65,
+          "rightIntensity": 35,
+          "metricLabel": "Use the right evidence for each question",
+          "footer": "Final two-clocks callback; no quantitative rates"
         },
-        "intent": "Final callback to two clocks"
+        "intent": "Bookend chapter 1 with the same two-clock idea"
       }
     ]
+  },
+  "splits": {
+    "1": {
+      "15": "flowing."
+    },
+    "2": {
+      "7": "concern.",
+      "8": "models,",
+      "9": "per year",
+      "11": "projection,"
+    },
+    "4": {
+      "3": "question.",
+      "7": "cold Tuesday."
+    },
+    "5": {
+      "7": "calendar aging stress."
+    },
+    "6": {
+      "9": "informed decisions"
+    }
   }
 }
