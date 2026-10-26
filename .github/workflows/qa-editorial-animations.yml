@@ -24,6 +24,9 @@ jobs:
       - name: Install existing renderer dependencies
         working-directory: video-service
         run: npm install
+      - name: Install media probe for actual video validation
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+
       - name: Prepare browser, verify schema and type-check
         working-directory: video-service
         run: |
@@ -35,7 +38,7 @@ jobs:
         working-directory: video-service
         run: |
           node scripts/qa_editorial_animations.mjs VA-LF-015
-          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-015/VA-LF-015.mp4
+          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-015/VA-LF-015_V1.mp4
       - uses: actions/upload-artifact@v4
         with:
           name: Card_testing_VA-LF-015_V1
@@ -46,7 +49,7 @@ jobs:
         working-directory: video-service
         run: |
           node scripts/qa_editorial_animations.mjs VA-LF-016
-          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-016/VA-LF-016.mp4
+          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-016/VA-LF-016_V1.mp4
       - uses: actions/upload-artifact@v4
         with:
           name: Card_testing_VA-LF-016_V1
@@ -57,7 +60,7 @@ jobs:
         working-directory: video-service
         run: |
           node scripts/qa_editorial_animations.mjs VA-LF-017
-          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-017/VA-LF-017.mp4
+          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-017/VA-LF-017_V1.mp4
       - uses: actions/upload-artifact@v4
         with:
           name: Card_testing_VA-LF-017_V1
@@ -68,7 +71,7 @@ jobs:
         working-directory: video-service
         run: |
           node scripts/qa_editorial_animations.mjs VA-LF-018
-          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-018/VA-LF-018.mp4
+          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-018/VA-LF-018_V1.mp4
       - uses: actions/upload-artifact@v4
         with:
           name: Card_testing_VA-LF-018_V1
@@ -79,7 +82,7 @@ jobs:
         working-directory: video-service
         run: |
           node scripts/qa_editorial_animations.mjs VA-LF-019
-          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-019/VA-LF-019.mp4
+          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-019/VA-LF-019_V1.mp4
       - uses: actions/upload-artifact@v4
         with:
           name: Card_testing_VA-LF-019_V1
@@ -90,7 +93,7 @@ jobs:
         working-directory: video-service
         run: |
           node scripts/qa_editorial_animations.mjs VA-LF-020
-          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-020/VA-LF-020.mp4
+          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-020/VA-LF-020_V1.mp4
       - uses: actions/upload-artifact@v4
         with:
           name: Card_testing_VA-LF-020_V1
