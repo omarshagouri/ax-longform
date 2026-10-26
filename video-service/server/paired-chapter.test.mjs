@@ -23,3 +23,26 @@ test("do not cut, stretch, or silently loop audio when chapter duration differs"
  const broken={...m,audio:[{...m.audio[0],durationFrames:2405}]};
  assert.throws(()=>makeAudioPartManifest(broken,1),/exactly in frames/);
 });
+
+test("split keeps one Drive-backed clip in each technical MP4 part",()=>{
+  const footage=[
+    {beat:1,startFrame:0,durationFrames:60,track:"card"},
+    {beat:2,startFrame:60,durationFrames:120,track:"clip",component:"VV-LF-023"},
+    {beat:3,startFrame:180,durationFrames:540,track:"anim"},
+    {beat:4,startFrame:720,durationFrames:500,track:"card"},
+    {beat:5,startFrame:1220,durationFrames:120,track:"clip",component:"VV-LF-046"},
+    {beat:6,startFrame:1340,durationFrames:460,track:"anim"}
+  ];
+  const split=chooseSplitFrame(footage,{requireClipPerPart:true});
+  assert.ok(split.splitFrame>=180&&split.splitFrame<=1220);
+  assert.ok(split.part1Frames<=1650&&split.part2Frames<=1650);
+});
+test("a plan with both clips in the first part and no legal split fails closed",()=>{
+  const footage=[
+    {beat:1,startFrame:0,durationFrames:90,track:"clip"},
+    {beat:2,startFrame:90,durationFrames:90,track:"clip"},
+    {beat:3,startFrame:180,durationFrames:1600,track:"anim"},
+    {beat:4,startFrame:1780,durationFrames:100,track:"card"}
+  ];
+  assert.throws(()=>chooseSplitFrame(footage,{requireClipPerPart:true}),/no legal split/);
+});
