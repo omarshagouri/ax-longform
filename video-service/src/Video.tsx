@@ -52,7 +52,7 @@ export const Video: React.FC<{ manifest: VideoManifest }> = ({ manifest }) => {
       })}
       {manifest.audio.filter((a) => a.src).map((a, i) => (
         <Sequence key={`audio-${i}`} from={a.startFrame} durationInFrames={a.durationFrames}>
-          <Audio src={asset(a.src)} />
+          <Audio src={asset(a.src)} startFrom={a.startFrom ?? 0} />
         </Sequence>
       ))}
     </AbsoluteFill>
