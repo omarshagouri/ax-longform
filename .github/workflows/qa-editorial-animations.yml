@@ -23,7 +23,7 @@ jobs:
           cache-dependency-path: video-service/package-lock.json
       - name: Install existing renderer dependencies
         working-directory: video-service
-        run: npm ci
+        run: npm install
       - name: Prepare browser, verify schema and type-check
         working-directory: video-service
         run: |
