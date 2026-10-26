@@ -11,7 +11,7 @@ const clamp=(v:number)=>Math.max(0,Math.min(1,v));
 const phase=(f:number,a:number,b:number)=>clamp((f-a)/Math.max(1,b-a));
 const ease=(v:number)=>1-Math.pow(1-clamp(v),3);
 const loop=(f:number,period:number,shift=0)=>((f+shift)%period)/period;
-const P:React.FC<{children:React.ReactNode;style?:React.CSSProperties}>=({children,style})=>(
+const P:React.FC<{children?:React.ReactNode;style?:React.CSSProperties}>=({children,style})=>(
   <div style={{position:"absolute",background:C.panel,border:"2px solid "+C.line,borderRadius:28,
     boxSizing:"border-box",...style}}>{children}</div>);
 const Heading:React.FC<{title?:string;kicker:string;footer?:string}>=({title,kicker,footer})=>(
