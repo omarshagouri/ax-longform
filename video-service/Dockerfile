@@ -17,6 +17,8 @@ RUN node --check server/native-motion.mjs
 RUN node --test server/native-motion.test.mjs
 RUN node --check server/paired-chapter.mjs
 RUN node --test server/paired-chapter.test.mjs
+RUN node --check server/clip-catalog.mjs
+RUN node --test server/clip-catalog.test.mjs
 RUN node --check server/assembly-gcs.mjs
 RUN node --test server/assembly-gcs.test.mjs
 RUN bash -n scripts/setup-lf-assembly-gcs.sh
