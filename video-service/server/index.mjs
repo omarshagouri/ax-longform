@@ -11,7 +11,7 @@ import { selectComposition, renderMedia, renderStill } from "@remotion/renderer"
 import { GoogleAuth } from "google-auth-library";
 import { uploadFinalAssemblyToGCS } from "./assembly-gcs.mjs";
 import { assertChapterTimelineMatchesAudio } from "./chapter-timing.mjs";
-import { chooseSplitFrame, makeSilentPartManifest, validatePairedJoin } from "./paired-chapter.mjs";
+import { chooseSplitFrame, makeSilentPartManifest, makeAudioPartManifest, validatePairedJoin } from "./paired-chapter.mjs";
 import { NATIVE_CLIP_IDS, assertNativeClipDuration, assertNativeMotionMix } from "./native-motion.mjs";
 import { parseBuffer } from "music-metadata";
 
@@ -329,13 +329,13 @@ app.post(["/build-and-render", "/render-chapter"], async (req, res) => {
 // Paired narrative chapters: never split speech or insert artificial chapter opens.
 app.post("/render-chapter-part", async(req,res)=>{
   if(!ok(req))return res.status(401).json({error:"bad api key"});
-  const {video_id,part,fps=30,beats,audio_file_ids=[]}=req.body||{};
-  if(!/^[A-Za-z0-9_-]{3,90}$/.test(String(video_id||""))||![1,2].includes(part)||Number(fps)!==30||!Array.isArray(beats)||beats.length<2||!Array.isArray(audio_file_ids)||audio_file_ids.length!==1||!/^[A-Za-z0-9_-]{12,}$/.test(String(audio_file_ids[0]||"")))return res.status(400).json({error:"invalid paired render request"});
+  const {video_id,part,fps=30,beats,audio_file_ids=[],audio_mode="silent"}=req.body||{};
+  if(!/^[A-Za-z0-9_-]{3,90}$/.test(String(video_id||""))||![1,2].includes(part)||Number(fps)!==30||!Array.isArray(beats)||beats.length<2||!Array.isArray(audio_file_ids)||audio_file_ids.length!==1||!/^[A-Za-z0-9_-]{12,}$/.test(String(audio_file_ids[0]||""))||!["silent","segment"].includes(audio_mode))return res.status(400).json({error:"invalid paired render request"});
   try{
     const full=await buildChapter(video_id,30,beats,audio_file_ids);
     const split=chooseSplitFrame(full.timeline);
-    const silent=makeSilentPartManifest(full,part,split);
-    return res.json({status:"ok",video_id,part,split_frame:split.splitFrame,total_frames:split.totalFrames,part_frames:part===1?split.part1Frames:split.part2Frames,...(await renderManifest(silent))});
+    const output=audio_mode==="segment"?makeAudioPartManifest(full,part,split):makeSilentPartManifest(full,part,split);
+    return res.json({status:"ok",video_id,part,audio_mode,split_frame:split.splitFrame,total_frames:split.totalFrames,part_frames:part===1?split.part1Frames:split.part2Frames,...(await renderManifest(output))});
   }catch(e){console.error("paired render error",e?.message);return res.status(422).json({error:String(e?.message||e)});}
 });
 function probePairedPart(file){
