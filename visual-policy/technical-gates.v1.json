@@ -1,0 +1,159 @@
+{
+  "schema_version": "1.0.0",
+  "policy_name": "AmpCoreX Long-form Visual Agent",
+  "revision": "V3.0-DRAFT",
+  "status": "DRAFT_INACTIVE",
+  "loaded_by_production": false,
+  "runner_status": "Legacy scheduled task still active daily 08:00 Europe/Oslo, self-contained prompt",
+  "source_task_id": "6adb15d1bbe48191b07ae8657b8b0729",
+  "source_prompt_path": "visual-policy/baselines/long-form-visual-planning-2026-10-26.txt",
+  "source_prompt_characters": 11166,
+  "creative_document_url": "https://docs.google.com/document/d/13ERSZtgEEDAZdufC6XOOxhVPPMnk7z1vc839nHIa_Gk/edit",
+  "control_sheet_url": "https://docs.google.com/spreadsheets/d/1k6LXvGGRjXcBjUP--YqCf9UwP1_t3XsvM40kxQxfMig/edit",
+  "validator_source": "video-service/server/visual-plan-validator.mjs",
+  "word_alignment_source": "video-service/server/visual-word-alignment.mjs",
+  "editorial": {
+    "approval_minimum": 95,
+    "preview_required_for_verified_rating": true,
+    "weights": {
+      "relevance": 25,
+      "pacing": 25,
+      "flow": 20,
+      "variety": 10,
+      "readability": 10,
+      "payoff": 10
+    },
+    "no_auto_generated_score": true
+  },
+  "production_contract": {
+    "fps": 30,
+    "visual_plan_columns": "A:G",
+    "first_beat_asset": "VC-LF-018",
+    "first_beat_frames": 60,
+    "min_narrative_chapters": 5,
+    "max_narrative_chapters": 7,
+    "native_footage_per_chapter": 2,
+    "technical_parts_per_chapter": 2,
+    "max_part_seconds": 55,
+    "min_part_seconds": 8,
+    "read_only_policy_draft": true,
+    "promotion_allowed_from_draft": false
+  },
+  "hard_gates": [
+    {
+      "id": "T01",
+      "summary": "Approved full narration text in order, no additions or omissions",
+      "scope": "technical",
+      "current_enforcement": "validator and prompt"
+    },
+    {
+      "id": "T02",
+      "summary": "Preserve one original narration MP3 per chapter",
+      "scope": "source_integrity",
+      "current_enforcement": "prompt/source IDs"
+    },
+    {
+      "id": "T03",
+      "summary": "Preserve Visual_Plan A:G schema and source workbook",
+      "scope": "technical",
+      "current_enforcement": "legacy contract"
+    },
+    {
+      "id": "T04",
+      "summary": "VC-LF-018 initial title exactly 60 frames, correct props",
+      "scope": "technical",
+      "current_enforcement": "validator and prompt"
+    },
+    {
+      "id": "T05",
+      "summary": "Chapter integer 30fps beat-frame sum equals measured audio duration",
+      "scope": "technical",
+      "current_enforcement": "validator and prompt"
+    },
+    {
+      "id": "T06",
+      "summary": "Catalog-registered Ready IDs and valid source-specific props",
+      "scope": "technical",
+      "current_enforcement": "validator and prompt"
+    },
+    {
+      "id": "T07",
+      "summary": "Respect live asset duration cap and verified actual playable MP4 duration",
+      "scope": "technical",
+      "current_enforcement": "catalog validator and additional media proof"
+    },
+    {
+      "id": "T08",
+      "summary": "Exactly two relevant native footage beats per chapter",
+      "scope": "legacy_render",
+      "current_enforcement": "validator and prompt"
+    },
+    {
+      "id": "T09",
+      "summary": "Two contiguous 8–55s parts each with one footage clip",
+      "scope": "legacy_render",
+      "current_enforcement": "validator and prompt"
+    },
+    {
+      "id": "T10",
+      "summary": "At least one meaningful animation per chapter",
+      "scope": "editorial",
+      "current_enforcement": "presence validator plus independent semantic review"
+    },
+    {
+      "id": "T11",
+      "summary": "No effectively static screen >3s including held end states",
+      "scope": "editorial",
+      "current_enforcement": "prompt; actual preview QA needed"
+    },
+    {
+      "id": "T12",
+      "summary": "No invented facts or misleading built-in animation labels",
+      "scope": "truth",
+      "current_enforcement": "prompt; visual and source review needed"
+    },
+    {
+      "id": "T13",
+      "summary": "Real measured word cues only if source-audio evidence available",
+      "scope": "conditional",
+      "current_enforcement": "optional validator and prompt"
+    },
+    {
+      "id": "T14",
+      "summary": "Earned visual-only ≥95/100 using six sub-scores and evidence",
+      "scope": "release",
+      "current_enforcement": "review completeness code and separate editor judgment"
+    },
+    {
+      "id": "T15",
+      "summary": "Actual rendered preview required before VERIFIED editorial approval",
+      "scope": "draft_new",
+      "current_enforcement": "not wired"
+    },
+    {
+      "id": "T16",
+      "summary": "No pipeline promotion on failed gate or rating <95",
+      "scope": "release",
+      "current_enforcement": "scheduled prompt; independent external gate not yet installed"
+    },
+    {
+      "id": "T17",
+      "summary": "No draft changes to Make, renderer, Final Assembly or approved narration",
+      "scope": "change_control",
+      "current_enforcement": "human and repo review"
+    },
+    {
+      "id": "T18",
+      "summary": "Only approved explicit policy version controls production",
+      "scope": "draft_new",
+      "current_enforcement": "not wired; future fail-closed loader required"
+    }
+  ],
+  "activation_requirements": [
+    "Human approves an immutable revision",
+    "Externally loaded policy verified in a canary",
+    "Runtime passes hard-gate test suite",
+    "Manual pilot review confirms results",
+    "Legacy scheduled task replaced only after controlled cutover"
+  ]
+}
