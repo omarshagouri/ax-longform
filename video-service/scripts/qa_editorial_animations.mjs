@@ -25,7 +25,7 @@ const specs=[
   footer:"QUALITATIVE STRESS MAP — no quantitative storage prescription"},stress:{title:"How elevated temperature and high stored state of charge interact with time in storage"}},
  {id:"VA-LF-018",title:"Geotab fleet climate association",durationFrames:180,values:{
   title:"What the large EV fleet actually showed",vehicles:22700,models:21,difference:.4,
-  source:"GEOTAB — CHECK STUDY VERSION AND YEAR",
+  source:"GEOTAB — REPORTED FLEET FINDING",
   footer:"Observed faster annual decline in hot versus mild climates; not isolated calendar aging"},
   stress:{title:"Climate-associated battery-health difference across vehicle models and usage patterns"}},
  {id:"VA-LF-019",title:"Dashboard estimate is not state of health",durationFrames:180,values:{
