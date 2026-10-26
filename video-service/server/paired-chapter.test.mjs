@@ -1,0 +1,11 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {chooseSplitFrame,makeSilentPartManifest,validatePairedJoin} from "./paired-chapter.mjs";
+const timeline=[{beat:1,startFrame:0,durationFrames:600},{beat:2,startFrame:600,durationFrames:600},{beat:3,startFrame:1200,durationFrames:90},{beat:4,startFrame:1290,durationFrames:600},{beat:5,startFrame:1890,durationFrames:510}];
+const m={video_id:"AX-LF-006_CH01",fps:30,timeline,audio:[{chapter:1,src:"whole.mp3",startFrame:0,durationFrames:2400}]};
+test("stable beat split at 1200/2400 frames",()=>assert.equal(chooseSplitFrame(timeline).splitFrame,1200));
+test("silent halves cover every frame",()=>{const s=chooseSplitFrame(timeline),a=makeSilentPartManifest(m,1,s),b=makeSilentPartManifest(m,2,s);assert.deepEqual(a.audio,[]);assert.deepEqual(b.audio,[]);assert.equal(a.timeline.length+b.timeline.length,timeline.length);assert.equal(b.timeline[0].startFrame,0);});
+test("reject invalid timeline",()=>assert.throws(()=>chooseSplitFrame([{startFrame:0,durationFrames:200},{startFrame:190,durationFrames:500}]),/gap, overlap/));
+test("reject >110-second chapter",()=>assert.throws(()=>chooseSplitFrame([{startFrame:0,durationFrames:3000},{startFrame:3000,durationFrames:400}]),/exceeds/));
+test("fail closed if original audio drifts",()=>assert.throws(()=>validatePairedJoin({part1Frames:1200,part2Frames:1200,splitFrame:1200,totalFrames:2400,audioDurationSec:79}),/0.25s/));
+test("join accepts contiguous segments and full original audio",()=>assert.deepEqual(validatePairedJoin({part1Frames:1200,part2Frames:1200,splitFrame:1200,totalFrames:2400,audioDurationSec:80.1}),{duration_seconds:80}));
