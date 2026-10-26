@@ -49,7 +49,7 @@ if(composition.width!==1920||composition.height!==1080||composition.fps!==30||co
 for(const [name,frame] of [["t00_start",15],["t01_1.5s",45],["t02_3.0s",90],["t03_4.5s",135],["t04_final",178]]){
  await renderStill({composition,serveUrl:bundled,inputProps:props,output:path.join(dst,name+".png"),frame,imageFormat:"png"});
 }
-await renderMedia({composition,serveUrl:bundled,inputProps:props,codec:"h264",outputLocation:path.join(dst,spec.id+".mp4"),concurrency:2});
+await renderMedia({composition,serveUrl:bundled,inputProps:props,codec:"h264",outputLocation:path.join(dst,spec.id+"_V1.mp4"),concurrency:2});
 const stressProps={...props,values:{...spec.values,...spec.stress}};
 const stressComp=await selectComposition({serveUrl:bundled,id:"AXAnimationPreview",inputProps:stressProps});
 for(const [name,frame] of [["stress_1.5s",45],["stress_final",178]]){
