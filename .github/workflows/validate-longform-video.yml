@@ -38,9 +38,9 @@ jobs:
         working-directory: video-service
         run: python3 scripts/extract_cards.py Cards
 
-      - name: Test paired chapter and live Drive footage catalog resolver
+      - name: Test paired chapters, footage, storyboard QA and measured audio cues
         working-directory: video-service
-        run: node --test server/paired-chapter.test.mjs server/clip-catalog.test.mjs
+        run: node --test server/paired-chapter.test.mjs server/clip-catalog.test.mjs server/visual-plan-validator.test.mjs server/visual-word-alignment.test.mjs
 
       - name: Typecheck
         working-directory: video-service
