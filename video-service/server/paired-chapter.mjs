@@ -1,5 +1,5 @@
-// One uninterrupted narrative chapter, two SILENT technical video chunks.
-// Mux original full chapter narration only after joining the two video chunks.
+// Two independently rendered MP4s for one coherent narrative chapter.
+// Each audio-enabled part plays only its original narration segment; no join in Renderer 5.
 export const PAIRED_FPS = 30;
 export const MAX_PART_FRAMES = 55 * PAIRED_FPS;
 export function chooseSplitFrame(timeline, {maxPartFrames=MAX_PART_FRAMES, minPartFrames=8*PAIRED_FPS}={}) {
@@ -24,6 +24,18 @@ export function makeSilentPartManifest(manifest,part,split=chooseSplitFrame(mani
   const timeline=manifest.timeline.filter(x=>x.startFrame>=start&&x.startFrame<end).map(x=>({...x,startFrame:x.startFrame-start}));
   if(!timeline.length||timeline[0].startFrame!==0||timeline.at(-1).startFrame+timeline.at(-1).durationFrames!==end-start)throw new Error("part partition lost timeline coverage");
   return {...manifest,video_id:manifest.video_id+"_P"+part,timeline,audio:[]};
+}
+// Preserve single-recorded narration without re-recording or duplicating words.
+// startFrom is interpreted by Remotion Audio in composition frames.
+export function makeAudioPartManifest(manifest, part, split=chooseSplitFrame(manifest.timeline)) {
+  const silent = makeSilentPartManifest(manifest, part, split);
+  const fromFrame = part===1 ? 0 : split.splitFrame;
+  const durationFrames = part===1 ? split.part1Frames : split.part2Frames;
+  const source = manifest.audio[0];
+  if (source.durationFrames !== split.totalFrames) {
+    throw new Error("paired audio/visual timeline must match exactly in frames");
+  }
+  return { ...silent, audio: [{...source, chapter:part, startFrame:0, durationFrames, startFrom:fromFrame}] };
 }
 export function validatePairedJoin({part1Frames,part2Frames,splitFrame,totalFrames,audioDurationSec,fps=PAIRED_FPS}){
   if(fps!==PAIRED_FPS||![part1Frames,part2Frames,splitFrame,totalFrames].every(Number.isInteger))throw new Error("invalid paired join frame metadata");
