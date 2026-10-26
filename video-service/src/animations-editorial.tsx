@@ -39,7 +39,7 @@ export const VALF015TwoClocks:React.FC<any>=({title,cycleLabel,calendarLabel,tak
   return <AbsoluteFill>
     <Heading title={title} kicker="TWO INDEPENDENT AGING PATHWAYS" footer={footer}/>
     {centers.map((cx,i)=>{
-      const angle=(i===0?seconds*.55:seconds*1.65)*Math.PI*2;
+      const angle=(i===0?Math.min(seconds,1.4)*.55:seconds*1.65)*Math.PI*2;
       const color=i===0?C.cold:C.teal;
       const pointerX=cx+Math.cos(angle-Math.PI/2)*150,pointerY=cy+Math.sin(angle-Math.PI/2)*150;
       const dots=Array.from({length:24},(_,k)=>{const a=k/24*Math.PI*2;return {x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r};});
@@ -161,7 +161,7 @@ export const VALF017SocHeatMatrix:React.FC<any>=({title,xAxisLabel,yAxisLabel,fo
 
 export const fleetEvidenceSchema=z.object({
   title:z.string().max(83).default("A real-world fleet observation"),
-  vehicles:z.number().int().min(100).max(1000000).default(22700),
+  vehicles:z.number().int().min(100).max(1000000).default(22000),
   models:z.number().int().min(1).max(100).default(21),
   difference:z.number().min(0).max(20).default(.4),
   source:z.string().max(65).default("GEOTAB FLEET ANALYSIS"),
