@@ -2,7 +2,7 @@
 // Each audio-enabled part plays only its original narration segment; no join in Renderer 5.
 export const PAIRED_FPS = 30;
 export const MAX_PART_FRAMES = 55 * PAIRED_FPS;
-export function chooseSplitFrame(timeline, {maxPartFrames=MAX_PART_FRAMES, minPartFrames=8*PAIRED_FPS}={}) {
+export function chooseSplitFrame(timeline, {maxPartFrames=MAX_PART_FRAMES, minPartFrames=8*PAIRED_FPS,requireClipPerPart=false}={}) {
   if (!Array.isArray(timeline) || timeline.length<2) throw new Error("paired chapter needs at least two visual beats");
   let previousEnd=0;
   for(const x of timeline) {
@@ -11,7 +11,7 @@ export function chooseSplitFrame(timeline, {maxPartFrames=MAX_PART_FRAMES, minPa
   }
   const totalFrames=previousEnd;
   if(totalFrames>2*maxPartFrames) throw new Error("chapter exceeds two 55s parts; shorten coherent chapter");
-  const legal=timeline.slice(0,-1).map(x=>x.startFrame+x.durationFrames).filter(x=>x>=minPartFrames&&totalFrames-x>=minPartFrames&&x<=maxPartFrames&&totalFrames-x<=maxPartFrames);
+  const legal=timeline.slice(0,-1).map(x=>x.startFrame+x.durationFrames).filter(x=>x>=minPartFrames&&totalFrames-x>=minPartFrames&&x<=maxPartFrames&&totalFrames-x<=maxPartFrames).filter(x=>!requireClipPerPart||(timeline.some(y=>y.track==='clip'&&y.startFrame<x)&&timeline.some(y=>y.track==='clip'&&y.startFrame>=x)));
   if(!legal.length)throw new Error("no legal split at a visual beat boundary");
   legal.sort((a,b)=>Math.abs(a-totalFrames/2)-Math.abs(b-totalFrames/2)||a-b);
   return {splitFrame:legal[0],totalFrames,part1Frames:legal[0],part2Frames:totalFrames-legal[0]};
