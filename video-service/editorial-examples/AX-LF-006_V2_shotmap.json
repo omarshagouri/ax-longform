@@ -112,19 +112,19 @@
       },
       {
         "endBeat": 11,
-        "id": "VA-LF-013",
+        "id": "VA-LF-004",
         "props": {
-          "title": "The second clock keeps running",
-          "leftLabel": "Driving",
-          "rightLabel": "Parked",
-          "leftValue": "Cycles vary",
-          "rightValue": "Time passes",
-          "leftIntensity": 40,
-          "rightIntensity": 40,
-          "metricLabel": "Activity is not the same as elapsed time",
-          "footer": "Illustrative activity only; no aging-rate claim"
+          "title": "Chemistry persists even while parked",
+          "nodes": [
+            "Time in service",
+            "Side reactions",
+            "Calendar aging"
+          ],
+          "centerLabel": "NO DRIVING REQUIRED",
+          "direction": "forward",
+          "footer": "Schematic pathway, not a measured aging rate"
         },
-        "intent": "Viewer learns no-drive is not zero aging"
+        "intent": "Represent a chemical process rather than another side-by-side gauge"
       },
       {
         "endBeat": 12,
@@ -345,19 +345,20 @@
       },
       {
         "endBeat": 9.2,
-        "id": "VA-LF-013",
+        "id": "VA-LF-007",
         "props": {
-          "title": "What the annual difference compares",
-          "leftLabel": "Hot-climate fleet",
-          "rightLabel": "Mild-climate fleet",
-          "leftValue": "0.4 pp/yr faster",
-          "rightValue": "Reference group",
-          "leftIntensity": 60,
-          "rightIntensity": 42,
-          "metricLabel": "Fleet-average association, not a single-EV forecast",
-          "footer": "Geotab observational result; lane intensities are schematic"
+          "title": "The two fleet groups",
+          "beforeLabel": "Hot climates",
+          "afterLabel": "Mild climates",
+          "beforeItems": [
+            "Observed faster average decline"
+          ],
+          "afterItems": [
+            "Comparison baseline"
+          ],
+          "footer": "0.4 percentage points per year association; not causal isolation"
         },
-        "intent": "Clarify relative comparison and non-causality"
+        "intent": "Editorial format change after the brief hard-number card"
       },
       {
         "endBeat": 10,
@@ -426,19 +427,30 @@
       },
       {
         "endBeat": 15,
-        "id": "VA-LF-013",
+        "id": "VA-LF-003",
         "props": {
-          "title": "Small annual differences can accumulate",
-          "leftLabel": "One year",
-          "rightLabel": "Several years",
-          "leftValue": "Small gap",
-          "rightValue": "Larger gap",
-          "leftIntensity": 35,
-          "rightIntensity": 65,
-          "metricLabel": "Time compounds persistent differences",
-          "footer": "Conceptual illustration, not an ownership prediction"
+          "title": "Why a small annual gap matters",
+          "seriesALabel": "Illustrative mild baseline",
+          "seriesA": [
+            100,
+            99,
+            98,
+            97,
+            96
+          ],
+          "seriesBLabel": "Extra 0.4 pp/year association",
+          "seriesB": [
+            100,
+            98.6,
+            97.2,
+            95.8,
+            94.4
+          ],
+          "xLabel": "Years (schematic)",
+          "yLabel": "Illustrative battery-health index",
+          "footer": "Only 0.4 pp/yr difference is quoted; baselines are not Geotab raw data"
         },
-        "intent": "Move from observed gap to owner impact"
+        "intent": "Illustrate cumulative gap, with explicit simulated baseline and no false study result"
       },
       {
         "endBeat": 16,
@@ -949,19 +961,19 @@
       },
       {
         "endBeat": 3,
-        "id": "VA-LF-013",
+        "id": "VA-LF-004",
         "props": {
-          "title": "When storage lasts longer",
-          "leftLabel": "Days parked",
-          "rightLabel": "Weeks parked",
-          "leftValue": "Short exposure",
-          "rightValue": "Repeated exposure",
-          "leftIntensity": 32,
-          "rightIntensity": 64,
-          "metricLabel": "Duration matters alongside SoC",
-          "footer": "Illustrative duration comparison — not a measured degradation rate"
+          "title": "Think about storage duration and charge",
+          "nodes": [
+            "Weeks parked",
+            "Stored SoC",
+            "Calendar exposure"
+          ],
+          "centerLabel": "STORAGE CONTEXT",
+          "direction": "forward",
+          "footer": "No universal charge limit or short-term damage claim"
         },
-        "intent": "Time emphasis before first clip"
+        "intent": "Start storage as a mechanism, not another comparison"
       },
       {
         "endBeat": 4,
@@ -1022,19 +1034,20 @@
       },
       {
         "endBeat": 8,
-        "id": "VA-LF-013",
+        "id": "VA-LF-007",
         "props": {
-          "title": "Exposure is about patterns",
-          "leftLabel": "Brief episode",
-          "rightLabel": "Extended routine",
-          "leftValue": "Not destiny",
-          "rightValue": "Worth managing",
-          "leftIntensity": 28,
-          "rightIntensity": 70,
-          "metricLabel": "Context, not single-event damage",
-          "footer": "Qualitative guidance from narration only"
+          "title": "One episode is not the same as a habit",
+          "beforeLabel": "Single weekend",
+          "afterLabel": "Long storage pattern",
+          "beforeItems": [
+            "Not a diagnosis"
+          ],
+          "afterItems": [
+            "Worth managing sensibly"
+          ],
+          "footer": "No claimed measurable harm from one weekend"
         },
-        "intent": "Long vs short pattern comparison"
+        "intent": "Pacing change to qualitative before/after reveal"
       },
       {
         "endBeat": 9,
@@ -1153,19 +1166,19 @@
       },
       {
         "endBeat": 7,
-        "id": "VA-LF-013",
+        "id": "VA-LF-004",
         "props": {
-          "title": "Focus on factors you can manage",
-          "leftLabel": "Unhelpful",
-          "rightLabel": "Useful",
-          "leftValue": "Watch every %",
-          "rightValue": "Follow evidence",
-          "leftIntensity": 75,
-          "rightIntensity": 35,
-          "metricLabel": "Own the routine, not every single number",
-          "footer": "Practical ownership interpretation"
+          "title": "What owners can influence",
+          "nodes": [
+            "Storage habits",
+            "Thermal environment",
+            "Informed choices"
+          ],
+          "centerLabel": "REALISTIC AGENCY",
+          "direction": "forward",
+          "footer": "Use model-specific manufacturer recommendations"
         },
-        "intent": "Emotional shift anxiety to evidence"
+        "intent": "Show sensible causal ownership pathway rather than another moving two-lane comparison"
       },
       {
         "endBeat": 8,
