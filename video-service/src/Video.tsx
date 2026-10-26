@@ -27,11 +27,12 @@ export const Video: React.FC<{ manifest: VideoManifest }> = ({ manifest }) => {
           return (
             <Sequence key={key} from={item.startFrame} durationInFrames={item.durationFrames}>
               <AbsoluteFill style={{ backgroundColor: theme.navy }}>
-                <OffthreadVideo src={asset(item.src)} muted style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <OffthreadVideo src={asset(item.src)} muted style={{ width: "100%", height: "100%", objectFit: (item.props as any)?.fit === "contain" ? "contain" : "cover" }} />
               </AbsoluteFill>
             </Sequence>
           );
         }
+        if (item.track === "clip") throw new Error(`Drive footage ${item.component} was not resolved to a real MP4 source`);
         const entry = registry[item.component];
         if (!entry) return null;
         const Card = entry.component;
@@ -52,7 +53,7 @@ export const Video: React.FC<{ manifest: VideoManifest }> = ({ manifest }) => {
       })}
       {manifest.audio.filter((a) => a.src).map((a, i) => (
         <Sequence key={`audio-${i}`} from={a.startFrame} durationInFrames={a.durationFrames}>
-          <Audio src={asset(a.src)} />
+          <Audio src={asset(a.src)} startFrom={a.startFrom ?? 0} />
         </Sequence>
       ))}
     </AbsoluteFill>

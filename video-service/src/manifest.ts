@@ -16,6 +16,7 @@ export const audioTrackSchema = z.object({
   src: z.string(),
   startFrame: z.number(),
   durationFrames: z.number(),
+  startFrom: z.number().int().nonnegative().optional(),
 });
 
 export const videoManifestSchema = z.object({
