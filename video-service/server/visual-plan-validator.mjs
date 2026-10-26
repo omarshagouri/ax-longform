@@ -3,6 +3,7 @@
 // node server/visual-plan-validator.mjs --input snapshot.json [--review review.json]
 import fs from "node:fs";
 import {pathToFileURL} from "node:url";
+import {verifyMeasuredWordCues,compareBeatsToCues} from "./visual-word-alignment.mjs";
 
 export const RUBRIC={relevance:25,pacing:25,flow:20,variety:10,readability:10,payoff:10};
 const canon=s=>String(s??"").toLowerCase().replace(/[^a-z0-9]/g,"");
@@ -66,6 +67,7 @@ export function auditVisualPlan(data) {
       if(!Number.isFinite(sec)||sec<=0||f<1){err("beat.duration",n,b,id,"Duration invalid");continue}
       if(Math.abs(sec-f/30)>0.00001)err("beat.frames",n,b,id,"Duration not quantized to 30fps");
       if(a?.max&&f>Math.floor(a.max*30+1e-6))err("beat.cap",n,b,id,"Beat "+f+" frames exceeds catalog max "+a.max+"s");
+      if(norm(r[5])!=="Ready")err("beat.status",n,b,id,"Saved beat must be Ready before promotion (found "+norm(r[5])+")");
       const p=jsonValues(r[3],err,n,b,id);
       if(a?.slots?.length && (isCard(id)||isAnim(id))) {
         const valid=new Set([...a.slots,"backgroundFileId","backgroundOpacity"]);
@@ -145,6 +147,20 @@ async function main() {
     args[2]||"1n_BoKTFc1EUIVjNPU5hRhGo2FJ3uZfVqoTf2CPjhf78"):
     (()=>{throw Error("Usage: --live [video_sheet_id] [catalog_sheet_id] OR --input snapshot.json [--review review.json]")})();
   const audit=auditVisualPlan(data);
+  const ai=args.indexOf("--alignment");
+  if(ai>=0){
+    const sidecar=JSON.parse(fs.readFileSync(args[ai+1],"utf8"));
+    audit.measuredAlignment=[];
+    for(const ch of data.chapters.slice(1).filter(r=>r?.[0])){
+      const n=String(ch[0]),entry=sidecar.chapters?.[n];
+      if(!entry){audit.measuredAlignment.push({chapter:n,verified:false,reason:"No real word timestamps available"});continue;}
+      const verified=verifyMeasuredWordCues({chapterNumber:Number(n),narration:ch[2],audioDurationSec:Number(ch[4]),sourceAudioId:ch[3],method:entry.method,cues:entry.cues});
+      if(!verified.valid){audit.measuredAlignment.push(verified);continue;}
+      const rows=data.visualPlan.slice(1).filter(r=>String(r?.[0])===n).sort((a,b)=>Number(a[1])-Number(b[1]));
+      try{audit.measuredAlignment.push({chapter:n,verified:true,...compareBeatsToCues(rows,entry.cues)});}
+      catch(e){audit.measuredAlignment.push({chapter:n,verified:false,reason:String(e.message||e)});}
+    }
+  }
   const ix=args.indexOf("--review");
   if(ix>=0)audit.review=validateEditorialReview(JSON.parse(fs.readFileSync(args[ix+1],"utf8")),audit);
   console.log(JSON.stringify(audit,null,2));
