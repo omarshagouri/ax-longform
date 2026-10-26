@@ -12,7 +12,7 @@ import { GoogleAuth } from "google-auth-library";
 import { uploadFinalAssemblyToGCS } from "./assembly-gcs.mjs";
 import { assertChapterTimelineMatchesAudio } from "./chapter-timing.mjs";
 import { chooseSplitFrame, makeSilentPartManifest, makeAudioPartManifest, validatePairedJoin } from "./paired-chapter.mjs";
-import { NATIVE_CLIP_IDS, assertNativeClipDuration, assertNativeMotionMix } from "./native-motion.mjs";
+import { CLIP_ID, readLiveClipCatalog, selectClip, resolveExplicitClip, assertClipFitsBeat } from "./clip-catalog.mjs";
 import { parseBuffer } from "music-metadata";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -39,7 +39,7 @@ const getServeUrl = () => {
 let authClientPromise = null;
 const getAuthClient = () => {
   if (!authClientPromise) {
-    authClientPromise = new GoogleAuth({ scopes: ["https://www.googleapis.com/auth/drive"] }).getClient();
+    authClientPromise = new GoogleAuth({ scopes: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/spreadsheets.readonly"] }).getClient();
   }
   return authClientPromise;
 };
@@ -76,11 +76,10 @@ function parseBeat(b, i, fps, cursor) {
   const id = String(b.card_id || b.visual_id || "").trim();
   const isCard = id.startsWith("VC-LF-");
   const isAnimation = id.startsWith("VA-LF-");
-  const isClip = NATIVE_CLIP_IDS.includes(id);
+  const isClip = CLIP_ID.test(id) || /^VV-LF-\\d{3,}\\.mp4$/i.test(id);
   if (!isCard && !isAnimation && !isClip) {
-    throw new Error(`beat ${beat}: unsupported visual ${id}; use VC-LF-*, VA-LF-* or native VV-LF-001..004`);
+    throw new Error(`beat ${beat}: unsupported visual ${id}; use a catalog Ready VC-LF, VA-LF or VV-LF entry`);
   }
-  if (isClip) assertNativeClipDuration(id, durationFrames, fps);
   let props = {};
   const v = b.values;
   if (typeof v === "string") {
@@ -117,8 +116,31 @@ async function buildChapter(video_id, fps, beats, audioIds) {
   let timeline = [];
   const audio = [];
   let cursor = 0;
+  let liveClips = null;
   for (let i = 0; i < beats.length; i++) {
     const item = parseBeat(beats[i], i, fps, cursor);
+
+    if (item.track === "clip") {
+      // Prefer the exact Drive File_ID copied from the catalog into Visual_Plan values.
+      // If absent, look up the current LIVE Clips tab by Visual_id / Clip_name.
+      let clip = resolveExplicitClip(item.component, item.props);
+      if (!clip) {
+        if (!liveClips) liveClips = await readLiveClipCatalog(await getAuthClient());
+        clip = selectClip(liveClips, item.component);
+      }
+      const raw = await driveDownload(clip.fileId, path.join(ASSETS, `${safe}_clip_${item.beat}`));
+      const actual = path.join(ASSETS, raw.name);
+      const clipPath = actual.endsWith(".mp4") ? actual : actual + ".mp4";
+      if (clipPath !== actual) fs.renameSync(actual, clipPath);
+      const probe = spawnSync("ffprobe", ["-v","error","-show_entries","format=duration:stream=codec_type,width,height","-of","json",clipPath],{encoding:"utf8",maxBuffer:1024*1024});
+      if (probe.status !== 0) throw new Error("ffprobe failed for catalog clip "+item.component);
+      const media = JSON.parse(probe.stdout||"{}");
+      const video = media.streams?.find(x=>x.codec_type==="video");
+      if (!video || video.width < 1 || video.height < 1) throw new Error("Drive clip is not a valid MP4 video: "+item.component);
+      assertClipFitsBeat({beatFrames:item.durationFrames,fps,mediaSeconds:Number(media.format?.duration),catalogSeconds:clip.duration,id:item.component});
+      item.src = `${BASE}/assets/${path.basename(clipPath)}`;
+      item.props = {fit:Math.abs(video.width/video.height - 16/9)<.015?"cover":"contain"};
+    }
 
     // Optional per-animation background image from Drive.
     // Visual Plan may pass values.backgroundFileId and backgroundOpacity.
@@ -133,8 +155,8 @@ async function buildChapter(video_id, fps, beats, audioIds) {
     timeline.push(item);
     cursor += item.durationFrames;
   }
-  timeline = coalesce(timeline);
-  assertNativeMotionMix(timeline);
+  // Do not merge equal adjacent beats: combining them bypasses per-asset caps.
+  if (!timeline.some(x=>x.track==="clip") || !timeline.some(x=>x.track==="anim")) throw new Error("chapter requires at least one relevant VV-LF clip and one VA-LF animation");
 
 
   let acur = 0;
@@ -333,7 +355,8 @@ app.post("/render-chapter-part", async(req,res)=>{
   if(!/^[A-Za-z0-9_-]{3,90}$/.test(String(video_id||""))||![1,2].includes(part)||Number(fps)!==30||!Array.isArray(beats)||beats.length<2||!Array.isArray(audio_file_ids)||audio_file_ids.length!==1||!/^[A-Za-z0-9_-]{12,}$/.test(String(audio_file_ids[0]||""))||!["silent","segment"].includes(audio_mode))return res.status(400).json({error:"invalid paired render request"});
   try{
     const full=await buildChapter(video_id,30,beats,audio_file_ids);
-    const split=chooseSplitFrame(full.timeline);
+    if(full.timeline.filter(x=>x.track==="clip").length!==2)throw new Error("each coherent narrative chapter must have exactly two catalog footage clips");
+    const split=chooseSplitFrame(full.timeline,{requireClipPerPart:true});
     const output=audio_mode==="segment"?makeAudioPartManifest(full,part,split):makeSilentPartManifest(full,part,split);
     return res.json({status:"ok",video_id,part,audio_mode,split_frame:split.splitFrame,total_frames:split.totalFrames,part_frames:part===1?split.part1Frames:split.part2Frames,...(await renderManifest(output))});
   }catch(e){console.error("paired render error",e?.message);return res.status(422).json({error:String(e?.message||e)});}
