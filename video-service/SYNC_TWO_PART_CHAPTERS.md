@@ -1,32 +1,15 @@
-# Long-form: synchronous paired render parts (restored)
-Updated 2026-10-15. Source of the intended design for AmpCoreX long-form rendering.
+# AmpCoreX coherent long-form chapters and two narrated render parts
+Updated 2026-10-26. This supersedes the old 1A/1B pseudo-chapter and 3-second-only VV-LF assumptions. Final Assembly is intentionally outside this document.
 
-## Flow: existing scenarios only
-2 Script -> 3 Audio -> 4 Visual Plan -> **5 Chapter Renderer (synchronous)** -> 6 Metadata -> 7 Thumbnail -> **8 Final Assembly (last)**.
+## Live flow
+Script Agent creates 5–7 coherent *narrative chapters*, one full narration and original MP3 per chapter. Visual Planning creates one continuous timeline per chapter. Renderer 5 splits each at a safe existing beat boundary into **two independently narrated finished MP4s** (each <=55s), and stores both Drive IDs in the chapter row. Do not join in Renderer 5, do not duplicate or re-record narration, do not add new title card at Part2, and do not modify Final Assembly yet.
 
-- Script Agent writes two numerically indexed parts per narrative chapter (A then B) into Chapters. 5–7 narrative chapters give 10, 12 or 14 short rows.
-- Every part is recorded into its own MP3, has its own native video/clip/animation timeline, and renders into one MP4.
-- Make HTTP calls POST `/render-chapter`, then the Make Drive upload module saves the returned Base64 MP4 to the user's Drive. There is **no async Cloud Tasks submission/collection** in this design.
-- No parent status becomes Rendered unless every expected part is Rendered AND has a Drive MP4 file ID and filename.
-- Final Assembly is last and is blocked until all expected parts are Rendered, have MP4 IDs/filenames, and are explicitly Approved by the editor.
+## Live catalog contract
+Visual Agent must read all actual live tabs of the AmpCoreX visual catalog (`Cards`, `Animations`, `Clips`) fresh. `Backgrounds` was deleted. Every chapter begins with 2.000s of `VC-LF-018` using its exact chapter title. Select exactly **two relevant Ready VV-LF clips** from live Clips tab per coherent chapter, one for each render part.
 
-## Native 3-second VV-LF clips
-- `VV-LF-001` battery cell array
-- `VV-LF-002` charge transfer
-- `VV-LF-003` thermal pack scan (illustrative only)
-- `VV-LF-004` pack layers
+**VV-LF IDs reference real Drive MP4 footage.** The live Clips tab fields `Visual_id`, `Clip_name`, `File_ID`, `Duration_sec` (or explicit maximum) define footage identity and timing. These override the obsolete four synthetic-native VV-LF ID meanings. For each footage beat, `card_id=Visual_id`; `values` JSON contains the current `file_id`, `clip_name`, and `max_duration_sec` copied verbatim from the same catalog row. Renderer 5 fetches that exact Drive file and verifies playable duration via ffprobe. A fallback Sheets lookup by visual ID / filename exists for absent explicit file IDs, subject to service account permission. There is **no universal fixed footage duration**. Different aspect ratios are fit safely. No silent replacement with synthetic animation is allowed.
 
-Each native clip lasts **exactly 90 frames at 30 fps**. It is a Remotion component in `src/clips.tsx`, not an external Drive MP4. Native generated visual scenes are not real measured/filmed engineering data.
-`/render-chapter` rejects a part unless it has ≥1 valid VV-LF and ≥1 contextually appropriate VA-LF animation. Clip duration and visual/audio coverage are checked programmatically.
-The `AXClipPreview` composition can render a single native clip. CI workflow `qa-native-motion-clips.yml` renders four standalone 1080p MP4 QA files and publishes an Actions artifact.
+Cards and animations obey their live per-asset maximum seconds. Never let any screen remain effectively static for >3 seconds. Visual plan must match original MP3 in exact integer 30fps frames. One complete, meaningful VA-LF animation per chapter at minimum; aim for one per part. Two clips per chapter take priority over a forced footage percentage.
 
-## Safety and rollout
-1. Keep PR #11 as DRAFT until rendered clip QA and server CI pass (both expected).
-2. Back up active Make scenarios, per-video workbooks, and the Cloud Run service config.
-3. Deploy only `ax-longform-render` from this new branch. Do not modify Shorts or Final Assembly services. The existing long-form API key environment variable remains unchanged.
-4. Import the associated numbered Make blueprint files from the private ZIP **as disabled copies**. They intentionally contain the existing credentials; do not commit them to GitHub.
-5. Disable both async 5A and 5B before enabling original synchronous 5.
-6. Test a fresh complete video: per-part word count, MP3 ID, clip+animation present, 30fps timings exact, Drive MP4 IDs, all-part count guard, editor approval, and last-stage assembly.
-7. Only merge and activate on passing end-to-end Make test. Do not retroactively rewrite completed AX-LF-003 or incomplete AX-LF-004 workbooks.
-
-The previous PR #10 is an obsolete async design and should not be merged. Its remote branch may remain temporarily for rollback of the currently deployed revision; closing that PR does not redeploy Cloud Run.
+## Make and rollout
+Current Make Scenario 5 V3 calls `/render-chapter-part` for parts 1 and 2 with `audio_mode:segment`, uploads both MP4s, and records P1/P2 IDs and filenames. No blueprint change is needed to transmit `values.file_id` because Make already sends the entire JSON object. Deploy the current `feature/catalog-vv-drive-clips-20261026` branch to the zero-traffic `paired-qa` tag and check API/service permissions. Deploying service code does not rerender existing outputs or advance pipeline state. The renderer build runs dynamic clip resolver regression tests. The 
