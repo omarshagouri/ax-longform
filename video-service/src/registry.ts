@@ -24,6 +24,19 @@ export function validateTimeline(
 ): string[] {
   const errors: string[] = [];
   for (const item of timeline) {
+    // VV-LF-005+ are real Drive MP4s resolved by server/buildChapter.
+    // Their visual IDs are catalog references, not React components in the
+    // built-in registry (which only contains VV-LF-001..004 native previews).
+    // Validate the resolved media source instead of requiring a fake component.
+    if ((item as { track?: string }).track === "clip") {
+      const clip = item as { component: string; src?: string; beat: number };
+      if (!/^VV-LF-\\d{3,}$/i.test(clip.component)) {
+        errors.push(`beat ${clip.beat}: invalid footage ID "${clip.component}"`);
+      } else if (!clip.src || !/^https?:\\/\\//i.test(clip.src)) {
+        errors.push(`beat ${clip.beat}: Drive footage "${clip.component}" has no resolved MP4 source`);
+      }
+      continue;
+    }
     const entry = registry[item.component];
     if (!entry) {
       errors.push(`beat ${item.beat}: unknown visual "${item.component}"`);
