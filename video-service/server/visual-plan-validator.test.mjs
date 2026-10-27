@@ -64,3 +64,15 @@ test("flags semantics for hot thermal map presented under winter cold narration"
  const a=auditVisualPlan(f);
  assert.ok(a.warnings.some(x=>x.code==="visual.hot_vs_cold"));
 });
+
+
+test("permanently retired VC-LF-016 is rejected in catalog and every plan beat",()=>{
+ const f=fixture();
+ f.catalog.Cards.push(["VC-LF-016","Tag chip","Ready","TAG_TEXT",3]);
+ f.visualPlan[2][2]="VC-LF-016";
+ f.visualPlan[2][3]=JSON.stringify({TAG_TEXT:"BANNED"});
+ const a=auditVisualPlan(f);
+ assert.equal(a.technicalPass,false);
+ assert.ok(a.errors.some(x=>x.code==="catalog.retired_asset"&&x.id==="VC-LF-016"));
+ assert.ok(a.errors.some(x=>x.code==="beat.retired_asset"&&x.id==="VC-LF-016"));
+});
