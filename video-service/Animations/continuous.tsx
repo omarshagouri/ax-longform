@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, interpolate, spring, useVideoConfig } from "remotion";
 import { z } from "zod";
-import { useLFPacedFrame as useCurrentFrame, useLFRevealProgress } from "../src/LFAnimationTiming";
+import { useLFPacedFrame as useCurrentFrame, useLFRealFrame, useLFRevealProgress } from "../src/LFAnimationTiming";
 import { theme } from "../src/theme";
 
 const C = {
@@ -21,8 +21,8 @@ type AnimEntry = {
 };
 
 const clamp01 = (v:number) => Math.max(0, Math.min(1, v));
-const staged = (p:number,start:number,end:number) => ease((p-start)/Math.max(.01,end-start));
 const ease = (v:number) => 1 - Math.pow(1 - clamp01(v), 3);
+const staged = (p:number,start:number,end:number) => ease((p-start)/Math.max(.01,end-start));
 const appear = (frame:number, fps:number, delay=0) => clamp01(spring({
   frame: Math.max(0, frame-delay), fps,
   config:{damping:19, stiffness:125, mass:.72}
@@ -102,7 +102,7 @@ const NodeBox:React.FC<{label:string;x:number;y:number;width:number;accent?:stri
   </div>;
 
 export const VALF008PacketStream:React.FC<any> = ({title,nodes,flowLabel,intensity,footer}) => {
-  const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
+  const f=useCurrentFrame(); const real=useLFRealFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
   const W=1610,left=155,inner=95,y=440,n=nodes.length,gap=n<=3?100:66,nodeW=Math.min(250,(W-190-gap*(n-1))/n);
   const xs=nodes.map((_:string,i:number)=>inner+i*(nodeW+gap));
   const x0=xs[0]+nodeW, x1=xs[n-1], span=Math.max(1,x1-x0);
@@ -115,7 +115,7 @@ export const VALF008PacketStream:React.FC<any> = ({title,nodes,flowLabel,intensi
       <svg width={W} height="620" style={{position:"absolute",inset:0}}>
         <line x1={x0} y1={y} x2={x1} y2={y} stroke={C.line} strokeWidth="10" strokeLinecap="round"/>
         {[...Array(count)].map((_,i)=>{
-          const q=loop01(f,period,Math.round(i*period/count));
+          const q=loop01(real,period,Math.round(i*period/count));
           const x=x0+span*q;
           const glow=.55+.45*Math.sin(q*Math.PI);
           return <g key={i}>
@@ -132,7 +132,7 @@ export const VALF008PacketStream:React.FC<any> = ({title,nodes,flowLabel,intensi
 };
 
 export const VALF009ThrottleGate:React.FC<any> = ({title,inputLabel,gateLabel,outputLabel,inputRate,outputRate,footer}) => {
-  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
+  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const real=useLFRealFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
   const W=1610, cy=348, inputEnd=370, gateL=696, gateR=914, outputStart=1240;
   const pct=clamp01(Number(outputRate)/100);
   const period=Math.max(30,Math.round(fps*2));
@@ -148,8 +148,8 @@ export const VALF009ThrottleGate:React.FC<any> = ({title,inputLabel,gateLabel,ou
       <svg width={W} height="620" style={{position:"absolute",inset:0}}>
         <line x1={inputEnd} y1={cy} x2={gateL} y2={cy} stroke={C.line} strokeWidth="9" strokeLinecap="round"/>
         <line x1={gateR} y1={cy} x2={outputStart} y2={cy} stroke={C.line} strokeWidth="9" strokeLinecap="round"/>
-        {[...Array(inCount)].map((_,i)=>{const q=loop01(f,period,Math.round(i*period/inCount));return <circle key={"in"+i} cx={inputEnd+(gateL-inputEnd)*q} cy={cy} r={8} fill={C.teal}/>;})}
-        {[...Array(outCount)].map((_,i)=>{const q=loop01(f,period,Math.round(i*period/outCount));return <circle key={"out"+i} cx={gateR+(outputStart-gateR)*q} cy={cy} r={8} fill={C.heat}/>;})}
+        {[...Array(inCount)].map((_,i)=>{const q=loop01(real,period,Math.round(i*period/inCount));return <circle key={"in"+i} cx={inputEnd+(gateL-inputEnd)*q} cy={cy} r={8} fill={C.teal}/>;})}
+        {[...Array(outCount)].map((_,i)=>{const q=loop01(real,period,Math.round(i*period/outCount));return <circle key={"out"+i} cx={gateR+(outputStart-gateR)*q} cy={cy} r={8} fill={C.heat}/>;})}
       </svg>
       <NodeBox label={inputLabel} x={70} y={cy-75} width={300} accent={C.teal} opacity={staged(progress,.20,.42)}/>
       <div style={{position:"absolute",left:gateL,top:cy-130,width:gateR-gateL,height:260,opacity:staged(progress,.42,.66),border:`2px solid ${C.heat}88`,borderRadius:26,background:"rgba(20,36,64,.97)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",boxSizing:"border-box"}}>
@@ -166,10 +166,10 @@ export const VALF009ThrottleGate:React.FC<any> = ({title,inputLabel,gateLabel,ou
 };
 
 export const VALF010ThermalField:React.FC<any> = ({title,heatLevel,hotspotRow,hotspotCol,cooling,note,footer}) => {
-  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
+  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const real=useLFRealFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
   const rows=5,cols=8,cellW=120,cellH=70,gap=12,startX=280,startY=180;
-  const wave=loop01(f,Math.round(fps*3.2));
-  const pulse=(Math.sin(f/fps*Math.PI*2*.75)+1)/2;
+  const wave=loop01(real,Math.round(fps*3.2));
+  const pulse=(Math.sin(real/fps*Math.PI*2*.75)+1)/2;
   return <AbsoluteFill>
     <Title title={title||"Heat moves through the pack"} kicker="Thermal map"/>
     <Panel style={{position:"absolute",left:155,top:285,width:1610,height:620,opacity:p}}>
@@ -198,10 +198,10 @@ const Meter:React.FC<{label:string;value:number;accent:string;y:number;scan:numb
 </div>;
 
 export const VALF011CalibrationShift:React.FC<any> = ({title,displayedStart,displayedEnd,usablePct,displayedLabel,usableLabel,footer}) => {
-  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
+  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const real=useLFRealFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
   const shift=ease(f/(fps*3.0));
   const displayed=Number(displayedStart)+(Number(displayedEnd)-Number(displayedStart))*shift;
-  const scan=5+90*loop01(f,Math.round(fps*2.6));
+  const scan=5+90*loop01(real,Math.round(fps*2.6));
   const err=displayed-Number(usablePct);
   return <AbsoluteFill>
     <Title title={title||"The estimate can move while usable energy barely changes"} kicker="Live calibration"/>
@@ -218,18 +218,18 @@ export const VALF011CalibrationShift:React.FC<any> = ({title,displayedStart,disp
 };
 
 export const VALF012DataDecision:React.FC<any> = ({title,sensors,decisionLabel,actionLabel,footer}) => {
-  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
+  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const real=useLFRealFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
   const W=1610, sx=85, sensorW=275, sensorH=90, cy=350, cx=815, centerW=250, actionX=1230;
   const spacing=112, ys=sensors.map((_:string,i:number)=>cy+(i-(sensors.length-1)/2)*spacing);
   const period=Math.max(30,Math.round(fps*1.9));
-  const centralPulse=1+.016*Math.sin(f/fps*Math.PI*2*1.2);
+  const centralPulse=1+.016*Math.sin(real/fps*Math.PI*2*1.2);
   return <AbsoluteFill>
     <Title title={title||"Data becomes a battery decision"} kicker="Live BMS logic"/>
     <Panel style={{position:"absolute",left:155,top:285,width:W,height:620,opacity:p}}>
       <div style={{position:"absolute",left:80,right:80,top:48,textAlign:"center",fontFamily:"Inter,Arial",fontSize:27,fontWeight:700,color:C.slate}}>SENSORS → ESTIMATE → DECIDE → ACT</div>
       <svg width={W} height="620" style={{position:"absolute",inset:0}}>
         {ys.map((y:number,i:number)=>{
-          const q=loop01(f,period,Math.round(i*period/sensors.length));
+          const q=loop01(real,period,Math.round(i*period/sensors.length));
           const from=sx+sensorW,to=cx-centerW/2;
           return <g key={i}>
             <line x1={from} y1={y} x2={to} y2={cy} stroke={C.line} strokeWidth="5"/>
@@ -237,7 +237,7 @@ export const VALF012DataDecision:React.FC<any> = ({title,sensors,decisionLabel,a
           </g>;
         })}
         <line x1={cx+centerW/2} y1={cy} x2={actionX} y2={cy} stroke={C.line} strokeWidth="8" strokeLinecap="round"/>
-        {[0,1,2].map(i=>{const q=loop01(f,Math.round(fps*1.65),i*16);return <circle key={"out"+i} cx={cx+centerW/2+(actionX-cx-centerW/2)*q} cy={cy} r="9" fill={C.heat}/>;})}
+        {[0,1,2].map(i=>{const q=loop01(real,Math.round(fps*1.65),i*16);return <circle key={"out"+i} cx={cx+centerW/2+(actionX-cx-centerW/2)*q} cy={cy} r="9" fill={C.heat}/>;})}
       </svg>
       {sensors.map((label:string,i:number)=><div key={i} style={{position:"absolute",left:sx,top:ys[i]-sensorH/2,width:sensorW,height:sensorH,boxSizing:"border-box",border:`2px solid ${i%2?C.cold:C.teal}88`,borderRadius:20,background:"rgba(20,36,64,.97)",display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 15px",fontFamily:"Space Grotesk,Arial",fontSize:label.length>17?25:31,fontWeight:700,color:C.white,textAlign:"center",opacity:staged(progress,.20+i*.10,.40+i*.10)}}>{label}</div>)}
       <div style={{position:"absolute",left:cx-centerW/2,top:cy-100,width:centerW,height:200,opacity:staged(progress,.58,.77),boxSizing:"border-box",borderRadius:30,border:`3px solid ${C.teal}`,background:"rgba(20,36,64,.97)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,textAlign:"center",fontFamily:"Space Grotesk,Arial",fontSize:30,fontWeight:750,color:C.white,transform:`scale(${centralPulse})`,boxShadow:`0 0 30px ${C.teal}33`}}>{decisionLabel}</div>
@@ -288,7 +288,7 @@ const CompareLane:React.FC<{x:number;label:string;value:string;intensity:number;
   </div>;
 };
 export const VALF013DynamicCompare:React.FC<any> = ({title,leftLabel,rightLabel,leftValue,rightValue,leftIntensity,rightIntensity,metricLabel,footer}) => {
-  const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
+  const f=useCurrentFrame(); const real=useLFRealFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
   return <AbsoluteFill>
     <Title title={title||"Same system, different operating condition"} kicker="Live comparator"/>
     <Panel style={{position:"absolute",left:155,top:285,width:1610,height:620,opacity:p}}>
