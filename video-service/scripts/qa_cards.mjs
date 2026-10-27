@@ -26,7 +26,6 @@ const cases=[
 ["VC-LF-013",4.5,{STEP1:"Collect",STEP2:"Diagnose",STEP3:"Recover",STEP4:"Reuse"}],
 ["VC-LF-014",4.5,{ITEM1:"Temperature",ITEM2:"State of charge",ITEM3:"Charge rate",ITEM4:"Calendar time"}],
 ["VC-LF-015",4.5,{QUOTE_TEXT:"Battery aging depends on both time and operating conditions.",SOURCE_NAME:"TEST SOURCE"}],
-["VC-LF-016",3,{TAG_TEXT:"CHAPTER 1"}],
 ["VC-LF-017",4.5,{TITLE:"Range vs temperature",C1_LABEL:"25°C",C1_VALUE:"100",C2_LABEL:"0°C",C2_VALUE:"80",C3_LABEL:"−10°C",C3_VALUE:"70",SOURCE:"TEST SOURCE"}],
 ["VC-LF-018",3,{CHAPTER_NUM:"3",TITLE:"When the Switch Went Down"}],
 ["VC-LF-019",5.5,{TITLE:"DASHBOARD VS USABLE CAPACITY",LEFT_LABEL:"EV A",LEFT_SOH:"88",LEFT_USABLE:"49.2 kWh",RIGHT_LABEL:"EV B",RIGHT_SOH:"97",RIGHT_USABLE:"49.5 kWh",FOOTER:"Similar usable energy. Different displayed health.",SOURCE:"TEST"}]
@@ -58,4 +57,4 @@ for(const [id,durationSec,values] of cases){
   await renderStill({composition:comp,serveUrl,output:path.join(dir,name+".png"),inputProps,frame,imageFormat:"png"});
  }
 }
-console.log("Rendered 19 current VC-LF cards + VC-LF-018 long-title stress case");
+console.log("Rendered 18 current VC-LF cards + VC-LF-018 long-title stress case");
