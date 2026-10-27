@@ -50,5 +50,9 @@ jobs:
         working-directory: video-service
         run: npm run typecheck
 
+      - name: Test full-beat LF card and animation motion
+        working-directory: video-service
+        run: node scripts/test-lf-full-duration-motion.mjs
+
       - name: Build container
         run: docker build -t longform-video-test ./video-service
