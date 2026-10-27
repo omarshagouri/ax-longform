@@ -42,6 +42,10 @@ jobs:
         working-directory: video-service
         run: node --test server/paired-chapter.test.mjs server/clip-catalog.test.mjs server/visual-plan-validator.test.mjs server/visual-word-alignment.test.mjs
 
+      - name: Test resolved catalog MP4 entries in Remotion timeline
+        working-directory: video-service
+        run: node scripts/test-catalog-clip-manifest.mjs
+
       - name: Typecheck
         working-directory: video-service
         run: npm run typecheck
