@@ -4,6 +4,7 @@ import { VideoManifest } from "./manifest";
 import { registry } from "./registry";
 import { Frame } from "./Frame";
 import { theme } from "./theme";
+import { LFAnimationTimingProvider } from "./LFAnimationTiming";
 
 const asset = (s: string) => (s.startsWith("http") || s.startsWith("data:") ? s : staticFile(s));
 
@@ -47,7 +48,13 @@ export const Video: React.FC<{ manifest: VideoManifest }> = ({ manifest }) => {
                 <AbsoluteFill style={{ backgroundColor: "rgba(10,22,40,0.40)" }} />
               </AbsoluteFill>
             ) : null}
-            <Card {...item.props} __holdFrames={item.durationFrames} />
+            {item.track === "anim" ? (
+              <LFAnimationTimingProvider animationId={item.component} durationFrames={item.durationFrames}>
+                <Card {...item.props} __holdFrames={item.durationFrames} />
+              </LFAnimationTimingProvider>
+            ) : (
+              <Card {...item.props} __holdFrames={item.durationFrames} />
+            )}
           </Sequence>
         );
       })}
