@@ -18,19 +18,16 @@ CARD = {
 }
 .ch-stage{
   position:absolute;
-  left:120px;
-  right:120px;
-  top:286px;
-  min-height:470px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
+  inset:0;
+  width:1920px;
+  height:1080px;
 }
 .ch-accent{
+  position:absolute;
+  left:calc(50% - 215px);
+  top:365px;
   width:430px;
   height:4px;
-  margin-bottom:42px;
   border-radius:999px;
   background:#00D4AA;
   box-shadow:0 0 20px rgba(0,212,170,.30);
@@ -39,12 +36,21 @@ CARD = {
   transform-origin:center;
 }
 .ch-row{
+  position:absolute;
+  top:50%;
+  left:0;
+  right:0;
+  transform:translateY(-50%);
   width:100%;
-  max-width:1620px;
   display:flex;
-  align-items:flex-start;
+  align-items:center;
   justify-content:center;
-  gap:34px;
+}
+.ch-number-wrap{
+  position:absolute;
+  left:120px;
+  top:50%;
+  transform:translateY(-50%);
 }
 .ch-number{
   flex:0 0 auto;
@@ -60,9 +66,9 @@ CARD = {
   transform:translateX(-30px);
 }
 .ch-title{
-  flex:0 1 auto;
-  width:max-content;
-  max-width:1280px;
+  flex:0 0 auto;
+  width:1320px;
+  max-width:calc(100% - 600px);
   margin:0;
   font-family:'Orbitron',sans-serif;
   font-size:104px;
@@ -71,7 +77,8 @@ CARD = {
   letter-spacing:-3.2px;
   color:#FFFFFF;
   text-align:center;
-  text-wrap:balance;
+  text-transform:uppercase;
+  white-space:nowrap;
   overflow-wrap:normal;
   word-break:normal;
   text-shadow:0 4px 30px rgba(0,0,0,.46);
@@ -84,7 +91,7 @@ CARD = {
   <div class="ch-stage">
     <div class="ch-accent" id="chAccent"></div>
     <div class="ch-row">
-      <div class="ch-number" id="chNum">__CHAPTER_NUM__</div>
+      <div class="ch-number-wrap"><div class="ch-number" id="chNum">__CHAPTER_NUM__</div></div>
       <h1 class="ch-title" id="chTitle">__TITLE__</h1>
     </div>
   </div>
@@ -103,10 +110,11 @@ if(n){
 /* Self-contained fit logic: do not depend on a renderer-global helper. */
 if(h){
   var maxSize=104;
-  var minSize=70;
+  var minSize=40;
   var size=maxSize;
   h.style.fontSize=size+'px';
-  while(size>minSize && (h.scrollHeight>230 || h.scrollWidth>1280)){
+  /* Fit uppercase chapter titles to one centered line without wrapping. */
+  while(size>minSize && h.scrollWidth>h.clientWidth+1){
     size-=2;
     h.style.fontSize=size+'px';
   }
