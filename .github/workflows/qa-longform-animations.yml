@@ -6,6 +6,13 @@ on:
     paths:
       - "video-service/**"
       - ".github/workflows/qa-longform-animations.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "video-service/Animations/registry.tsx"
+      - "video-service/src/LFAnimationTiming.tsx"
+      - "video-service/src/AnimationPreview.tsx"
+      - "video-service/src/Video.tsx"
   workflow_dispatch:
 
 jobs:
