@@ -1,6 +1,7 @@
 import React from "react";
-import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, useVideoConfig } from "remotion";
 import { z } from "zod";
+import { useLFPacedFrame as useCurrentFrame } from "../src/LFAnimationTiming";
 
 // AmpCoreX editorial animation family. All animation is deterministic at 30fps.
 // 1920×1080 frame; no external media or hidden telemetry.
