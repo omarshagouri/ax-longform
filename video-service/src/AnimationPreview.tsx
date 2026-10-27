@@ -2,6 +2,7 @@ import React from "react";
 import { AbsoluteFill } from "remotion";
 import { Frame } from "./Frame";
 import { animationRegistry } from "../Animations/registry";
+import { LFAnimationTimingProvider } from "./LFAnimationTiming";
 
 export type AnimationPreviewProps = {
   animationId: string;
@@ -36,7 +37,9 @@ export const AnimationPreview: React.FC<AnimationPreviewProps> = ({
   return (
     <AbsoluteFill>
       <Frame />
-      <Anim {...values} __holdFrames={durationFrames} />
+      <LFAnimationTimingProvider animationId={animationId} durationFrames={durationFrames}>
+        <Anim {...values} __holdFrames={durationFrames} />
+      </LFAnimationTimingProvider>
     </AbsoluteFill>
   );
 };
