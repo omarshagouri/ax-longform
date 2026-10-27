@@ -30,9 +30,9 @@ export function validateTimeline(
     // Validate the resolved media source instead of requiring a fake component.
     if ((item as { track?: string }).track === "clip") {
       const clip = item as { component: string; src?: string; beat: number };
-      if (!/^VV-LF-\\d{3,}$/i.test(clip.component)) {
+      if (!/^VV-LF-\d{3,}$/i.test(clip.component)) {
         errors.push(`beat ${clip.beat}: invalid footage ID "${clip.component}"`);
-      } else if (!clip.src || !/^https?:\\/\\//i.test(clip.src)) {
+      } else if (!clip.src || !/^https?:\/\//i.test(clip.src)) {
         errors.push(`beat ${clip.beat}: Drive footage "${clip.component}" has no resolved MP4 source`);
       }
       continue;
