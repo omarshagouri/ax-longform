@@ -14,7 +14,7 @@ export function parseRenderDelivery(value) {
 
 export function assertRenderDeliveryReady(delivery, env = process.env) {
   if (delivery === DELIVERY_GCS && !resolveRenderDeliveryBucket(env)) {
-    throw new Error("GCS delivery unavailable: set AXLF_RENDER_GCS_BUCKET (or AXLF_ASSEMBLY_GCS_BUCKET) on this Cloud Run service before rendering");
+    throw Object.assign(new Error("GCS delivery unavailable: set AXLF_RENDER_GCS_BUCKET (or AXLF_ASSEMBLY_GCS_BUCKET) on this Cloud Run service before rendering"), { statusCode: 503 });
   }
 }
 
