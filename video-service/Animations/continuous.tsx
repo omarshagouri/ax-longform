@@ -245,23 +245,44 @@ export const VALF012DataDecision:React.FC<any> = ({title,sensors,decisionLabel,a
 };
 
 const CompareLane:React.FC<{x:number;label:string;value:string;intensity:number;accent:string;metric?:string;frame:number;fps:number}> = ({x,label,value,intensity,accent,metric,frame,fps}) => {
-  // Intensity is the filled percentage of a 100%-wide gray reference track.
-  // E.g. 50 fills exactly half the track, independent of the other lane's value.
-  // Animate to the target once, then hold it: do not loop dots or imply a rate.
+  // The intensity is a percentage of a fixed gray 0–100 reference track.
   const targetPct=Number.isFinite(intensity)?Math.max(0,Math.min(100,intensity)):0;
   const reveal=ease((frame-fps*0.25)/(fps*1.35));
   const filledPct=targetPct*reveal;
-  return <div style={{position:"absolute",left:x,top:95,width:620,height:430,border:`2px solid ${accent}55`,borderRadius:28,background:"rgba(20,36,64,.88)",padding:"34px 38px",boxSizing:"border-box"}}>
-    <div style={{fontFamily:"Space Grotesk,Arial",fontSize:38,fontWeight:750,color:accent}}>{label}</div>
-    <div style={{fontFamily:"Space Grotesk,Arial",fontSize:76,fontWeight:750,color:C.white,marginTop:20}}>{value}</div>
-    {metric?<div style={{fontFamily:"Inter,Arial",fontSize:25,fontWeight:650,color:C.slate,marginTop:4}}>{metric}</div>:null}
-    <div style={{position:"absolute",left:45,right:45,bottom:90,height:18,borderRadius:10,background:C.line,overflow:"hidden"}}>
-      <div style={{height:"100%",width:`${filledPct}%`,borderRadius:10,background:accent}}/>
+  const labelRef=React.useRef<HTMLDivElement>(null);
+  const valueRef=React.useRef<HTMLDivElement>(null);
+
+  // Fit labels to reserved text zones before Remotion captures the frame.
+  // A second line is allowed, but cannot move the metric into the bar.
+  React.useLayoutEffect(()=>{
+    const fit=(el:HTMLDivElement|null,starting:number,minimum:number)=>{
+      if(!el)return;
+      let size=starting;
+      el.style.fontSize=size+"px";
+      while(size>minimum && (el.scrollHeight>el.clientHeight+1 || el.scrollWidth>el.clientWidth+1)){
+        size-=2;
+        el.style.fontSize=size+"px";
+      }
+    };
+    fit(labelRef.current,36,24);
+    fit(valueRef.current,66,28);
+  },[label,value]);
+
+  const trackLabels={fontFamily:"Inter,Arial",fontSize:23,fontWeight:700,color:C.slate};
+  const showNumberInsideFill=filledPct>=18;
+  return <div style={{position:"absolute",left:x,top:95,width:620,height:430,border:"2px solid "+accent+"55",borderRadius:28,background:"rgba(20,36,64,.88)",boxSizing:"border-box"}}>
+    <div ref={labelRef} style={{position:"absolute",left:38,right:38,top:28,height:66,overflow:"hidden",overflowWrap:"anywhere",fontFamily:"Space Grotesk,Arial",fontSize:36,lineHeight:1.1,fontWeight:750,color:accent}}>{label}</div>
+    <div ref={valueRef} style={{position:"absolute",left:38,right:38,top:107,height:134,overflow:"hidden",overflowWrap:"anywhere",fontFamily:"Space Grotesk,Arial",fontSize:66,lineHeight:1.05,fontWeight:750,color:C.white}}>{value}</div>
+    {metric?<div style={{position:"absolute",left:38,right:38,top:251,height:56,overflow:"hidden",overflowWrap:"anywhere",fontFamily:"Inter,Arial",fontSize:25,lineHeight:1.12,fontWeight:650,color:C.slate}}>{metric}</div>:null}
+    <div style={{position:"absolute",left:45,right:45,bottom:77,height:34,borderRadius:10,background:C.line,overflow:"hidden"}}>
+      <div style={{position:"absolute",left:0,top:0,height:"100%",width:String(filledPct)+"%",borderRadius:10,background:accent}}/>
+      <div style={{position:"absolute",left:0,top:0,height:"100%",width:showNumberInsideFill?String(filledPct)+"%":"100%",display:"flex",alignItems:"center",justifyContent:showNumberInsideFill?"center":"flex-start",paddingLeft:showNumberInsideFill?0:10,boxSizing:"border-box",fontFamily:"Inter,Arial",fontSize:22,fontWeight:800,letterSpacing:0.2,color:showNumberInsideFill?C.navy:C.white}}>
+        {Math.round(filledPct)}%
+      </div>
     </div>
-    <div style={{position:"absolute",left:45,right:45,bottom:44,display:"flex",justifyContent:"space-between",fontFamily:"Inter,Arial",fontSize:23,fontWeight:700,color:C.slate}}><span>0</span><span>100</span></div>
+    <div style={{position:"absolute",left:45,right:45,bottom:31,display:"flex",justifyContent:"space-between",...trackLabels}}><span>0</span><span>100</span></div>
   </div>;
 };
-
 export const VALF013DynamicCompare:React.FC<any> = ({title,leftLabel,rightLabel,leftValue,rightValue,leftIntensity,rightIntensity,metricLabel,footer}) => {
   const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
   return <AbsoluteFill>

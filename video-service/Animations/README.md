@@ -81,6 +81,7 @@ Continuous-motion family:
 - VA-LF-011: active calibration scan and changing estimate
 - VA-LF-012: continuous sensor packets into BMS logic and output action
 - VA-LF-013: two independent progress bars that fill once to the supplied level, then hold (no looping particles). `leftIntensity` and `rightIntensity` are each a percentage from 0 to 100 of the full gray reference track: 50 and 50 yield equal half-length colored bars. These values are normalized illustrative proportions, not measured battery aging rates unless independently sourced and correctly labeled.
+  Each colored bar shows its animated numeric level (e.g., `50%`) inside the bar when there is room; values near zero display on the gray track for legibility. Both comparison headings and values use independently fitted, vertically reserved text zones so a wrapped value cannot overlap the metric or bar.
 
 Do not use motion as decoration only.
 Do not add facts, mechanisms, values, rankings, or causal claims that are absent from narration/evidence.
