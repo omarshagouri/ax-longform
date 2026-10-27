@@ -81,3 +81,16 @@ test("existing Base64 payload still works for unmigrated Make clients", async ()
     assert.equal(result.size_bytes,8);
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+
+test("oversized legacy Base64 response fails cleanly with 413 rather than Cloud Run 500", async () => {
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),"axlf-delivery-"));
+  try {
+    const file=path.join(dir,"oversized.mp4");
+    fs.writeFileSync(file,Buffer.alloc(23*1024*1024,3));
+    await assert.rejects(
+      deliverRenderedMp4({filePath:file,filename:"oversized.mp4",videoId:"oversized",delivery:"inline"}),
+      err=>err.statusCode===413 && err.message.includes("delivery:gcs")
+    );
+  } finally {fs.rmSync(dir,{recursive:true,force:true});}
+});
