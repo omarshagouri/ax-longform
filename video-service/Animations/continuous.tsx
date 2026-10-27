@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, interpolate, spring, useVideoConfig } from "remotion";
 import { z } from "zod";
-import { useLFPacedFrame as useCurrentFrame } from "../src/LFAnimationTiming";
+import { useLFPacedFrame as useCurrentFrame, useLFRevealProgress } from "../src/LFAnimationTiming";
 import { theme } from "../src/theme";
 
 const C = {
@@ -21,6 +21,7 @@ type AnimEntry = {
 };
 
 const clamp01 = (v:number) => Math.max(0, Math.min(1, v));
+const staged = (p:number,start:number,end:number) => ease((p-start)/Math.max(.01,end-start));
 const ease = (v:number) => 1 - Math.pow(1 - clamp01(v), 3);
 const appear = (frame:number, fps:number, delay=0) => clamp01(spring({
   frame: Math.max(0, frame-delay), fps,
@@ -131,7 +132,7 @@ export const VALF008PacketStream:React.FC<any> = ({title,nodes,flowLabel,intensi
 };
 
 export const VALF009ThrottleGate:React.FC<any> = ({title,inputLabel,gateLabel,outputLabel,inputRate,outputRate,footer}) => {
-  const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
+  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
   const W=1610, cy=348, inputEnd=370, gateL=696, gateR=914, outputStart=1240;
   const pct=clamp01(Number(outputRate)/100);
   const period=Math.max(30,Math.round(fps*2));
@@ -141,8 +142,8 @@ export const VALF009ThrottleGate:React.FC<any> = ({title,inputLabel,gateLabel,ou
     <Title title={title||"The BMS can throttle power"} kicker="Control gate"/>
     <Panel style={{position:"absolute",left:155,top:285,width:W,height:620,opacity:p}}>
       <div style={{position:"absolute",top:56,left:90,right:90,display:"flex",justifyContent:"center",gap:80,fontFamily:"Inter,Arial",fontSize:29,fontWeight:750}}>
-        <span style={{color:C.teal}}>REQUEST {Math.round(inputRate)}%</span>
-        <span style={{color:C.heat}}>ALLOWED {Math.round(outputRate)}%</span>
+        <span style={{color:C.teal,opacity:staged(progress,.27,.43)}}>REQUEST {Math.round(inputRate)}%</span>
+        <span style={{color:C.heat,opacity:staged(progress,.65,.80)}}>ALLOWED {Math.round(outputRate)}%</span>
       </div>
       <svg width={W} height="620" style={{position:"absolute",inset:0}}>
         <line x1={inputEnd} y1={cy} x2={gateL} y2={cy} stroke={C.line} strokeWidth="9" strokeLinecap="round"/>
@@ -150,22 +151,22 @@ export const VALF009ThrottleGate:React.FC<any> = ({title,inputLabel,gateLabel,ou
         {[...Array(inCount)].map((_,i)=>{const q=loop01(f,period,Math.round(i*period/inCount));return <circle key={"in"+i} cx={inputEnd+(gateL-inputEnd)*q} cy={cy} r={8} fill={C.teal}/>;})}
         {[...Array(outCount)].map((_,i)=>{const q=loop01(f,period,Math.round(i*period/outCount));return <circle key={"out"+i} cx={gateR+(outputStart-gateR)*q} cy={cy} r={8} fill={C.heat}/>;})}
       </svg>
-      <NodeBox label={inputLabel} x={70} y={cy-75} width={300} accent={C.teal}/>
-      <div style={{position:"absolute",left:gateL,top:cy-130,width:gateR-gateL,height:260,border:`2px solid ${C.heat}88`,borderRadius:26,background:"rgba(20,36,64,.97)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",boxSizing:"border-box"}}>
+      <NodeBox label={inputLabel} x={70} y={cy-75} width={300} accent={C.teal} opacity={staged(progress,.20,.42)}/>
+      <div style={{position:"absolute",left:gateL,top:cy-130,width:gateR-gateL,height:260,opacity:staged(progress,.42,.66),border:`2px solid ${C.heat}88`,borderRadius:26,background:"rgba(20,36,64,.97)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",boxSizing:"border-box"}}>
         <div style={{fontFamily:"Space Grotesk,Arial",fontSize:29,fontWeight:700,color:C.white,textAlign:"center",padding:"0 15px"}}>{gateLabel}</div>
         <div style={{marginTop:23,width:125,height:38,border:`2px solid ${C.slate}`,borderRadius:10,padding:5,boxSizing:"border-box",background:C.navy}}>
           <div style={{width:`${pct*100}%`,height:"100%",background:C.heat,borderRadius:5,boxShadow:`0 0 16px ${C.heat}66`}}/>
         </div>
         <div style={{fontFamily:"Inter,Arial",fontSize:23,fontWeight:750,color:C.heat,marginTop:17}}>{Math.round(Number(outputRate))}% OPEN</div>
       </div>
-      <NodeBox label={outputLabel} x={outputStart} y={cy-75} width={300} accent={C.heat}/>
+      <NodeBox label={outputLabel} x={outputStart} y={cy-75} width={300} accent={C.heat} opacity={staged(progress,.65,.86)}/>
       <div style={{position:"absolute",left:90,right:90,bottom:40,textAlign:"center",fontFamily:"Inter,Arial",fontSize:25,color:C.slate}}>The BMS limits delivered power when operating conditions require it.</div>
     </Panel><Footer text={footer}/>
   </AbsoluteFill>;
 };
 
 export const VALF010ThermalField:React.FC<any> = ({title,heatLevel,hotspotRow,hotspotCol,cooling,note,footer}) => {
-  const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
+  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
   const rows=5,cols=8,cellW=120,cellH=70,gap=12,startX=280,startY=180;
   const wave=loop01(f,Math.round(fps*3.2));
   const pulse=(Math.sin(f/fps*Math.PI*2*.75)+1)/2;
@@ -180,15 +181,15 @@ export const VALF010ThermalField:React.FC<any> = ({title,heatLevel,hotspotRow,ho
         const hot=clamp01(influence*(.72+.28*pulse)-coolBand*.35);
         const bg=hot>.55?C.heat:hot>.22?"#7B6558":C.surface;
         const border=hot>.45?C.heat:C.line;
-        return <div key={r+"-"+c} style={{position:"absolute",left:startX+c*(cellW+gap),top:startY+r*(cellH+gap),width:cellW,height:cellH,border:`2px solid ${border}`,borderRadius:16,background:bg,boxShadow:hot>.45?`0 0 ${20+30*hot}px ${C.heat}44`:"none",transition:"none",opacity:.98}}/>;
+        return <div key={r+"-"+c} style={{position:"absolute",left:startX+c*(cellW+gap),top:startY+r*(cellH+gap),width:cellW,height:cellH,border:`2px solid ${border}`,borderRadius:16,background:bg,boxShadow:hot>.45?`0 0 ${20+30*hot}px ${C.heat}44`:"none",transition:"none",opacity:.98*staged(progress,.20+(r*cols+c)/(rows*cols)*.48,.38+(r*cols+c)/(rows*cols)*.48)}}/>;
       }))}
-      {cooling?<div style={{position:"absolute",left:startX+wave*((cols-1)*(cellW+gap))-25,top:startY-20,width:50,height:rows*(cellH+gap)-gap+40,background:"linear-gradient(90deg,rgba(77,166,255,0),rgba(77,166,255,.28),rgba(77,166,255,0))",filter:"blur(5px)",borderRadius:30}}/>:null}
+      {cooling?<div style={{position:"absolute",left:startX+wave*((cols-1)*(cellW+gap))-25,top:startY-20,width:50,height:rows*(cellH+gap)-gap+40,background:"linear-gradient(90deg,rgba(77,166,255,0),rgba(77,166,255,.28),rgba(77,166,255,0))",opacity:staged(progress,.60,.79),filter:"blur(5px)",borderRadius:30}}/>:null}
       <div style={{position:"absolute",right:125,top:125,fontFamily:"Inter,Arial",fontSize:25,fontWeight:700,color:cooling?C.cold:C.heat}}>{cooling?"COOLING SWEEP ACTIVE":"HEAT PROPAGATION"}</div>
     </Panel><Footer text={footer}/>
   </AbsoluteFill>;
 };
 
-const Meter:React.FC<{label:string;value:number;accent:string;y:number;scan:number}> = ({label,value,accent,y,scan}) => <div style={{position:"absolute",left:250,top:y,width:1110}}>
+const Meter:React.FC<{label:string;value:number;accent:string;y:number;scan:number;opacity?:number}> = ({label,value,accent,y,scan,opacity=1}) => <div style={{position:"absolute",left:250,top:y,width:1110,opacity}}>
   <div style={{display:"flex",justifyContent:"space-between",fontFamily:"Inter,Arial",fontSize:28,fontWeight:700,color:C.white,marginBottom:14}}><span>{label}</span><span style={{color:accent}}>{value.toFixed(1)}%</span></div>
   <div style={{height:28,borderRadius:16,background:C.line,position:"relative",overflow:"visible"}}>
     <div style={{position:"absolute",left:0,top:0,height:"100%",width:`${value}%`,background:accent,borderRadius:16,opacity:.86}}/>
@@ -197,7 +198,7 @@ const Meter:React.FC<{label:string;value:number;accent:string;y:number;scan:numb
 </div>;
 
 export const VALF011CalibrationShift:React.FC<any> = ({title,displayedStart,displayedEnd,usablePct,displayedLabel,usableLabel,footer}) => {
-  const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
+  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
   const shift=ease(f/(fps*3.0));
   const displayed=Number(displayedStart)+(Number(displayedEnd)-Number(displayedStart))*shift;
   const scan=5+90*loop01(f,Math.round(fps*2.6));
@@ -205,9 +206,9 @@ export const VALF011CalibrationShift:React.FC<any> = ({title,displayedStart,disp
   return <AbsoluteFill>
     <Title title={title||"The estimate can move while usable energy barely changes"} kicker="Live calibration"/>
     <Panel style={{position:"absolute",left:155,top:285,width:1610,height:620,opacity:p}}>
-      <Meter label={displayedLabel||"Displayed estimate"} value={displayed} accent={C.heat} y={150} scan={scan}/>
-      <Meter label={usableLabel||"Usable energy"} value={Number(usablePct)} accent={C.teal} y={310} scan={100-scan}/>
-      <div style={{position:"absolute",left:250,right:250,bottom:65,display:"flex",justifyContent:"center",gap:24,fontFamily:"Inter,Arial",fontSize:29,fontWeight:700}}>
+      <Meter label={displayedLabel||"Displayed estimate"} value={displayed} accent={C.heat} y={150} scan={scan} opacity={staged(progress,.24,.47)}/>
+      <Meter label={usableLabel||"Usable energy"} value={Number(usablePct)} accent={C.teal} y={310} scan={100-scan} opacity={staged(progress,.49,.71)}/>
+      <div style={{position:"absolute",left:250,right:250,bottom:65,opacity:staged(progress,.72,.88),display:"flex",justifyContent:"center",gap:24,fontFamily:"Inter,Arial",fontSize:29,fontWeight:700}}>
         <span style={{color:C.slate}}>DIFFERENCE</span>
         <span style={{color:Math.abs(err)<2?C.teal:C.heat}}>{err>0?"+":""}{err.toFixed(1)} pts</span>
         <span style={{color:C.slate}}>• estimator keeps scanning</span>
@@ -217,7 +218,7 @@ export const VALF011CalibrationShift:React.FC<any> = ({title,displayedStart,disp
 };
 
 export const VALF012DataDecision:React.FC<any> = ({title,sensors,decisionLabel,actionLabel,footer}) => {
-  const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
+  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
   const W=1610, sx=85, sensorW=275, sensorH=90, cy=350, cx=815, centerW=250, actionX=1230;
   const spacing=112, ys=sensors.map((_:string,i:number)=>cy+(i-(sensors.length-1)/2)*spacing);
   const period=Math.max(30,Math.round(fps*1.9));
@@ -238,15 +239,17 @@ export const VALF012DataDecision:React.FC<any> = ({title,sensors,decisionLabel,a
         <line x1={cx+centerW/2} y1={cy} x2={actionX} y2={cy} stroke={C.line} strokeWidth="8" strokeLinecap="round"/>
         {[0,1,2].map(i=>{const q=loop01(f,Math.round(fps*1.65),i*16);return <circle key={"out"+i} cx={cx+centerW/2+(actionX-cx-centerW/2)*q} cy={cy} r="9" fill={C.heat}/>;})}
       </svg>
-      {sensors.map((label:string,i:number)=><div key={i} style={{position:"absolute",left:sx,top:ys[i]-sensorH/2,width:sensorW,height:sensorH,boxSizing:"border-box",border:`2px solid ${i%2?C.cold:C.teal}88`,borderRadius:20,background:"rgba(20,36,64,.97)",display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 15px",fontFamily:"Space Grotesk,Arial",fontSize:label.length>17?25:31,fontWeight:700,color:C.white,textAlign:"center"}}>{label}</div>)}
-      <div style={{position:"absolute",left:cx-centerW/2,top:cy-100,width:centerW,height:200,boxSizing:"border-box",borderRadius:30,border:`3px solid ${C.teal}`,background:"rgba(20,36,64,.97)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,textAlign:"center",fontFamily:"Space Grotesk,Arial",fontSize:30,fontWeight:750,color:C.white,transform:`scale(${centralPulse})`,boxShadow:`0 0 30px ${C.teal}33`}}>{decisionLabel}</div>
-      <NodeBox label={actionLabel} x={actionX} y={cy-75} width={300} accent={C.heat}/>
+      {sensors.map((label:string,i:number)=><div key={i} style={{position:"absolute",left:sx,top:ys[i]-sensorH/2,width:sensorW,height:sensorH,boxSizing:"border-box",border:`2px solid ${i%2?C.cold:C.teal}88`,borderRadius:20,background:"rgba(20,36,64,.97)",display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 15px",fontFamily:"Space Grotesk,Arial",fontSize:label.length>17?25:31,fontWeight:700,color:C.white,textAlign:"center",opacity:staged(progress,.20+i*.10,.40+i*.10)}}>{label}</div>)}
+      <div style={{position:"absolute",left:cx-centerW/2,top:cy-100,width:centerW,height:200,opacity:staged(progress,.58,.77),boxSizing:"border-box",borderRadius:30,border:`3px solid ${C.teal}`,background:"rgba(20,36,64,.97)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,textAlign:"center",fontFamily:"Space Grotesk,Arial",fontSize:30,fontWeight:750,color:C.white,transform:`scale(${centralPulse})`,boxShadow:`0 0 30px ${C.teal}33`}}>{decisionLabel}</div>
+      <NodeBox label={actionLabel} x={actionX} y={cy-75} width={300} accent={C.heat} opacity={staged(progress,.74,.92)}/>
     </Panel><Footer text={footer}/>
   </AbsoluteFill>;
 };
 
 const CompareLane:React.FC<{x:number;label:string;value:string;intensity:number;accent:string;metric?:string;frame:number;fps:number}> = ({x,label,value,intensity,accent,metric,frame,fps}) => {
   // The intensity is a percentage of a fixed gray 0–100 reference track.
+  const progress=useLFRevealProgress();
+  const cue=x<600?.24:.43;
   const targetPct=Number.isFinite(intensity)?Math.max(0,Math.min(100,intensity)):0;
   const reveal=ease((frame-fps*0.25)/(fps*1.35));
   const filledPct=targetPct*reveal;
@@ -272,9 +275,9 @@ const CompareLane:React.FC<{x:number;label:string;value:string;intensity:number;
   const trackLabels={fontFamily:"Inter,Arial",fontSize:23,fontWeight:700,color:C.slate};
   const showNumberInsideFill=filledPct>=18;
   return <div style={{position:"absolute",left:x,top:95,width:620,height:430,border:"2px solid "+accent+"55",borderRadius:28,background:"rgba(20,36,64,.88)",boxSizing:"border-box"}}>
-    <div ref={labelRef} style={{position:"absolute",left:38,right:38,top:28,height:66,overflow:"hidden",overflowWrap:"anywhere",fontFamily:"Space Grotesk,Arial",fontSize:36,lineHeight:1.1,fontWeight:750,color:accent}}>{label}</div>
-    <div ref={valueRef} style={{position:"absolute",left:38,right:38,top:107,height:134,overflow:"hidden",overflowWrap:"anywhere",fontFamily:"Space Grotesk,Arial",fontSize:66,lineHeight:1.05,fontWeight:750,color:C.white}}>{value}</div>
-    {metric?<div style={{position:"absolute",left:38,right:38,top:251,height:56,overflow:"hidden",overflowWrap:"anywhere",fontFamily:"Inter,Arial",fontSize:25,lineHeight:1.12,fontWeight:650,color:C.slate}}>{metric}</div>:null}
+    <div ref={labelRef} style={{position:"absolute",left:38,right:38,top:28,height:66,overflow:"hidden",overflowWrap:"anywhere",fontFamily:"Space Grotesk,Arial",fontSize:36,lineHeight:1.1,fontWeight:750,color:accent,opacity:staged(progress,cue,cue+.15)}}>{label}</div>
+    <div ref={valueRef} style={{position:"absolute",left:38,right:38,top:107,height:134,overflow:"hidden",overflowWrap:"anywhere",fontFamily:"Space Grotesk,Arial",fontSize:66,lineHeight:1.05,fontWeight:750,color:C.white,opacity:staged(progress,cue+.09,cue+.24)}}>{value}</div>
+    {metric?<div style={{position:"absolute",left:38,right:38,top:251,height:56,overflow:"hidden",overflowWrap:"anywhere",fontFamily:"Inter,Arial",fontSize:25,lineHeight:1.12,fontWeight:650,color:C.slate,opacity:staged(progress,cue+.17,cue+.32)}}>{metric}</div>:null}
     <div style={{position:"absolute",left:45,right:45,bottom:77,height:34,borderRadius:10,background:C.line,overflow:"hidden"}}>
       <div style={{position:"absolute",left:0,top:0,height:"100%",width:String(filledPct)+"%",borderRadius:10,background:accent}}/>
       <div style={{position:"absolute",left:0,top:0,height:"100%",width:showNumberInsideFill?String(filledPct)+"%":"100%",display:"flex",alignItems:"center",justifyContent:showNumberInsideFill?"center":"flex-start",paddingLeft:showNumberInsideFill?0:10,boxSizing:"border-box",fontFamily:"Inter,Arial",fontSize:22,fontWeight:800,letterSpacing:0.2,color:showNumberInsideFill?C.navy:C.white}}>
