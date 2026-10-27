@@ -58,7 +58,7 @@ Purpose: reusable 1920x1080 motion graphics selected by the Visual Plan Agent al
 | VA-LF-010 | Thermal Cell Field | hot spots, heat propagation, cooling sweep | title, heatLevel, hotspotRow, hotspotCol, cooling, note, footer | 9s |
 | VA-LF-011 | Live Calibration Shift | displayed SoH/range estimate moving while usable energy stays stable | title, displayedStart, displayedEnd, usablePct, displayedLabel, usableLabel, footer | 9s |
 | VA-LF-012 | Data Stream → Decision | sensor data feeding BMS logic and producing control action | title, sensors, decisionLabel, actionLabel, footer | 9s |
-| VA-LF-013 | Dynamic Side-by-Side Comparator | two conditions with continuously different activity/stress | title, leftLabel, rightLabel, leftValue, rightValue, leftIntensity, rightIntensity, metricLabel, footer | 9s |
+| VA-LF-013 | Dynamic Side-by-Side Comparator | two conditions compared by independent progress bars on a 0–100 reference scale | title, leftLabel, rightLabel, leftValue, rightValue, leftIntensity, rightIntensity, metricLabel, footer | 9s |
 
 ## Renderer rule
 
@@ -80,7 +80,7 @@ Continuous-motion family:
 - VA-LF-010: thermal pulse field with moving cooling sweep
 - VA-LF-011: active calibration scan and changing estimate
 - VA-LF-012: continuous sensor packets into BMS logic and output action
-- VA-LF-013: two simultaneous motion lanes for comparison
+- VA-LF-013: two independent progress bars that fill once to the supplied level, then hold (no looping particles). `leftIntensity` and `rightIntensity` are each a percentage from 0 to 100 of the full gray reference track: 50 and 50 yield equal half-length colored bars. These values are normalized illustrative proportions, not measured battery aging rates unless independently sourced and correctly labeled.
 
 Do not use motion as decoration only.
 Do not add facts, mechanisms, values, rankings, or causal claims that are absent from narration/evidence.
