@@ -120,19 +120,24 @@ if(h){
   }
 }
 
-var pLine=easeOutCubic(clamp((t-0.05)/0.40));
+/* Chapter divider has three distinct entrance beats across the actual hold.
+   The remaining final 12% settles for legibility. */
+var __duration=(typeof x!=='undefined'&&Number.isFinite(x)&&x>0)?x:3;
+var __window=Math.max(0.25,__duration*0.88);
+function __step(a,b){return easeOutCubic(clamp((t-__window*a)/Math.max(0.05,__window*(b-a))));}
+var pLine=__step(0.03,0.28);
 if(a){
   a.style.transform='scaleX('+pLine+')';
   a.style.opacity=pLine;
 }
 
-var pNum=easeOutCubic(clamp((t-0.18)/0.52));
+var pNum=__step(0.28,0.56);
 if(n){
   n.style.opacity=pNum;
   n.style.transform='translateX('+(-30*(1-pNum))+'px)';
 }
 
-var pTitle=easeOutCubic(clamp((t-0.30)/0.70));
+var pTitle=__step(0.49,0.94);
 if(h){
   h.style.opacity=pTitle;
   h.style.transform='translateY('+(24*(1-pTitle))+'px)';

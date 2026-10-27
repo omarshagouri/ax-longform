@@ -68,10 +68,10 @@ export const HtmlCard: React.FC<{
   useLayoutEffect(() => {
     try {
       const holdSec = holdFrames && holdFrames > 0 ? holdFrames / fps : data.default_duration;
-      // Card motion must not slow down just because the narration holds the visual longer.
-      // Settle the entrance in ~2 seconds, then hold the finished state.
-      const motionSec = Math.min(holdSec, data.default_duration, 2.8);
-      seekFn(frame / fps, motionSec, clamp, easeOutCubic);
+      // Match the proven Shorts renderer: pass the FULL beat duration.
+      // Each card's seek(t, x) distributes its entrances across the beat,
+      // leaving only its authored closing hold instead of freezing after 2.8s.
+      seekFn(frame / fps, holdSec, clamp, easeOutCubic);
     } catch {
       /* keep rendering even if a card's seek throws on an edge frame */
     }

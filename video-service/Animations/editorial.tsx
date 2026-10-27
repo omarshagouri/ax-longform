@@ -1,6 +1,7 @@
 import React from "react";
-import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, useVideoConfig } from "remotion";
 import { z } from "zod";
+import { useLFPacedFrame as useCurrentFrame, useLFRevealProgress } from "../src/LFAnimationTiming";
 
 // AmpCoreX editorial animation family. All animation is deterministic at 30fps.
 // 1920×1080 frame; no external media or hidden telemetry.
@@ -10,21 +11,31 @@ const C={navy:"#0A1628",panel:"#142440",line:"#28405E",white:"#F5FAFF",
 const clamp=(v:number)=>Math.max(0,Math.min(1,v));
 const phase=(f:number,a:number,b:number)=>clamp((f-a)/Math.max(1,b-a));
 const ease=(v:number)=>1-Math.pow(1-clamp(v),3);
+const reveal=(p:number,start:number,end:number)=>ease((p-start)/Math.max(.01,end-start));
 const loop=(f:number,period:number,shift=0)=>((f+shift)%period)/period;
-const P:React.FC<{children?:React.ReactNode;style?:React.CSSProperties}>=({children,style})=>(
-  <div style={{position:"absolute",background:C.panel,border:"2px solid "+C.line,borderRadius:28,
-    boxSizing:"border-box",...style}}>{children}</div>);
-const Heading:React.FC<{title?:string;kicker:string;footer?:string}>=({title,kicker,footer})=>(
-  <AbsoluteFill style={{pointerEvents:"none",fontFamily:"Inter,Arial,sans-serif"}}>
+const P:React.FC<{children?:React.ReactNode;style?:React.CSSProperties}>=({children,style})=>{
+  const progress=useLFRevealProgress(),alpha=reveal(progress,.08,.28);
+  return <div style={{position:"absolute",background:C.panel,border:"2px solid "+C.line,borderRadius:28,
+    boxSizing:"border-box",opacity:alpha,...style}}>{children}</div>;
+};
+const Heading:React.FC<{title?:string;kicker:string;footer?:string}>=({title,kicker,footer})=>{
+  const progress=useLFRevealProgress(),first=reveal(progress,.01,.12),second=reveal(progress,.09,.25);
+  return <AbsoluteFill style={{pointerEvents:"none",fontFamily:"Inter,Arial,sans-serif"}}>
     <div style={{position:"absolute",left:172,top:104,color:C.teal,fontSize:25,
-      letterSpacing:4,fontWeight:800}}>{kicker.toUpperCase()}</div>
+      letterSpacing:4,fontWeight:800,opacity:first,transform:"translateY("+((1-first)*14)+"px"}}>{kicker.toUpperCase()}</div>
     <div style={{position:"absolute",left:172,top:145,right:172,color:C.white,fontWeight:750,
-      fontSize:(title||"").length>55?51:63,lineHeight:1.1,fontFamily:"Space Grotesk,Arial,sans-serif"}}>{title}</div>
+      fontSize:(title||"").length>55?51:63,lineHeight:1.1,fontFamily:"Space Grotesk,Arial,sans-serif",
+      opacity:second,transform:"translateY("+((1-second)*18)+"px"}}>{title}</div>
+    {/* Evidence attributions must remain available while factual values are on screen. */}
     <div style={{position:"absolute",left:172,right:172,bottom:70,textAlign:"center",
       color:C.slate,fontSize:23,letterSpacing:.3}}>{footer||"ILLUSTRATIVE ENGINEERING VISUAL — NOT MEASURED VEHICLE DATA"}</div>
-  </AbsoluteFill>);
-const Text:React.FC<{children:React.ReactNode;size?:number;color?:string;weight?:number}>=({children,size=31,color=C.white,weight=650})=>(
-  <div style={{fontFamily:"Inter,Arial,sans-serif",fontSize:size,color,fontWeight:weight,lineHeight:1.22}}>{children}</div>);
+  </AbsoluteFill>;
+};
+const Text:React.FC<{children:React.ReactNode;size?:number;color?:string;weight?:number;cue?:number}>=({children,size=31,color=C.white,weight=650,cue=.34})=>{
+  const p=useLFRevealProgress(),alpha=reveal(p,cue,cue+.17);
+  return <div style={{fontFamily:"Inter,Arial,sans-serif",fontSize:size,color,fontWeight:weight,lineHeight:1.22,
+    opacity:alpha,transform:"translateY("+((1-alpha)*15)+"px"}}>{children}</div>;
+};
 
 export const twoClocksSchema=z.object({
   title:z.string().max(85).default("Your battery has two clocks"),
@@ -34,7 +45,7 @@ export const twoClocksSchema=z.object({
   footer:z.string().max(135).optional(),
 });
 export const VALF015TwoClocks:React.FC<any>=({title,cycleLabel,calendarLabel,takeaway,footer})=>{
-  const f=useCurrentFrame(),{fps}=useVideoConfig();const seconds=f/fps;
+  const progress=useLFRevealProgress();const f=useCurrentFrame(),{fps}=useVideoConfig();const seconds=f/fps;
   const centers=[575,1345],cy=566,r=190;
   return <AbsoluteFill>
     <Heading title={title} kicker="TWO INDEPENDENT AGING PATHWAYS" footer={footer}/>
@@ -45,7 +56,7 @@ export const VALF015TwoClocks:React.FC<any>=({title,cycleLabel,calendarLabel,tak
       const dots=Array.from({length:24},(_,k)=>{const a=k/24*Math.PI*2;return {x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r};});
       return <React.Fragment key={i}>
         <P style={{left:cx-338,top:304,width:676,height:575,boxShadow:"0 16px 65px #0003"}}/>
-        <svg style={{position:"absolute",inset:0}} width={1920} height={1080}>
+        <svg style={{position:"absolute",inset:0,opacity:reveal(progress,.24+i*.18,.46+i*.18)}} width={1920} height={1080}>
           <circle cx={cx} cy={cy} r={r} fill="none" stroke={C.line} strokeWidth={20}/>
           <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth={8} opacity={.6}/>
           {dots.map((d,k)=><circle key={k} cx={d.x} cy={d.y} r={k%6===0?7:4} fill={color} opacity={k%6===0?1:.5}/>)}
@@ -63,7 +74,7 @@ export const VALF015TwoClocks:React.FC<any>=({title,cycleLabel,calendarLabel,tak
           </g>)}
         </svg>
         <div style={{position:"absolute",top:337,left:cx-250,width:500,textAlign:"center"}}>
-          <Text size={42} color={color}>{i===0?cycleLabel:calendarLabel}</Text>
+          <Text size={42} color={color} cue={.32+i*.18}>{i===0?cycleLabel:calendarLabel}</Text>
         </div>
         <div style={{position:"absolute",top:752,left:cx-260,width:520,textAlign:"center"}}>
           <Text size={30}>{i===0?"USE-RELATED WEAR":"TIME IN SERVICE"}</Text>
@@ -71,7 +82,7 @@ export const VALF015TwoClocks:React.FC<any>=({title,cycleLabel,calendarLabel,tak
       </React.Fragment>;
     })}
     <div style={{position:"absolute",top:908,left:300,right:300,textAlign:"center"}}>
-      <Text size={32} color={C.yellow}>{takeaway}</Text>
+      <Text size={32} color={C.yellow} cue={.78}>{takeaway}</Text>
     </div>
   </AbsoluteFill>;
 };
@@ -84,12 +95,12 @@ export const cellAgingSchema=z.object({
   footer:z.string().max(135).optional(),
 });
 export const VALF016CellAging:React.FC<any>=({title,anodeLabel,cathodeLabel,reactionLabel,footer})=>{
-  const f=useCurrentFrame(),{fps}=useVideoConfig();const s=f/fps;
+  const progress=useLFRevealProgress();const f=useCurrentFrame(),{fps}=useVideoConfig();const s=f/fps;
   const deposit=16+7*(.5+.5*Math.sin(s*1.5));
   return <AbsoluteFill>
     <Heading title={title} kicker="CALENDAR AGING — CELL CROSS-SECTION" footer={footer}/>
     <P style={{left:182,top:314,width:1556,height:515}}/>
-    <svg width={1920} height={1080} style={{position:"absolute",inset:0}}>
+    <svg width={1920} height={1080} style={{position:"absolute",inset:0,opacity:reveal(progress,.24,.46)}}>
       <rect x={305} y={398} width={320} height={325} rx={20} fill="#30577A" stroke={C.cold} strokeWidth={6}/>
       <rect x={1295} y={398} width={320} height={325} rx={20} fill="#725044" stroke={C.heat} strokeWidth={6}/>
       <rect x={670} y={404} width={580} height={313} rx={18} fill="#1A3549" stroke={C.line} strokeWidth={5}/>
@@ -113,10 +124,10 @@ export const VALF016CellAging:React.FC<any>=({title,anodeLabel,cathodeLabel,reac
     <div style={{position:"absolute",top:344,left:330}}><Text size={33}>{anodeLabel}</Text></div>
     <div style={{position:"absolute",top:344,left:1320}}><Text size={33}>{cathodeLabel}</Text></div>
     <div style={{position:"absolute",top:752,left:740,width:480,textAlign:"center"}}>
-      <Text size={29} color={C.teal}>{reactionLabel}</Text>
+      <Text size={29} color={C.teal} cue={.66}>{reactionLabel}</Text>
     </div>
     <div style={{position:"absolute",top:872,left:250,right:250,textAlign:"center"}}>
-      <Text size={28} color={C.slate}>Illustrative interface processes continue even when vehicle current is low.</Text>
+      <Text size={28} color={C.slate} cue={0}>Illustrative interface processes continue even when vehicle current is low.</Text>
     </div>
   </AbsoluteFill>;
 };
@@ -128,13 +139,13 @@ export const socHeatSchema=z.object({
   footer:z.string().max(135).optional(),
 });
 export const VALF017SocHeatMatrix:React.FC<any>=({title,xAxisLabel,yAxisLabel,footer})=>{
-  const f=useCurrentFrame(),{fps}=useVideoConfig(),s=f/fps;
+  const progress=useLFRevealProgress();const f=useCurrentFrame(),{fps}=useVideoConfig(),s=f/fps;
   const cols=6,rows=4,x0=425,y0=330,stepX=169,stepY=126;
   const dotP=(.5+.5*Math.sin(s*1.45))*0.97;
   return <AbsoluteFill>
     <Heading title={title} kicker="QUALITATIVE EXPOSURE MAP — NOT A PREDICTION" footer={footer}/>
     <P style={{left:255,top:280,width:1420,height:640}}/>
-    <svg width={1920} height={1080} style={{position:"absolute",inset:0}}>
+    <svg width={1920} height={1080} style={{position:"absolute",inset:0,opacity:reveal(progress,.24,.46)}}>
       {Array.from({length:rows},(_,i)=>Array.from({length:cols},(_,j)=>{
         const risk=.18+(j/(cols-1)*.35)+((rows-1-i)/(rows-1))*.45;
         const color=risk>.66?C.heat:risk>.42?C.yellow:C.teal;
@@ -155,7 +166,7 @@ export const VALF017SocHeatMatrix:React.FC<any>=({title,xAxisLabel,yAxisLabel,fo
     </div>
     <div style={{position:"absolute",top:299,left:430}}><Text size={25} color={C.heat}>WARMER</Text></div>
     <div style={{position:"absolute",top:786,left:430}}><Text size={25} color={C.cold}>COOLER</Text></div>
-    <div style={{position:"absolute",top:870,left:1170}}><Text size={26} color={C.yellow}>More sustained stress →</Text></div>
+    <div style={{position:"absolute",top:870,left:1170}}><Text size={26} color={C.yellow} cue={.78}>More sustained stress →</Text></div>
   </AbsoluteFill>;
 };
 
@@ -168,19 +179,19 @@ export const fleetEvidenceSchema=z.object({
   footer:z.string().max(135).optional(),
 });
 export const VALF018FleetEvidence:React.FC<any>=({title,vehicles,models,difference,source,footer})=>{
-  const f=useCurrentFrame(),{fps}=useVideoConfig(),s=f/fps;
+  const progress=useLFRevealProgress();const f=useCurrentFrame(),{fps}=useVideoConfig(),s=f/fps;
   const tick=Math.floor(s*7),period=Math.max(1,Math.round(fps*2.4));
   return <AbsoluteFill>
     <Heading title={title} kicker="OBSERVATIONAL DATA — ASSOCIATION, NOT CAUSATION" footer={footer}/>
     <P style={{left:180,top:325,width:825,height:510}}/>
-    <P style={{left:1030,top:325,width:710,height:510,borderColor:C.heat+"66"}}/>
+    <P style={{left:1030,top:325,width:710,height:510,borderColor:C.heat+"66",opacity:reveal(progress,.43,.63)}}/>
     <div style={{position:"absolute",left:230,top:367}}><Text size={28} color={C.cold}>FLEET SAMPLE</Text></div>
     <div style={{position:"absolute",left:232,top:402,fontFamily:"Space Grotesk,Arial",fontSize:115,fontWeight:790,color:C.white}}>
       {Math.round(vehicles*ease(phase(f,12,76))).toLocaleString("en-US")}+
     </div>
     <div style={{position:"absolute",left:232,top:549}}><Text size={29}>ELECTRIC VEHICLES</Text></div>
     <div style={{position:"absolute",left:232,top:609}}><Text size={29} color={C.slate}>{models} MAKES / MODELS</Text></div>
-    <svg width={1920} height={1080} style={{position:"absolute",inset:0}}>
+    <svg width={1920} height={1080} style={{position:"absolute",inset:0,opacity:reveal(progress,.24,.46)}}>
       {Array.from({length:48},(_,k)=>{
         const x=250+(k%12)*56,y=698+Math.floor(k/12)*28;
         const visible=phase(f,8+k*.9,20+k*.9);
@@ -194,14 +205,14 @@ export const VALF018FleetEvidence:React.FC<any>=({title,vehicles,models,differen
       <path d="M 1130 700 H 1580" stroke={C.heat} strokeWidth={7} strokeLinecap="round" opacity={.7}/>
       <circle cx={1130+480*loop(f,period)} cy={700} r={15} fill={C.heat}/>
     </svg>
-    <div style={{position:"absolute",left:1100,top:368}}><Text size={28} color={C.heat}>HOT VS MILD CLIMATE</Text></div>
+    <div style={{position:"absolute",left:1100,top:368}}><Text size={28} color={C.heat} cue={.57}>HOT VS MILD CLIMATE</Text></div>
     <div style={{position:"absolute",left:1100,top:438,fontFamily:"Space Grotesk,Arial",fontSize:127,fontWeight:800,color:C.heat}}>
       {Number(difference).toFixed(1)}
     </div>
-    <div style={{position:"absolute",left:1105,top:597}}><Text size={32}>PERCENTAGE POINTS / YEAR</Text></div>
+    <div style={{position:"absolute",left:1105,top:597}}><Text size={32} cue={.64}>PERCENTAGE POINTS / YEAR</Text></div>
     <div style={{position:"absolute",left:1105,top:642}}><Text size={26} color={C.slate}>Faster observed health decline</Text></div>
     <div style={{position:"absolute",top:872,left:225,right:225,textAlign:"center"}}>
-      <Text size={26} color={C.teal}>{source} · Combined real-world battery degradation, not calendar-only aging.</Text>
+      <Text size={26} color={C.teal} cue={0}>{source} · Combined real-world battery degradation, not calendar-only aging.</Text>
     </div>
   </AbsoluteFill>;
 };
@@ -214,13 +225,13 @@ export const rangeVsHealthSchema=z.object({
   footer:z.string().max(135).optional(),
 });
 export const VALF019RangeHealth:React.FC<any>=({title,rangeStart,rangeEnd,healthReference,footer})=>{
-  const f=useCurrentFrame(),{fps}=useVideoConfig(),s=f/fps,drive=.5-.5*Math.cos(s*1.1);
+  const progress=useLFRevealProgress();const f=useCurrentFrame(),{fps}=useVideoConfig(),s=f/fps,drive=.5-.5*Math.cos(s*1.1);
   const range=Number(rangeStart)+(Number(rangeEnd)-Number(rangeStart))*drive;
   const ref=Number(healthReference),scan=loop(f,Math.max(1,Math.round(fps*2.5)));
   return <AbsoluteFill>
     <Heading title={title} kicker="TWO DIFFERENT OWNER QUESTIONS" footer={footer}/>
     <P style={{left:185,top:302,width:1550,height:560}}/>
-    <svg width={1920} height={1080} style={{position:"absolute",inset:0}}>
+    <svg width={1920} height={1080} style={{position:"absolute",inset:0,opacity:reveal(progress,.24,.46)}}>
       <path d="M 420 717 A 260 260 0 0 1 940 717" fill="none" stroke={C.line} strokeWidth={43} strokeLinecap="round"/>
       <path d="M 420 717 A 260 260 0 0 1 940 717" fill="none" stroke={C.teal} strokeWidth={43}
         strokeDasharray="817" strokeDashoffset={817*(1-range/100)} strokeLinecap="round"/>
@@ -233,12 +244,12 @@ export const VALF019RangeHealth:React.FC<any>=({title,rangeStart,rangeEnd,health
     <div style={{position:"absolute",left:365,top:539,width:625,textAlign:"center",fontSize:114,color:C.white,fontFamily:"Space Grotesk",fontWeight:800}}>
       {Math.round(range)}<span style={{fontSize:37,color:C.slate}}> INDEX</span>
     </div>
-    <div style={{position:"absolute",left:1128,top:377,width:460,textAlign:"center"}}><Text color={C.cold} size={36}>HEALTH REFERENCE</Text></div>
-    <div style={{position:"absolute",left:1128,top:463,width:460,textAlign:"center"}}><Text size={52}>{ref} INDEX</Text></div>
+    <div style={{position:"absolute",left:1128,top:377,width:460,textAlign:"center"}}><Text color={C.cold} size={36} cue={.57}>HEALTH REFERENCE</Text></div>
+    <div style={{position:"absolute",left:1128,top:463,width:460,textAlign:"center"}}><Text size={52} cue={.65}>{ref} INDEX</Text></div>
     <div style={{position:"absolute",left:300,top:761,width:650,textAlign:"center"}}><Text size={27}>Changes with operating conditions</Text></div>
     <div style={{position:"absolute",left:1128,top:687,width:460,textAlign:"center"}}><Text size={26}>Long-term metric, if available</Text></div>
     <div style={{position:"absolute",top:879,left:220,right:220,textAlign:"center"}}>
-      <Text size={27} color={C.yellow}>Schematic normalized indexes — NOT actual range, SoH or measured vehicle telemetry</Text>
+      <Text size={27} color={C.yellow} cue={0}>Schematic normalized indexes — NOT actual range, SoH or measured vehicle telemetry</Text>
     </div>
   </AbsoluteFill>;
 };
@@ -250,7 +261,7 @@ export const fluctuationTrendSchema=z.object({
   footer:z.string().max(135).optional(),
 });
 export const VALF020FluctuationTrend:React.FC<any>=({title,topLabel,bottomLabel,footer})=>{
-  const f=useCurrentFrame(),{fps}=useVideoConfig(),s=f/fps;
+  const progress=useLFRevealProgress();const f=useCurrentFrame(),{fps}=useVideoConfig(),s=f/fps;
   const W=1115,x0=520,top=410,bottom=672,cursor=loop(f,Math.round(fps*5.2));
   const wave=(x:number)=>36*Math.sin(x*17)+17*Math.cos(x*43);
   const decline=(x:number)=>-x*98+11*Math.sin(x*6);
@@ -260,7 +271,7 @@ export const VALF020FluctuationTrend:React.FC<any>=({title,topLabel,bottomLabel,
   return <AbsoluteFill>
     <Heading title={title} kicker="SHORT-TERM NOISE VERSUS LONG-TERM SIGNAL" footer={footer}/>
     <P style={{left:218,top:300,width:1485,height:566}}/>
-    <svg width={1920} height={1080} style={{position:"absolute",inset:0}}>
+    <svg width={1920} height={1080} style={{position:"absolute",inset:0,opacity:reveal(progress,.24,.46)}}>
       {[top,bottom].map((y,k)=><g key={k}>
         <line x1={x0-20} y1={y+93} x2={x0+W+20} y2={y+93} stroke={C.line} strokeWidth={3}/>
         <line x1={x0-20} y1={y-96} x2={x0-20} y2={y+100} stroke={C.line} strokeWidth={3}/>
@@ -275,9 +286,9 @@ export const VALF020FluctuationTrend:React.FC<any>=({title,topLabel,bottomLabel,
       <circle cx={x0+W*cursor} cy={bottom-decline(cursor)} r={14} fill={C.white} stroke={C.heat} strokeWidth={5}/>
     </svg>
     <div style={{position:"absolute",left:264,top:362,width:240}}><Text size={28} color={C.cold}>{topLabel}</Text></div>
-    <div style={{position:"absolute",left:264,top:636,width:240}}><Text size={28} color={C.heat}>{bottomLabel}</Text></div>
+    <div style={{position:"absolute",left:264,top:636,width:240}}><Text size={28} color={C.heat} cue={.61}>{bottomLabel}</Text></div>
     <div style={{position:"absolute",top:887,left:260,right:260,textAlign:"center"}}>
-      <Text size={27} color={C.yellow}>Illustrative shapes only — never interpret these paths as observed degradation rates.</Text>
+      <Text size={27} color={C.yellow} cue={0}>Illustrative shapes only — never interpret these paths as observed degradation rates.</Text>
     </div>
   </AbsoluteFill>;
 };
