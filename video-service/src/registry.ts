@@ -10,8 +10,12 @@ export type CardEntry = {
   schema: z.ZodTypeAny;
 };
 
+/** Permanently removed AmpCoreX card; never advertise or render, even from stale generated data. */
+export const bannedVisualIds = new Set(["VC-LF-016"]);
+
 export const registry: Record<string, CardEntry> = { ...animationRegistry, ...nativeClips };
 for (const id of Object.keys(allCards)) {
+  if (bannedVisualIds.has(id)) continue;
   const data = allCards[id];
   registry[id] = {
     component: makeHtmlCard(data),
@@ -24,6 +28,10 @@ export function validateTimeline(
 ): string[] {
   const errors: string[] = [];
   for (const item of timeline) {
+    if (bannedVisualIds.has(item.component)) {
+      errors.push(`beat ${item.beat}: retired AmpCoreX visual "${item.component}" is permanently prohibited`);
+      continue;
+    }
     // VV-LF-005+ are real Drive MP4s resolved by server/buildChapter.
     // Their visual IDs are catalog references, not React components in the
     // built-in registry (which only contains VV-LF-001..004 native previews).
