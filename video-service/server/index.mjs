@@ -10,6 +10,7 @@ import { bundle } from "@remotion/bundler";
 import { selectComposition, renderMedia, renderStill } from "@remotion/renderer";
 import { GoogleAuth } from "google-auth-library";
 import { uploadFinalAssemblyToGCS } from "./assembly-gcs.mjs";
+import { parseRenderDelivery, assertRenderDeliveryReady, deliverRenderedMp4 } from "./render-delivery.mjs";
 import { assertChapterTimelineMatchesAudio } from "./chapter-timing.mjs";
 import { chooseSplitFrame, makeSilentPartManifest, makeAudioPartManifest, validatePairedJoin } from "./paired-chapter.mjs";
 import { CLIP_ID, readLiveClipCatalog, selectClip, resolveExplicitClip, assertClipFitsBeat } from "./clip-catalog.mjs";
@@ -208,15 +209,40 @@ async function renderThumbnail({ background_base64, headline, subhead = "", seri
   return { filename: path.basename(out), file_base64: b64, width: 1280, height: 720 };
 }
 
-async function renderManifest(manifest) {
-  const serveUrl = await getServeUrl();
-  const safe = String(manifest.video_id || "chapter").replace(/[^A-Za-z0-9_-]/g, "");
-  const out = path.join("/tmp", `${safe}.mp4`);
-  const composition = await selectComposition({ serveUrl, id: "AXLongForm", inputProps: { manifest } });
-  await renderMedia({ composition, serveUrl, codec: "h264", outputLocation: out, inputProps: { manifest } });
-  const b64 = fs.readFileSync(out).toString("base64");
-  fs.unlinkSync(out);
-  return { filename: `${safe}.mp4`, file_base64: b64 };
+/** The request returns only after rendering AND private GCS upload have succeeded.
+ * Log structured lifecycle events so a Make error can be correlated with Cloud Run.
+ * Unique temp filenames prevent two concurrent requests from overwriting each other.
+ */
+async function renderManifest(manifest,{delivery="inline",jobId=randomUUID()}={}) {
+  const mode=parseRenderDelivery(delivery);
+  assertRenderDeliveryReady(mode);
+  const safe=String(manifest.video_id||"chapter").replace(/[^A-Za-z0-9_-]/g,"");
+  const filename=safe+".mp4";
+  const out=path.join("/tmp",safe+"-"+jobId+".mp4");
+  const log=(phase,extras={})=>console.log(JSON.stringify({event:"lf_render",job_id:jobId,video_id:safe,phase,delivery:mode,...extras}));
+  log("preparing");
+  try{
+    const serveUrl=await getServeUrl();
+    const inputProps={manifest};
+    const composition=await selectComposition({serveUrl,id:"AXLongForm",inputProps});
+    log("rendering",{total_frames:composition.durationInFrames});
+    let lastQuarter=-1;
+    await renderMedia({composition,serveUrl,codec:"h264",outputLocation:out,inputProps,
+      onProgress:({progress})=>{
+        const quarter=Math.floor(progress*4);
+        if(quarter>lastQuarter){lastQuarter=quarter;log("render_progress",{percent:Math.min(100,quarter*25)});}
+      },
+    });
+    log("uploading",{size_bytes:fs.statSync(out).size});
+    const result=await deliverRenderedMp4({filePath:out,filename,videoId:safe,delivery:mode});
+    log("completed",{size_bytes:result.size_bytes,storage_object:result.storage_object||null});
+    return {job_id:jobId,phase:"completed",...result};
+  }catch(error){
+    log("failed",{message:String(error?.message||error).slice(0,500)});
+    throw error;
+  }finally{
+    fs.rmSync(out,{force:true});
+  }
 }
 
 async function assembleApprovedChapters(video_id, chapters, endClipId, thumbnailFileId = "", folderId = "") {
@@ -326,15 +352,25 @@ app.post("/render-video", async (req, res) => {
   if (!manifest || !Array.isArray(manifest.timeline)) return res.status(400).json({ error: "need manifest.timeline[]" });
   manifest.width = WIDTH;
   manifest.height = HEIGHT;
-  try { return res.json({ status: "ok", ...(await renderManifest(manifest)) }); }
-  catch (e) { console.error(e); return res.status(500).json({ error: String(e?.stack || e) }); }
+  const jobId=randomUUID();
+  try {
+    const delivery=parseRenderDelivery(req.body?.delivery ?? manifest.delivery);
+    assertRenderDeliveryReady(delivery);
+    return res.json({status:"ok",...(await renderManifest(manifest,{delivery,jobId}))});
+  }catch(e){
+    console.error("render-video failed",jobId,e?.message);
+    return res.status(e?.statusCode||500).json({status:"error",phase:"failed",job_id:jobId,error:String(e?.message||e)});
+  }
 });
 
 app.post(["/build-and-render", "/render-chapter"], async (req, res) => {
   if (!ok(req)) return res.status(401).json({ error: "bad api key" });
-  const { video_id, fps = 30, beats, audio_file_ids = [] } = req.body || {};
+  const { video_id, fps = 30, beats, audio_file_ids = [], delivery: requestedDelivery } = req.body || {};
+  const jobId=randomUUID();
   if (!Array.isArray(beats) || beats.length === 0) return res.status(400).json({ error: "need non-empty beats[]" });
   try {
+    const delivery=parseRenderDelivery(requestedDelivery);
+    assertRenderDeliveryReady(delivery);
     const F = Number(fps) || 30;
     const manifest = await buildChapter(video_id, F, beats, audio_file_ids);
     return res.json({
@@ -343,23 +379,26 @@ app.post(["/build-and-render", "/render-chapter"], async (req, res) => {
       card_beats: manifest.timeline.filter((x) => x.track === "card").length,
       animation_beats: manifest.timeline.filter((x) => x.track === "anim").length,
       audio_tracks: manifest.audio.length,
-      ...(await renderManifest(manifest)),
+      ...(await renderManifest(manifest,{delivery,jobId})),
     });
-  } catch (e) { console.error(e); return res.status(500).json({ error: String(e?.stack || e) }); }
+  } catch (e) { console.error("render-chapter failed",jobId,e?.message); return res.status(e?.statusCode||500).json({status:"error",phase:"failed",job_id:jobId,error:String(e?.message||e)}); }
 });
 
 // Paired narrative chapters: never split speech or insert artificial chapter opens.
 app.post("/render-chapter-part", async(req,res)=>{
   if(!ok(req))return res.status(401).json({error:"bad api key"});
-  const {video_id,part,fps=30,beats,audio_file_ids=[],audio_mode="silent"}=req.body||{};
+  const {video_id,part,fps=30,beats,audio_file_ids=[],audio_mode="silent",delivery:requestedDelivery}=req.body||{};
+  const jobId=randomUUID();
   if(!/^[A-Za-z0-9_-]{3,90}$/.test(String(video_id||""))||![1,2].includes(part)||Number(fps)!==30||!Array.isArray(beats)||beats.length<2||!Array.isArray(audio_file_ids)||audio_file_ids.length!==1||!/^[A-Za-z0-9_-]{12,}$/.test(String(audio_file_ids[0]||""))||!["silent","segment"].includes(audio_mode))return res.status(400).json({error:"invalid paired render request"});
   try{
+    const delivery=parseRenderDelivery(requestedDelivery);
+    assertRenderDeliveryReady(delivery);
     const full=await buildChapter(video_id,30,beats,audio_file_ids);
     if(full.timeline.filter(x=>x.track==="clip").length!==2)throw new Error("each coherent narrative chapter must have exactly two catalog footage clips");
     const split=chooseSplitFrame(full.timeline,{requireClipPerPart:true});
     const output=audio_mode==="segment"?makeAudioPartManifest(full,part,split):makeSilentPartManifest(full,part,split);
-    return res.json({status:"ok",video_id,part,audio_mode,split_frame:split.splitFrame,total_frames:split.totalFrames,part_frames:part===1?split.part1Frames:split.part2Frames,...(await renderManifest(output))});
-  }catch(e){console.error("paired render error",e?.message);return res.status(422).json({error:String(e?.message||e)});}
+    return res.json({status:"ok",video_id,part,audio_mode,split_frame:split.splitFrame,total_frames:split.totalFrames,part_frames:part===1?split.part1Frames:split.part2Frames,...(await renderManifest(output,{delivery,jobId}))});
+  }catch(e){console.error("paired render error",jobId,e?.message);return res.status(e?.statusCode||422).json({status:"error",phase:"failed",job_id:jobId,video_id,part,error:String(e?.message||e)});}
 });
 function probePairedPart(file){
   const p=spawnSync("ffprobe",["-v","error","-count_frames","-select_streams","v:0","-show_entries","stream=nb_read_frames,r_frame_rate,width,height,codec_name","-of","json",file],{encoding:"utf8",maxBuffer:1024*1024});
@@ -371,9 +410,13 @@ function probePairedPart(file){
 }
 app.post("/join-chapter",async(req,res)=>{
  if(!ok(req))return res.status(401).json({error:"bad api key"});
- const {video_id,part1_file_id,part2_file_id,audio_file_id,split_frame,total_frames}=req.body||{};
+ const {video_id,part1_file_id,part2_file_id,audio_file_id,split_frame,total_frames,delivery:requestedDelivery}=req.body||{};
+ const jobId=randomUUID();
  if(!/^[A-Za-z0-9_-]{3,90}$/.test(String(video_id||""))||![part1_file_id,part2_file_id,audio_file_id].every(x=>/^[A-Za-z0-9_-]{12,}$/.test(String(x||"")))||!Number.isInteger(split_frame)||!Number.isInteger(total_frames))return res.status(400).json({error:"invalid paired join request"});
  const safe=String(video_id).replace(/[^A-Za-z0-9_-]/g,"");
+ let delivery;
+ try{delivery=parseRenderDelivery(requestedDelivery);assertRenderDeliveryReady(delivery);}
+ catch(e){return res.status(e?.statusCode||422).json({status:"error",phase:"failed",job_id:jobId,error:String(e?.message||e)});}
  const work=fs.mkdtempSync(path.join("/tmp","axlf-paired-"+safe+"-"));
  try{
   const [a,b,c]=await Promise.all([driveDownload(part1_file_id,path.join(work,"part1")),driveDownload(part2_file_id,path.join(work,"part2")),driveDownload(audio_file_id,path.join(work,"audio"))]);
@@ -390,8 +433,9 @@ app.post("/join-chapter",async(req,res)=>{
   const mux=spawnSync("ffmpeg",["-v","error","-y","-i",silent,"-i",path.join(work,c.name),"-map","0:v:0","-map","1:a:0","-c:v","copy","-c:a","aac","-b:a","192k","-af","apad=whole_dur="+check.duration_seconds,"-t",String(check.duration_seconds),"-movflags","+faststart",out],{encoding:"utf8",maxBuffer:1048576});
   if(mux.status!==0)throw new Error("chapter audio mux failed");
   if(probePairedPart(out)!==total_frames||fs.statSync(out).size<10000)throw new Error("invalid joined chapter");
-  return res.json({status:"ok",filename:safe+".mp4",frames:total_frames,duration_seconds:check.duration_seconds,file_base64:fs.readFileSync(out).toString("base64")});
- }catch(e){console.error("paired join error",e?.message);return res.status(422).json({error:String(e?.message||e)});}
+  const file=await deliverRenderedMp4({filePath:out,filename:safe+".mp4",videoId:safe,delivery});
+  return res.json({status:"ok",phase:"completed",job_id:jobId,frames:total_frames,duration_seconds:check.duration_seconds,...file});
+ }catch(e){console.error("paired join error",jobId,e?.message);return res.status(e?.statusCode||422).json({status:"error",phase:"failed",job_id:jobId,error:String(e?.message||e)});}
  finally{fs.rmSync(work,{recursive:true,force:true});}
 });
 
