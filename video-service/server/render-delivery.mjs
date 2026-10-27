@@ -5,6 +5,8 @@ import { resolveRenderDeliveryBucket, uploadRenderedMp4ToGCS } from "./assembly-
 
 export const DELIVERY_GCS = "gcs";
 export const DELIVERY_INLINE = "inline";
+// Conservative ceiling: Base64 grows ~33%, and non-streamed HTTP replies have a 32 MiB limit.
+export const MAX_INLINE_MP4_BYTES = 22 * 1024 * 1024;
 
 export function parseRenderDelivery(value) {
   if (value === undefined || value === null || value === "") return DELIVERY_INLINE;
@@ -41,6 +43,9 @@ export async function deliverRenderedMp4({
       download_url: data.download_url,
       download_expires_at: data.download_expires_at,
     };
+  }
+  if (sizeBytes > MAX_INLINE_MP4_BYTES) {
+    throw Object.assign(new Error("Rendered MP4 exceeds safe Base64 response size. Use delivery:gcs and download_url in Make."), {statusCode:413});
   }
   return {
     delivery: DELIVERY_INLINE,
