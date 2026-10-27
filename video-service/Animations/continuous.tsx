@@ -245,16 +245,20 @@ export const VALF012DataDecision:React.FC<any> = ({title,sensors,decisionLabel,a
 };
 
 const CompareLane:React.FC<{x:number;label:string;value:string;intensity:number;accent:string;metric?:string;frame:number;fps:number}> = ({x,label,value,intensity,accent,metric,frame,fps}) => {
-  const count=Math.max(2,Math.round(2+intensity/16));
-  const period=Math.round(fps*(2.6-1.35*intensity/100));
+  // Intensity is the filled percentage of a 100%-wide gray reference track.
+  // E.g. 50 fills exactly half the track, independent of the other lane's value.
+  // Animate to the target once, then hold it: do not loop dots or imply a rate.
+  const targetPct=Number.isFinite(intensity)?Math.max(0,Math.min(100,intensity)):0;
+  const reveal=ease((frame-fps*0.25)/(fps*1.35));
+  const filledPct=targetPct*reveal;
   return <div style={{position:"absolute",left:x,top:95,width:620,height:430,border:`2px solid ${accent}55`,borderRadius:28,background:"rgba(20,36,64,.88)",padding:"34px 38px",boxSizing:"border-box"}}>
     <div style={{fontFamily:"Space Grotesk,Arial",fontSize:38,fontWeight:750,color:accent}}>{label}</div>
     <div style={{fontFamily:"Space Grotesk,Arial",fontSize:76,fontWeight:750,color:C.white,marginTop:20}}>{value}</div>
     {metric?<div style={{fontFamily:"Inter,Arial",fontSize:25,fontWeight:650,color:C.slate,marginTop:4}}>{metric}</div>:null}
-    <div style={{position:"absolute",left:45,right:45,bottom:90,height:18,borderRadius:10,background:C.line}}>
-      {[...Array(count)].map((_,i)=>{const q=loop01(frame,period,Math.round(i*period/count));return <div key={i} style={{position:"absolute",left:`calc(${q*100}% - 8px)`,top:1,width:16,height:16,borderRadius:99,background:accent,boxShadow:`0 0 18px ${accent}66`}}/>;})}
+    <div style={{position:"absolute",left:45,right:45,bottom:90,height:18,borderRadius:10,background:C.line,overflow:"hidden"}}>
+      <div style={{height:"100%",width:`${filledPct}%`,borderRadius:10,background:accent}}/>
     </div>
-    <div style={{position:"absolute",left:45,right:45,bottom:44,display:"flex",justifyContent:"space-between",fontFamily:"Inter,Arial",fontSize:23,fontWeight:700,color:C.slate}}><span>LOW</span><span>ACTIVITY</span><span>HIGH</span></div>
+    <div style={{position:"absolute",left:45,right:45,bottom:44,display:"flex",justifyContent:"space-between",fontFamily:"Inter,Arial",fontSize:23,fontWeight:700,color:C.slate}}><span>0</span><span>100</span></div>
   </div>;
 };
 
@@ -276,5 +280,5 @@ export const continuousAnimationRegistry:Record<string,AnimEntry> = {
   "VA-LF-010":{component:VALF010ThermalField,schema:thermalSchema,description:"Continuously pulsing cell heat map with optional moving cooling sweep.",slots:["title","heatLevel","hotspotRow","hotspotCol","cooling","note","footer"],defaultDurationSec:9},
   "VA-LF-011":{component:VALF011CalibrationShift,schema:calibrationSchema,description:"Displayed battery estimate shifts while usable-energy reference stays stable; scan markers remain active.",slots:["title","displayedStart","displayedEnd","usablePct","displayedLabel","usableLabel","footer"],defaultDurationSec:9},
   "VA-LF-012":{component:VALF012DataDecision,schema:dataDecisionSchema,description:"Continuous sensor data packets feed BMS logic and produce an animated control action.",slots:["title","sensors","decisionLabel","actionLabel","footer"],defaultDurationSec:9},
-  "VA-LF-013":{component:VALF013DynamicCompare,schema:dynamicCompareSchema,description:"Two continuously moving activity lanes compare operating conditions side by side.",slots:["title","leftLabel","rightLabel","leftValue","rightValue","leftIntensity","rightIntensity","metricLabel","footer"],defaultDurationSec:9},
+  "VA-LF-013":{component:VALF013DynamicCompare,schema:dynamicCompareSchema,description:"Two side-by-side normalized progress bars, filled to leftIntensity/rightIntensity percent of their gray 0-100 reference tracks.",slots:["title","leftLabel","rightLabel","leftValue","rightValue","leftIntensity","rightIntensity","metricLabel","footer"],defaultDurationSec:9},
 };
