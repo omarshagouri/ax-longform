@@ -1,0 +1,101 @@
+name: Card Testing — long-form editorial animations V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "video-service/src/animations-editorial.tsx"
+      - "video-service/src/animations.tsx"
+      - "video-service/scripts/qa_editorial_animations.mjs"
+      - ".github/workflows/qa-editorial-animations.yml"
+  workflow_dispatch:
+
+jobs:
+  card-testing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: video-service/package-lock.json
+      - name: Install existing renderer dependencies
+        working-directory: video-service
+        run: npm install
+      - name: Install media probe for actual video validation
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+
+      - name: Prepare browser, verify schema and type-check
+        working-directory: video-service
+        run: |
+          python3 scripts/extract_cards.py Cards
+          npm run typecheck
+          npx remotion browser ensure
+
+      - name: "1/6 — VA-LF-015 two aging clocks MP4 + image checkpoints"
+        working-directory: video-service
+        run: |
+          node scripts/qa_editorial_animations.mjs VA-LF-015
+          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-015/VA-LF-015_V1.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Card_testing_VA-LF-015_V1
+          path: video-service/card-testing/editorial-animations-V1/VA-LF-015/
+          if-no-files-found: error
+
+      - name: "2/6 — VA-LF-016 cell interface chemistry"
+        working-directory: video-service
+        run: |
+          node scripts/qa_editorial_animations.mjs VA-LF-016
+          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-016/VA-LF-016_V1.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Card_testing_VA-LF-016_V1
+          path: video-service/card-testing/editorial-animations-V1/VA-LF-016/
+          if-no-files-found: error
+
+      - name: "3/6 — VA-LF-017 temperature × stored charge"
+        working-directory: video-service
+        run: |
+          node scripts/qa_editorial_animations.mjs VA-LF-017
+          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-017/VA-LF-017_V1.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Card_testing_VA-LF-017_V1
+          path: video-service/card-testing/editorial-animations-V1/VA-LF-017/
+          if-no-files-found: error
+
+      - name: "4/6 — VA-LF-018 fleet evidence"
+        working-directory: video-service
+        run: |
+          node scripts/qa_editorial_animations.mjs VA-LF-018
+          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-018/VA-LF-018_V1.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Card_testing_VA-LF-018_V1
+          path: video-service/card-testing/editorial-animations-V1/VA-LF-018/
+          if-no-files-found: error
+
+      - name: "5/6 — VA-LF-019 range versus health"
+        working-directory: video-service
+        run: |
+          node scripts/qa_editorial_animations.mjs VA-LF-019
+          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-019/VA-LF-019_V1.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Card_testing_VA-LF-019_V1
+          path: video-service/card-testing/editorial-animations-V1/VA-LF-019/
+          if-no-files-found: error
+
+      - name: "6/6 — VA-LF-020 temporary versus persistent trend"
+        working-directory: video-service
+        run: |
+          node scripts/qa_editorial_animations.mjs VA-LF-020
+          ffprobe -v error -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 card-testing/editorial-animations-V1/VA-LF-020/VA-LF-020_V1.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Card_testing_VA-LF-020_V1
+          path: video-service/card-testing/editorial-animations-V1/VA-LF-020/
+          if-no-files-found: error

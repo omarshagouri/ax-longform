@@ -9,6 +9,7 @@ import {
 import { z } from "zod";
 import { theme } from "./theme";
 import { continuousAnimationRegistry } from "./animations-continuous";
+import { editorialAnimationRegistry } from "./animations-editorial";
 import { Dashboard, dashboardSchema } from "./Dashboard";
 
 const lfTheme = {
@@ -1380,6 +1381,7 @@ export const VALF007SystemDelta: React.FC<any> = ({
 
 export const animationRegistry: Record<string, AnimEntry> = {
   ...continuousAnimationRegistry,
+  ...editorialAnimationRegistry,
   "VA-LF-014": {
     component: Dashboard,
     schema: dashboardSchema,
