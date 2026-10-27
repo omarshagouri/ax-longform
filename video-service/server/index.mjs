@@ -74,6 +74,7 @@ function parseBeat(b, i, fps, cursor) {
   const durationFrames = Math.max(1, Math.round(durSec * fps));
   const beat = Number(b.beat) || i + 1;
   const id = String(b.card_id || b.visual_id || "").trim();
+  if (id === "VC-LF-016") throw new Error("AmpCoreX card VC-LF-016 was permanently retired and cannot be used.");
   const isCard = id.startsWith("VC-LF-");
   const isAnimation = id.startsWith("VA-LF-");
   const isClip = CLIP_ID.test(id) || /^VV-LF-\d{3,}\.mp4$/i.test(id);
