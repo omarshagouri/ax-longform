@@ -1,6 +1,7 @@
 import React from "react";
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, interpolate, spring, useVideoConfig } from "remotion";
 import { z } from "zod";
+import { useLFPacedFrame as useCurrentFrame } from "../src/LFAnimationTiming";
 import { theme } from "../src/theme";
 
 const C = {
