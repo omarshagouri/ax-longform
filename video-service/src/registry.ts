@@ -2,7 +2,7 @@ import React from "react";
 import { z } from "zod";
 import { makeHtmlCard, schemaFromSlots } from "./HtmlCard";
 import { allCards } from "./cards/generated/allCards";
-import { animationRegistry } from "./animations";
+import { animationRegistry } from "../Animations/registry";
 import { nativeClips } from "./clips";
 
 export type CardEntry = {

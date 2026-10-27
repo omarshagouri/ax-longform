@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { z } from "zod";
-import { theme } from "./theme";
+import { theme } from "../src/theme";
 
 const C = {
   ...theme,

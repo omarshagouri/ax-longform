@@ -6,9 +6,9 @@ import {renderMedia,renderStill,selectComposition} from "@remotion/renderer";
 
 // Reuses the old AXAnimationPreview QA workflow exactly: canonical MP4,
 // 5 timed PNG checkpoints, stress layout stills and saved input.json.
-// Run ONE animation per execution: node scripts/qa_editorial_animations.mjs VA-LF-015
+// Run ONE animation per execution: node Animations/testing/qa-editorial.mjs VA-LF-015
 // Never claims a generated render was actually visually reviewed.
-const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../..");
 const out=path.join(root,"card-testing","editorial-animations-V1");
 const specs=[
  {id:"VA-LF-015",title:"Two independent battery aging clocks",durationFrames:180,values:{

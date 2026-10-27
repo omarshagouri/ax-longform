@@ -4,9 +4,9 @@ on:
   push:
     branches: [main, visual-library-v2]
     paths:
-      - "video-service/src/animations-continuous.tsx"
-      - "video-service/src/animations.tsx"
-      - "video-service/scripts/qa_continuous_animations.mjs"
+      - "video-service/Animations/continuous.tsx"
+      - "video-service/Animations/registry.tsx"
+      - "video-service/Animations/testing/qa-continuous.mjs"
       - ".github/workflows/qa-continuous-animations.yml"
   workflow_dispatch:
 
@@ -33,7 +33,7 @@ jobs:
         run: npm run typecheck
       - name: Render continuous animation QA
         working-directory: video-service
-        run: node scripts/qa_continuous_animations.mjs
+        run: node Animations/testing/qa-continuous.mjs
       - name: Upload continuous animation QA
         uses: actions/upload-artifact@v4
         with:

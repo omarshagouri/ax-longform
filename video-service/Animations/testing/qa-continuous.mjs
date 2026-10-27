@@ -5,7 +5,7 @@ import { bundle } from "@remotion/bundler";
 import { renderMedia, renderStill, selectComposition } from "@remotion/renderer";
 
 const __dirname=path.dirname(fileURLToPath(import.meta.url));
-const ROOT=path.resolve(__dirname,"..");
+const ROOT=path.resolve(__dirname,"../..");
 const ENTRY=path.join(ROOT,"src","index.ts");
 const OUT=path.join(ROOT,"qa-continuous-v2");
 fs.rmSync(OUT,{recursive:true,force:true}); fs.mkdirSync(OUT,{recursive:true});
