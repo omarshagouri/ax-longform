@@ -16,7 +16,8 @@ const cases=[
  {id:"VA-LF-010",durationFrames:270,values:{title:"A hot spot spreads unless cooling removes the heat",heatLevel:82,hotspotRow:2,hotspotCol:5,cooling:true,note:"Cell temperature is not uniform across a working pack",footer:"QA"}},
  {id:"VA-LF-011",durationFrames:270,values:{title:"The dashboard estimate can move after recalibration",displayedStart:88,displayedEnd:96,usablePct:95,displayedLabel:"Displayed SoH",usableLabel:"Usable-energy reference",footer:"QA"}},
  {id:"VA-LF-012",durationFrames:270,values:{title:"The BMS turns live sensor data into a control decision",sensors:["Voltage","Current","Temperature","SOC"],decisionLabel:"BMS estimate + limits",actionLabel:"Allowed power",footer:"QA"}},
- {id:"VA-LF-013",durationFrames:270,values:{title:"Same battery, different operating stress",leftLabel:"Mild operation",rightLabel:"High stress",leftValue:"LOW",rightValue:"HIGH",leftIntensity:28,rightIntensity:88,metricLabel:"Relative activity / stress",footer:"QA"}}
+ {id:"VA-LF-013",durationFrames:270,values:{title:"Same battery, different operating stress",leftLabel:"Mild operation",rightLabel:"High stress",leftValue:"LOW",rightValue:"HIGH",leftIntensity:28,rightIntensity:88,metricLabel:"Relative activity / stress",footer:"QA"}},
+ {id:"VA-LF-013",caseName:"equal-half-bars",durationFrames:270,values:{title:"Low mileage does not pause time",leftLabel:"LOW MILEAGE",rightLabel:"HIGH MILEAGE",leftValue:"TIME PASSES",rightValue:"TIME PASSES",leftIntensity:50,rightIntensity:50,metricLabel:"Calendar time in both",footer:"Illustrative comparison; no measured aging rates"}}
 ];
 
 const serveUrl=await bundle({entryPoint:ENTRY,webpackOverride:(c)=>c});
@@ -24,7 +25,7 @@ const serveUrl=await bundle({entryPoint:ENTRY,webpackOverride:(c)=>c});
 for(const test of cases){
  const inputProps={animationId:test.id,values:test.values,durationFrames:test.durationFrames};
  const comp=await selectComposition({serveUrl,id:"AXAnimationPreview",inputProps});
- const dir=path.join(OUT,test.id); fs.mkdirSync(dir,{recursive:true});
+ const dir=path.join(OUT,test.id+(test.caseName?"-"+test.caseName:"")); fs.mkdirSync(dir,{recursive:true});
  for(const cp of [
   ["t00_0.5s",15],["t01_1.5s",45],["t02_3.0s",90],["t03_5.0s",Math.min(test.durationFrames-2,150)],["t04_final",test.durationFrames-2]
  ]){
