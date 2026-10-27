@@ -9,7 +9,7 @@ import {
 } from "@remotion/renderer";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..");
+const ROOT = path.resolve(__dirname, "../..");
 const ENTRY = path.join(ROOT, "src", "index.ts");
 const OUT = path.join(ROOT, "qa-output");
 fs.rmSync(OUT, { recursive: true, force: true });

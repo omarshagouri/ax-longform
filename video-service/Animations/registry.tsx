@@ -7,10 +7,10 @@ import {
   useVideoConfig,
 } from "remotion";
 import { z } from "zod";
-import { theme } from "./theme";
-import { continuousAnimationRegistry } from "./animations-continuous";
-import { editorialAnimationRegistry } from "./animations-editorial";
-import { Dashboard, dashboardSchema } from "./Dashboard";
+import { theme } from "../src/theme";
+import { continuousAnimationRegistry } from "./continuous";
+import { editorialAnimationRegistry } from "./editorial";
+import { Dashboard, dashboardSchema } from "../src/Dashboard";
 
 const lfTheme = {
   ...theme,

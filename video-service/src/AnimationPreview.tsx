@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
 import { Frame } from "./Frame";
-import { animationRegistry } from "./animations";
+import { animationRegistry } from "../Animations/registry";
 
 export type AnimationPreviewProps = {
   animationId: string;

@@ -41,7 +41,7 @@ jobs:
 
       - name: Render animation QA suite
         working-directory: video-service
-        run: node scripts/qa_animations.mjs
+        run: node Animations/testing/qa-core.mjs
 
       - name: Upload QA renders
         uses: actions/upload-artifact@v4

@@ -1,3 +1,43 @@
+# Animations — Long-form motion library
+
+**One folder for all animation implementation and QA**, alongside `video-service/Cards/`.
+
+## Files
+
+| File | Purpose |
+|---|---|
+| `registry.tsx` | Core VA-LF animation definitions, unified `animationRegistry`, schema validation, export used by Remotion renderer |
+| `continuous.tsx` | Continuous-motion VA-LF animation components |
+| `editorial.tsx` | Purpose-built explanatory VA-LF-015–020 components |
+| `testing/qa-core.mjs` | Base animation render, canonical and stress screenshot checks |
+| `testing/qa-continuous.mjs` | Continuous motion render checks |
+| `testing/qa-editorial.mjs` | Individual editorial animation MP4 and checkpoint inspection |
+
+## One standard renderer and naming system
+
+Every animation retains its existing `VA-LF-###` ID, catalog entry and Zod prop schema. The only public registry is `animationRegistry` in `registry.tsx`; don't add competing registries elsewhere.
+
+Production consumes the library through `src/registry.ts` and preview through `src/AnimationPreview.tsx`. Do not import animations from `src/animations*.tsx`; those paths were removed in this reorganization.
+
+## Tests (run from `video-service/`)
+
+```sh
+python3 scripts/extract_cards.py Cards
+node Animations/testing/qa-core.mjs
+node Animations/testing/qa-continuous.mjs
+node Animations/testing/qa-editorial.mjs VA-LF-015
+# Repeat editorial test for each ID through VA-LF-020
+npm run build
+```
+
+GitHub Actions execute these scripts, render previews and upload corresponding QA artifacts. Outputs are not source code and are not committed.
+
+## Existing asset behavior
+
+The refactor preserves animation behavior; no motion semantics, existing IDs, props or durations have been changed. Use the live visual dataset to check Ready status; merged code alone does not imply production Cloud Run deployment.
+
+## Existing catalog / usage reference
+
 # Long-Form Animation Library V2
 
 ID family: VA-LF-*.
