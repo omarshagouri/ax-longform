@@ -3,10 +3,10 @@ import {
   AbsoluteFill,
   interpolate,
   spring,
-  useCurrentFrame,
   useVideoConfig,
 } from "remotion";
 import { z } from "zod";
+import { useLFPacedFrame as useCurrentFrame } from "../src/LFAnimationTiming";
 import { theme } from "../src/theme";
 import { continuousAnimationRegistry } from "./continuous";
 import { editorialAnimationRegistry } from "./editorial";
