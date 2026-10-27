@@ -1,0 +1,21 @@
+name: Validate Visual Policy Contract
+
+on:
+  pull_request:
+    paths:
+      - "visual-policy/**"
+      - ".github/workflows/validate-visual-policy.yml"
+  workflow_dispatch:
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out policy
+        uses: actions/checkout@v4
+      - name: Install Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify archived prompt, rubric and immutable legacy gates
+        run: node --test visual-policy/technical-gates.test.mjs
