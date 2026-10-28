@@ -22,6 +22,7 @@ const loadTsx = (mod, filename) => {
 require.extensions[".tsx"] = loadTsx;
 require.extensions[".ts"] = loadTsx;
 const { animationRegistry } = require("../Animations/registry.tsx");
+const { normalizeBoundedAnimationValues } = require("../src/clampNumeric.ts");
 
 const cases = [
   {id:"VA-LF-001",values:{usablePct:70},slots:[["usablePct",0,100],["bufferPct",0,100]]},
@@ -71,4 +72,11 @@ assert.equal(animationRegistry["VA-LF-008"].schema.parse({
 assert.equal(animationRegistry["VA-LF-008"].schema.safeParse({
   nodes:["charger","pack"],intensity:"not a number"
 }).success,false);
-console.log(`PASS: ${assertions+3} animation bounds assertions across ${cases.length} numeric-control animations`);
+const legacyLongTitle="An intentionally extra-long editorial QA title that should never be rejected just because we clamp numbers";
+const legacy = normalizeBoundedAnimationValues(animationRegistry["VA-LF-016"].schema, {title:legacyLongTitle,footer:"QA"});
+assert.equal(legacy.title,legacyLongTitle,"do not newly reject or truncate existing preview text");
+const clampedPreview = normalizeBoundedAnimationValues(animationRegistry["VA-LF-008"].schema,
+  {title:legacyLongTitle,nodes:["charger","pack"],intensity:0.6});
+assert.equal(clampedPreview.intensity,1,"render must use the normalized intensity");
+assert.equal(clampedPreview.title,legacyLongTitle,"clamp must preserve unrelated text");
+console.log(`PASS: ${assertions+6} animation bounds assertions across ${cases.length} numeric-control animations`);
