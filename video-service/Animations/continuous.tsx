@@ -1,6 +1,7 @@
 import React from "react";
 import { AbsoluteFill, interpolate, spring, useVideoConfig } from "remotion";
 import { z } from "zod";
+import { clampNumeric, clampInteger } from "../src/clampNumeric";
 import { useLFPacedFrame as useCurrentFrame, useLFRealFrame, useLFRevealProgress } from "../src/LFAnimationTiming";
 import { theme } from "../src/theme";
 
@@ -47,7 +48,7 @@ const packetStreamSchema=z.object({
   title:z.string().optional(),
   nodes:z.array(z.string()).min(2).max(5),
   flowLabel:z.string().optional(),
-  intensity:z.number().min(1).max(5).default(3),
+  intensity:clampNumeric(1, 5).default(3),
   footer:z.string().optional(),
 });
 const throttleSchema=z.object({
@@ -55,24 +56,24 @@ const throttleSchema=z.object({
   inputLabel:z.string(),
   gateLabel:z.string(),
   outputLabel:z.string(),
-  inputRate:z.number().min(0).max(100),
-  outputRate:z.number().min(0).max(100),
+  inputRate:clampNumeric(0, 100),
+  outputRate:clampNumeric(0, 100),
   footer:z.string().optional(),
 });
 const thermalSchema=z.object({
   title:z.string().optional(),
-  heatLevel:z.number().min(0).max(100).default(70),
-  hotspotRow:z.number().int().min(0).max(4).default(2),
-  hotspotCol:z.number().int().min(0).max(7).default(5),
+  heatLevel:clampNumeric(0, 100).default(70),
+  hotspotRow:clampInteger(0, 4).default(2),
+  hotspotCol:clampInteger(0, 7).default(5),
   cooling:z.boolean().default(true),
   note:z.string().optional(),
   footer:z.string().optional(),
 });
 const calibrationSchema=z.object({
   title:z.string().optional(),
-  displayedStart:z.number().min(0).max(100),
-  displayedEnd:z.number().min(0).max(100),
-  usablePct:z.number().min(0).max(100),
+  displayedStart:clampNumeric(0, 100),
+  displayedEnd:clampNumeric(0, 100),
+  usablePct:clampNumeric(0, 100),
   displayedLabel:z.string().default("Displayed estimate"),
   usableLabel:z.string().default("Usable energy"),
   footer:z.string().optional(),
@@ -90,8 +91,8 @@ const dynamicCompareSchema=z.object({
   rightLabel:z.string(),
   leftValue:z.string(),
   rightValue:z.string(),
-  leftIntensity:z.number().min(0).max(100),
-  rightIntensity:z.number().min(0).max(100),
+  leftIntensity:clampNumeric(0, 100),
+  rightIntensity:clampNumeric(0, 100),
   metricLabel:z.string().optional(),
   footer:z.string().optional(),
 });
@@ -106,7 +107,7 @@ export const VALF008PacketStream:React.FC<any> = ({title,nodes,flowLabel,intensi
   const W=1610,left=155,inner=95,y=440,n=nodes.length,gap=n<=3?100:66,nodeW=Math.min(250,(W-190-gap*(n-1))/n);
   const xs=nodes.map((_:string,i:number)=>inner+i*(nodeW+gap));
   const x0=xs[0]+nodeW, x1=xs[n-1], span=Math.max(1,x1-x0);
-  const count=Math.max(3,Math.min(8,Number(intensity||3)+3));
+  const count=Math.max(3,Math.min(8,Math.round(Number(intensity||3)+3)));
   const period=Math.round(fps*(2.8-Math.min(5,Number(intensity||3))*.25));
   return <AbsoluteFill>
     <Title title={title||"Energy moving through the system"} kicker="Live energy stream"/>
