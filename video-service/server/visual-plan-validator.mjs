@@ -10,6 +10,7 @@ const canon=s=>String(s??"").toLowerCase().replace(/[^a-z0-9]/g,"");
 const norm=s=>String(s??"").replace(/[’‘]/g,"'").replace(/[“”]/g,'"').replace(/\s+/g," ").trim();
 const words=s=>norm(s).split(" ").filter(Boolean);
 const isClip=s=>/^VV-LF-\d{3,}$/i.test(s),isAnim=s=>/^VA-LF-\d{3,}$/i.test(s),isCard=s=>/^VC-LF-\d{3,}$/i.test(s);
+const RETIRED_VISUALS=new Set(["VC-LF-016"]);
 const continuous=new Set(["VA-LF-004","VA-LF-008","VA-LF-009","VA-LF-010","VA-LF-011","VA-LF-012","VA-LF-013"]);
 function buildCatalog(tabs,err){
   const map=new Map();
@@ -21,6 +22,7 @@ function buildCatalog(tabs,err){
     for(const [i,r] of rows.entries()){
       if(i===0||!r?.length)continue;
       const id=norm(v(r,key));if(!id)continue;
+      if(RETIRED_VISUALS.has(id)){err("catalog.retired_asset",0,0,id,"Permanently retired asset cannot be listed");continue;}
       if(map.has(id))err("catalog.duplicate",0,0,id,"Duplicate Visual ID");
       const limit=Number(v(r,maxKey)||v(r,name==="Animations"?"Default_duration":"Duration_sec"));
       if(!Number.isFinite(limit)||limit<=0)err("catalog.cap",0,0,id,"No valid maximum duration");
@@ -61,6 +63,7 @@ export function auditVisualPlan(data) {
     if(!Number.isFinite(audio)||audio<=0)err("chapter.audio",n,0,null,"Measured audio duration missing");
     for(let i=0;i<rows.length;i++){
       const r=rows[i],b=Number(r[1]),id=norm(r[2]),a=assets.get(id),sec=Number(r[4]),f=Math.round(sec*30);
+      if(RETIRED_VISUALS.has(id))err("beat.retired_asset",n,b,id,"Permanently retired AmpCoreX card is prohibited");
       if(b!==i+1)err("beat.order",n,b,id,"Beats must be sequential from 1");
       if(!a)err("beat.unknown_asset",n,b,id,"ID not in live catalog");
       else if(a.status.toLowerCase()!=="ready")err("beat.not_ready",n,b,id,"Catalog asset is not Ready");
