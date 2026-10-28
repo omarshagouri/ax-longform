@@ -15,10 +15,10 @@ const tmp=fs.mkdtempSync(path.join(os.tmpdir(),"ax-lf-motion-"));
 const samples=[66,150,235];  // 2.2s, 5.0s, 7.83s within an 8s beat
 const hash=buf=>crypto.createHash("sha256").update(buf).digest("hex");
 
-async function verify({id,compositionId,inputProps}){
+async function verify({id,compositionId,inputProps,sampleFrames=samples}){
   const comp=await selectComposition({serveUrl,id:compositionId,inputProps});
   const hashes=[];
-  for(const frame of samples){
+  for(const frame of sampleFrames){
     const output=path.join(tmp,id+"-"+frame+".png");
     await renderStill({composition:comp,serveUrl,inputProps,frame,output,imageFormat:"png"});
     hashes.push(hash(fs.readFileSync(output)));
@@ -31,8 +31,25 @@ async function verify({id,compositionId,inputProps}){
 const vals={title:"Low mileage does not pause time",leftLabel:"LOW MILEAGE",rightLabel:"HIGH MILEAGE",
   leftValue:"TIME PASSES",rightValue:"TIME PASSES",leftIntensity:50,rightIntensity:50,
   metricLabel:"Calendar time in both",footer:"Illustrative comparison; no measured aging rates"};
+// Directional choreography: context → labeled objects → links → signal,
+// and comparator labels/values BEFORE the two progress bars.
+await verify({id:"VA-LF-004",compositionId:"AXAnimationPreview",
+  inputProps:{animationId:"VA-LF-004",durationFrames:240,
+    values:{title:"Chemistry continues even without driving",nodes:["Electrode interface","Cell-side reactions","Storage aging"],
+      centerLabel:"Conceptual mechanism",direction:"forward"}}});
+await verify({id:"VA-LF-008",compositionId:"AXAnimationPreview",
+  inputProps:{animationId:"VA-LF-008",durationFrames:240,
+    values:{title:"Charge/discharge is one aging pathway",nodes:["Charging","BMS","Pack","Cells"],
+      flowLabel:"CYCLING ENERGY",intensity:3}}});
+await verify({id:"VA-LF-012",compositionId:"AXAnimationPreview",
+  inputProps:{animationId:"VA-LF-012",durationFrames:240,
+    values:{title:"BMS signals help estimate range",sensors:["Cell temperature","Pack voltage","Recent current"],
+      decisionLabel:"BMS estimate",actionLabel:"Range estimate"}}});
 await verify({id:"VA-LF-013",compositionId:"AXAnimationPreview",
   inputProps:{animationId:"VA-LF-013",durationFrames:240,values:vals}});
+await verify({id:"VA-LF-013-12s",compositionId:"AXAnimationPreview",
+  sampleFrames:[100,245,353],
+  inputProps:{animationId:"VA-LF-013",durationFrames:360,values:vals}});
 await verify({id:"VA-LF-015",compositionId:"AXAnimationPreview",
   inputProps:{animationId:"VA-LF-015",durationFrames:240,values:{title:"Your battery has two clocks",
     cycleLabel:"Charging cycles",calendarLabel:"Calendar time",
