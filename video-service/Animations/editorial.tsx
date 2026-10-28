@@ -1,6 +1,7 @@
 import React from "react";
 import { AbsoluteFill, useVideoConfig } from "remotion";
 import { z } from "zod";
+import { clampNumeric, clampInteger } from "../src/clampNumeric";
 import { useLFPacedFrame as useCurrentFrame, useLFRevealProgress } from "../src/LFAnimationTiming";
 
 // AmpCoreX editorial animation family. All animation is deterministic at 30fps.
@@ -172,9 +173,9 @@ export const VALF017SocHeatMatrix:React.FC<any>=({title,xAxisLabel,yAxisLabel,fo
 
 export const fleetEvidenceSchema=z.object({
   title:z.string().max(83).default("A real-world fleet observation"),
-  vehicles:z.number().int().min(100).max(1000000).default(22000),
-  models:z.number().int().min(1).max(100).default(21),
-  difference:z.number().min(0).max(20).default(.4),
+  vehicles:clampInteger(100, 1000000).default(22000),
+  models:clampInteger(1, 100).default(21),
+  difference:clampNumeric(0, 20).default(.4),
   source:z.string().max(65).default("GEOTAB FLEET ANALYSIS"),
   footer:z.string().max(135).optional(),
 });
@@ -219,9 +220,9 @@ export const VALF018FleetEvidence:React.FC<any>=({title,vehicles,models,differen
 
 export const rangeVsHealthSchema=z.object({
   title:z.string().max(86).default("Dashboard range is not battery health"),
-  rangeStart:z.number().min(0).max(100).default(82),
-  rangeEnd:z.number().min(0).max(100).default(58),
-  healthReference:z.number().min(0).max(100).default(79),
+  rangeStart:clampNumeric(0, 100).default(82),
+  rangeEnd:clampNumeric(0, 100).default(58),
+  healthReference:clampNumeric(0, 100).default(79),
   footer:z.string().max(135).optional(),
 });
 export const VALF019RangeHealth:React.FC<any>=({title,rangeStart,rangeEnd,healthReference,footer})=>{

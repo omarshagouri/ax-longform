@@ -6,6 +6,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import { z } from "zod";
+import { clampNumeric, clampInteger } from "../src/clampNumeric";
 import { useLFPacedFrame as useCurrentFrame, useLFRevealProgress } from "../src/LFAnimationTiming";
 import { theme } from "../src/theme";
 import { continuousAnimationRegistry } from "./continuous";
@@ -41,8 +42,8 @@ const baseProps = {
 
 const batteryBufferSchema = z.object({
   ...baseProps,
-  usablePct: z.number().min(0).max(100),
-  bufferPct: z.number().min(0).max(100).default(0),
+  usablePct: clampNumeric(0, 100),
+  bufferPct: clampNumeric(0, 100).default(0),
   usableLabel: z.string().optional().default("Usable"),
   bufferLabel: z.string().optional().default("Reserve"),
   footer: z.string().optional(),
@@ -51,9 +52,9 @@ const batteryBufferSchema = z.object({
 const beforeAfterSchema = z.object({
   ...baseProps,
   beforeLabel: z.string(),
-  beforePct: z.number().min(0).max(100),
+  beforePct: clampNumeric(0, 100),
   afterLabel: z.string(),
-  afterPct: z.number().min(0).max(100),
+  afterPct: clampNumeric(0, 100),
   deltaLabel: z.string().optional(),
   footer: z.string().optional(),
 });
@@ -92,7 +93,7 @@ const timelineSchema = z.object({
 const counterSchema = z.object({
   ...baseProps,
   value: z.number(),
-  decimals: z.number().int().min(0).max(2).default(0),
+  decimals: clampInteger(0, 2).default(0),
   prefix: z.string().optional().default(""),
   suffix: z.string().optional().default(""),
   label: z.string().optional(),
