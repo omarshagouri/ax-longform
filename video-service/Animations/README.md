@@ -13,6 +13,26 @@
 | `testing/qa-continuous.mjs` | Continuous motion render checks |
 | `testing/qa-editorial.mjs` | Individual editorial animation MP4 and checkpoint inspection |
 
+## Permanent numeric-bounds policy for new animations
+
+Every **user-supplied bounded numeric animation field** must use
+`clampNumeric(min, max)` from `../src/clampNumeric` in its Zod schema.
+For bounded integer fields (grid indexes/counts), use `clampInteger(min, max)`.
+Out-of-range finite values are normalized to the nearest permitted boundary,
+not rejected. Values already within range remain unchanged.
+
+The renderer and animation preview must use the **parsed Zod output** for
+actual drawing, not just validate it; otherwise the old out-of-range number
+would still reach the component. The standalone dashboard path follows the
+same policy. Add low / high / in-range regression cases to
+`scripts/test-lf-animation-clamping.mjs` for every new bounded numeric field,
+and keep that test in `validate-longform-video.yml`.
+
+Non-numeric input and missing required fields still fail validation. Unbounded
+measured/chart values have no arbitrary invented min/max. Clamping is a
+visual input compatibility rule; do not represent a clamped value as a verified
+battery measurement or external research result. Preserve full-beat reveal timing.
+
 ## One standard renderer and naming system
 
 Every animation retains its existing `VA-LF-###` ID, catalog entry and Zod prop schema. The only public registry is `animationRegistry` in `registry.tsx`; don't add competing registries elsewhere.
