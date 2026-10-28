@@ -46,6 +46,10 @@ jobs:
         working-directory: video-service
         run: node scripts/test-catalog-clip-manifest.mjs
 
+      - name: Verify all bounded LF animation controls clamp automatically
+        working-directory: video-service
+        run: node scripts/test-lf-animation-clamping.mjs
+
       - name: Typecheck
         working-directory: video-service
         run: npm run typecheck
