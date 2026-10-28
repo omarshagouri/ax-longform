@@ -34,11 +34,12 @@ export const AnimationPreview: React.FC<AnimationPreviewProps> = ({
   }
 
   const Anim = entry.component;
+  const renderedValues = { ...values, ...entry.schema.parse(values) };
   return (
     <AbsoluteFill>
       <Frame />
       <LFAnimationTimingProvider animationId={animationId} durationFrames={durationFrames}>
-        <Anim {...values} __holdFrames={durationFrames} />
+        <Anim {...renderedValues} __holdFrames={durationFrames} />
       </LFAnimationTimingProvider>
     </AbsoluteFill>
   );
