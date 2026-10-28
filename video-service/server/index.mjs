@@ -485,7 +485,7 @@ app.post("/render-dashboard", async (req, res) => {
     typeof v !== "string" || v.length > max || (required && !v.trim()))) {
     return res.status(400).json({ error: "invalid text slot (type, required title or length)" });
   }
-  if (progress !== undefined && (typeof progress !== "number" || !Number.isFinite(progress) || progress < 0 || progress > 100)) {
+  if (progress !== undefined && (typeof progress !== "number" || !Number.isFinite(progress))) {
     return res.status(400).json({ error: "progress must be a number from 0 to 100" });
   }
   const frames = Math.round(Number(duration_sec) * 30);
@@ -496,7 +496,8 @@ app.post("/render-dashboard", async (req, res) => {
   const outPath = path.join("/tmp", "dashboard-" + job + ".mp4");
   try {
     // Intentionally use the bundled PNG. Legacy background_file_id fields are ignored.
-    const inputProps = { title, subtitle, mainValue, mainUnit, progress,
+    const normalizedProgress = progress === undefined ? undefined : Math.max(0, Math.min(100, progress));
+    const inputProps = { title, subtitle, mainValue, mainUnit, progress: normalizedProgress,
       detail, status, __holdFrames: frames };
     const serveUrl = await getServeUrl();
     const comp = await selectComposition({ serveUrl, id: "AXDashboardPreview", inputProps });
