@@ -4,6 +4,9 @@ on:
     branches: [main]
     paths:
       - 'video-service/src/Dashboard.tsx'
+      - 'video-service/scripts/test-lf-dashboard-motion.mjs'
+      - 'video-service/Animations/registry.tsx'
+      - 'video-service/src/AnimationPreview.tsx'
       - 'video-service/public/dashboard-bg.png'
       - 'video-service/src/Root.tsx'
       - 'video-service/src/animations.tsx'
@@ -40,6 +43,9 @@ jobs:
           npx remotion render AXDashboardPreview out/dashboard-smoke.mp4 \
             --codec h264 --crf 24 --concurrency 2 --log error
           test -s out/dashboard-smoke.mp4
+      - name: Verify VA-LF-014 advances over 6, 8 and 12 second beats
+        working-directory: video-service
+        run: node scripts/test-lf-dashboard-motion.mjs
       - uses: actions/upload-artifact@v4
         with:
           name: dashboard-smoke-preview
