@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, Sequence, Audio, Img, OffthreadVideo, staticFile } from "remotion";
 import { VideoManifest } from "./manifest";
-import { registry } from "./registry";
+import { registry, bannedVisualIds } from "./registry";
 import { Frame } from "./Frame";
 import { theme } from "./theme";
 import { LFAnimationTimingProvider } from "./LFAnimationTiming";
@@ -15,6 +15,9 @@ export const Video: React.FC<{ manifest: VideoManifest }> = ({ manifest }) => {
       <Frame />
       {manifest.timeline.map((item, i) => {
         const key = `t-${item.beat}-${i}`;
+        if (bannedVisualIds.has(item.component)) {
+          throw new Error("Retired AmpCoreX card VC-LF-016 is permanently prohibited");
+        }
         if (item.track === "image" && item.src) {
           return (
             <Sequence key={key} from={item.startFrame} durationInFrames={item.durationFrames}>
