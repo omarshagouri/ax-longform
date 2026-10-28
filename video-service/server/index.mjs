@@ -2,7 +2,7 @@
 // Native canvas: 1920x1080. This service never calls or modifies Shorts services.
 import express from "express";
 import fs from "fs";
-import { randomUUID } from "node:crypto";
+import { randomUUID,createHash } from "node:crypto";
 import path from "path";
 import { fileURLToPath } from "url";
 import { spawnSync } from "child_process";
@@ -601,7 +601,6 @@ app.post("/subtitle/prepare-chapter", (req,res) => {
       if(sidecar?.schema!=="ampcorex.lf.word-timing.v1" || sidecar.video_id!==video_id ||
         sidecar.chapter!==Number(chapter) || !Array.isArray(sidecar.words) || !sidecar.words.length)
         throw Error("Prepared timestamps do not match video and chapter");
-      const {createHash}=await import("node:crypto");
       const expected=createHash("sha256").update(String(narration||"").replace(/\s+/g," ").trim()).digest("hex");
       if(sidecar.narration_sha256!==expected)throw Error("Prepared timestamp narration does not match approved narration");
       sidecar.audio_file_id=String(audio_file_id||"").trim();
