@@ -3,6 +3,7 @@ import { AbsoluteFill } from "remotion";
 import { Frame } from "./Frame";
 import { animationRegistry } from "../Animations/registry";
 import { LFAnimationTimingProvider } from "./LFAnimationTiming";
+import { normalizeBoundedAnimationValues } from "./clampNumeric";
 
 export type AnimationPreviewProps = {
   animationId: string;
@@ -34,7 +35,7 @@ export const AnimationPreview: React.FC<AnimationPreviewProps> = ({
   }
 
   const Anim = entry.component;
-  const renderedValues = { ...values, ...entry.schema.parse(values) };
+  const renderedValues = normalizeBoundedAnimationValues(entry.schema, values);
   return (
     <AbsoluteFill>
       <Frame />
