@@ -246,7 +246,7 @@ export const VALF012DataDecision:React.FC<any> = ({title,sensors,decisionLabel,a
   </AbsoluteFill>;
 };
 
-const CompareLane:React.FC<{x:number;label:string;value:string;intensity:number;accent:string;metric?:string;frame:number;fps:number}> = ({x,label,value,intensity,accent,metric,frame,fps}) => {
+const CompareLane:React.FC<{x:number;label:string;value:string;intensity:number;accent:string;metric?:string}> = ({x,label,value,intensity,accent,metric}) => {
   // The intensity is a percentage of a fixed gray 0–100 reference track.
   const progress=useLFRevealProgress();
   const cue=x<600?.23:.42;
@@ -291,12 +291,12 @@ const CompareLane:React.FC<{x:number;label:string;value:string;intensity:number;
   </div>;
 };
 export const VALF013DynamicCompare:React.FC<any> = ({title,leftLabel,rightLabel,leftValue,rightValue,leftIntensity,rightIntensity,metricLabel,footer}) => {
-  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const real=useLFRealFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
+  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
   return <AbsoluteFill>
     <Title title={title||"Same system, different operating condition"} kicker="Live comparator"/>
     <Panel style={{position:"absolute",left:155,top:285,width:1610,height:620,opacity:p}}>
-      <CompareLane x={105} label={leftLabel} value={leftValue} intensity={Number(leftIntensity)} accent={C.teal} metric={metricLabel} frame={f} fps={fps}/>
-      <CompareLane x={885} label={rightLabel} value={rightValue} intensity={Number(rightIntensity)} accent={C.heat} metric={metricLabel} frame={f} fps={fps}/>
+      <CompareLane x={105} label={leftLabel} value={leftValue} intensity={Number(leftIntensity)} accent={C.teal} metric={metricLabel}/>
+      <CompareLane x={885} label={rightLabel} value={rightValue} intensity={Number(rightIntensity)} accent={C.heat} metric={metricLabel}/>
       <div style={{position:"absolute",left:775,top:255,width:60,textAlign:"center",fontFamily:"Space Grotesk,Arial",fontSize:44,fontWeight:800,color:C.slate,opacity:staged(progress,.39,.52)}}>VS</div>
     </Panel><Footer text={footer}/>
   </AbsoluteFill>;
