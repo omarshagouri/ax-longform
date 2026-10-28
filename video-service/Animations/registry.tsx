@@ -6,7 +6,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import { z } from "zod";
-import { useLFPacedFrame as useCurrentFrame } from "../src/LFAnimationTiming";
+import { useLFPacedFrame as useCurrentFrame, useLFRevealProgress } from "../src/LFAnimationTiming";
 import { theme } from "../src/theme";
 import { continuousAnimationRegistry } from "./continuous";
 import { editorialAnimationRegistry } from "./editorial";
@@ -839,7 +839,14 @@ export const VALF004ProcessFlow: React.FC<any> = ({
   footer,
 }) => {
   const frame = useCurrentFrame();
+  const progress = useLFRevealProgress();
   const { fps } = useVideoConfig();
+  // Staged story: contextual label, node, connector, next node, then moving flow.
+  const reveal = (start: number, end: number) => {
+    const p = clamp01((progress - start) / (end - start));
+    return 1 - Math.pow(1 - p, 3);
+  };
+  const sequenceStep = 0.54 / (2 * nodes.length - 1);
   const n = nodes.length;
   const panelP = enter(frame, fps, 7);
   const flowStart = 48;
@@ -892,6 +899,7 @@ export const VALF004ProcessFlow: React.FC<any> = ({
               lineHeight: 1.25,
               fontWeight: 650,
               color: lfTheme.slate,
+              opacity: reveal(0.12, 0.24),
             }}
           >
             {centerLabel}
@@ -908,7 +916,7 @@ export const VALF004ProcessFlow: React.FC<any> = ({
             const x2 = positions[i + 1];
             const midY = y + nodeH / 2;
             return (
-              <g key={i}>
+              <g key={i} opacity={reveal(0.20 + (2 * i + 1) * sequenceStep, 0.20 + (2 * i + 2) * sequenceStep)}>
                 <line
                   x1={x1 + 12}
                   y1={midY}
@@ -943,13 +951,13 @@ export const VALF004ProcessFlow: React.FC<any> = ({
               cy={y + nodeH / 2}
               r="13"
               fill={lfTheme.teal}
-              opacity="0.98"
+              opacity={0.98 * reveal(0.79, 0.91)}
             />
           ) : null}
         </svg>
 
         {nodes.map((node: string, i: number) => {
-          const q = enter(frame, fps, 14 + i * 7);
+          const q = reveal(0.20 + 2 * i * sequenceStep, 0.20 + (2 * i + 1) * sequenceStep);
           return (
             <div
               key={node + i}
@@ -998,7 +1006,7 @@ export const VALF004ProcessFlow: React.FC<any> = ({
             fontSize: 27,
             fontWeight: 750,
             letterSpacing: 0.4,
-            opacity: fade(frame, 45, 10),
+            opacity: reveal(0.88, 0.98),
           }}
         >
           {direction === "reverse"
