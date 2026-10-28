@@ -71,15 +71,21 @@ export function getResumableSessionURL(session) {
   return location;
 }
 
-export async function uploadFinalAssemblyToGCS(filePath, filename, videoId) {
-  const bucket = String(process.env.AXLF_ASSEMBLY_GCS_BUCKET || "").trim();
-  if (!bucket) throw new Error("AXLF_ASSEMBLY_GCS_BUCKET is not configured");
+export function resolveRenderDeliveryBucket(env = process.env) {
+  return String(env.AXLF_RENDER_GCS_BUCKET || env.AXLF_ASSEMBLY_GCS_BUCKET || "").trim();
+}
+
+/** Shared private MP4 storage contract for assembly and chapter-part delivery.
+ * IAM and upload permissions are bucket-scoped; download is a one-hour signed URL.
+ */
+async function uploadPrivateMp4ToGCS(filePath, filename, videoId, {bucket, prefix, envName}) {
+  if (!bucket) throw new Error(envName + " is not configured");
   if (!/^[a-z0-9][a-z0-9._-]{2,221}[a-z0-9]$/.test(bucket)) {
     throw new Error("Invalid AXLF_ASSEMBLY_GCS_BUCKET name");
   }
   const safeVideoId = String(videoId || "video").replace(/[^A-Za-z0-9_-]/g, "");
   const safeFilename = String(filename || "video_FINAL.mp4").replace(/[^A-Za-z0-9._-]/g, "_");
-  const objectName = "final-assembly/" + safeVideoId + "/" + Date.now() + "-" + randomUUID() + "/" + safeFilename;
+  const objectName = prefix + "/" + safeVideoId + "/" + Date.now() + "-" + randomUUID() + "/" + safeFilename;
   const size = fs.statSync(filePath).size;
 
   const auth = new GoogleAuth({ scopes: [API_SCOPE] });
@@ -118,4 +124,22 @@ export async function uploadFinalAssemblyToGCS(filePath, filename, videoId) {
     storage_object: objectName,
     ...signed,
   };
+}
+
+/** Existing separate final-assembly endpoint continues using its configured bucket. */
+export async function uploadFinalAssemblyToGCS(filePath, filename, videoId) {
+  return uploadPrivateMp4ToGCS(filePath, filename, videoId, {
+    bucket: String(process.env.AXLF_ASSEMBLY_GCS_BUCKET || "").trim(),
+    prefix: "final-assembly",
+    envName: "AXLF_ASSEMBLY_GCS_BUCKET",
+  });
+}
+
+/** New small-response chapter/part delivery; isolated object prefix and bucket override. */
+export async function uploadRenderedMp4ToGCS(filePath, filename, videoId) {
+  return uploadPrivateMp4ToGCS(filePath, filename, videoId, {
+    bucket: resolveRenderDeliveryBucket(),
+    prefix: "chapter-renders",
+    envName: "AXLF_RENDER_GCS_BUCKET or AXLF_ASSEMBLY_GCS_BUCKET",
+  });
 }

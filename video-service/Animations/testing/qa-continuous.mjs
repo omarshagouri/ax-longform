@@ -17,7 +17,8 @@ const cases=[
  {id:"VA-LF-011",durationFrames:270,values:{title:"The dashboard estimate can move after recalibration",displayedStart:88,displayedEnd:96,usablePct:95,displayedLabel:"Displayed SoH",usableLabel:"Usable-energy reference",footer:"QA"}},
  {id:"VA-LF-012",durationFrames:270,values:{title:"The BMS turns live sensor data into a control decision",sensors:["Voltage","Current","Temperature","SOC"],decisionLabel:"BMS estimate + limits",actionLabel:"Allowed power",footer:"QA"}},
  {id:"VA-LF-013",durationFrames:270,values:{title:"Same battery, different operating stress",leftLabel:"Mild operation",rightLabel:"High stress",leftValue:"LOW",rightValue:"HIGH",leftIntensity:28,rightIntensity:88,metricLabel:"Relative activity / stress",footer:"QA"}},
- {id:"VA-LF-013",caseName:"equal-half-bars",durationFrames:270,values:{title:"Low mileage does not pause time",leftLabel:"LOW MILEAGE",rightLabel:"HIGH MILEAGE",leftValue:"TIME PASSES",rightValue:"TIME PASSES",leftIntensity:50,rightIntensity:50,metricLabel:"Calendar time in both",footer:"Illustrative comparison; no measured aging rates"}}
+ {id:"VA-LF-013",caseName:"equal-half-bars",durationFrames:270,values:{title:"Low mileage does not pause time",leftLabel:"LOW MILEAGE",rightLabel:"HIGH MILEAGE",leftValue:"TIME PASSES",rightValue:"TIME PASSES",leftIntensity:50,rightIntensity:50,metricLabel:"Calendar time in both",footer:"Illustrative comparison; no measured aging rates"}},
+ {id:"VA-LF-013",caseName:"long-value-spacing",durationFrames:270,values:{title:"Stored charge and heat are two factors",leftLabel:"COOL / MODERATE SOC",rightLabel:"HOT / HIGH SOC",leftValue:"LOWER STRESS",rightValue:"HIGHER STRESS",leftIntensity:30,rightIntensity:70,metricLabel:"Qualitative storage stress",footer:"Illustrative comparison; no measured aging rates"}}
 ];
 
 const serveUrl=await bundle({entryPoint:ENTRY,webpackOverride:(c)=>c});

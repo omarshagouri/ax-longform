@@ -22,6 +22,11 @@ RUN node --test server/clip-catalog.test.mjs
 RUN node --test server/visual-plan-validator.test.mjs server/visual-word-alignment.test.mjs
 RUN node --check server/assembly-gcs.mjs
 RUN node --test server/assembly-gcs.test.mjs
+RUN node --check server/render-delivery.mjs
+RUN node --test server/render-delivery.test.mjs
+RUN node --check server/segmented-tts.mjs
+RUN node --check server/visual-timing-context.mjs
+RUN node --test server/segmented-tts.test.mjs
 RUN bash -n scripts/setup-lf-assembly-gcs.sh
 RUN python3 scripts/extract_cards.py Cards
 RUN npx remotion browser ensure

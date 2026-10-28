@@ -8,6 +8,12 @@ on:
       - "video-service/src/HtmlCard.tsx"
       - "video-service/scripts/qa_cards.mjs"
       - ".github/workflows/qa-longform-cards.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "video-service/Cards/**"
+      - "video-service/src/HtmlCard.tsx"
+      - "video-service/src/cards/generated/allCards.ts"
   workflow_dispatch:
 
 jobs:
