@@ -12,6 +12,7 @@ import { GoogleAuth } from "google-auth-library";
 import { uploadFinalAssemblyToGCS } from "./assembly-gcs.mjs";
 import { prepareChapterSidecar, buildFinalSrt } from "./subtitles.mjs";
 import { generateSegmentedChapter } from "./segmented-tts.mjs";
+import { makeVisualTimingContext } from "./visual-timing-context.mjs";
 import { parseRenderDelivery, assertRenderDeliveryReady, deliverRenderedMp4 } from "./render-delivery.mjs";
 import { assertChapterTimelineMatchesAudio } from "./chapter-timing.mjs";
 import { chooseSplitFrame, makeSilentPartManifest, makeAudioPartManifest, validatePairedJoin } from "./paired-chapter.mjs";
@@ -555,6 +556,20 @@ app.post("/render-dashboard", async (req, res) => {
   } finally {
     try { fs.unlinkSync(outPath); } catch {}
   }
+});
+
+// Visual planning receives actual sentence timestamps from uploaded WordTimings JSON.
+app.post("/visual/timing-context",async(req,res)=>{
+  if(!ok(req))return res.status(401).json({error:"bad api key"});
+  try{
+    const {video_id,chapter,narration,subtitle_alignment_file_id}=req.body||{};
+    const id=String(subtitle_alignment_file_id||"").trim();
+    if(!/^[a-zA-Z0-9_-]{15,256}$/.test(id))return res.status(400).json({error:"Valid chapter WordTimings Drive file ID is required"});
+    const {buf}=await driveDownload(id,path.join(ASSETS,"visual_timing_"+randomUUID()));
+    if(buf.length>1000000)throw Error("Word-timing sidecar exceeds 1 MB");
+    const sidecar=JSON.parse(buf.toString("utf8"));
+    return res.json({status:"ok",...makeVisualTimingContext({sidecar,video_id,chapter,narration})});
+  }catch(error){return res.status(422).json({status:"error",error:String(error?.message||error)});}
 });
 
 // One approved chapter narration -> short TTS generations -> one stitched MP3 and
