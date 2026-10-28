@@ -102,7 +102,7 @@ const NodeBox:React.FC<{label:string;x:number;y:number;width:number;accent?:stri
   </div>;
 
 export const VALF008PacketStream:React.FC<any> = ({title,nodes,flowLabel,intensity,footer}) => {
-  const f=useCurrentFrame(); const real=useLFRealFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
+  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const real=useLFRealFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
   const W=1610,left=155,inner=95,y=440,n=nodes.length,gap=n<=3?100:66,nodeW=Math.min(250,(W-190-gap*(n-1))/n);
   const xs=nodes.map((_:string,i:number)=>inner+i*(nodeW+gap));
   const x0=xs[0]+nodeW, x1=xs[n-1], span=Math.max(1,x1-x0);
@@ -111,21 +111,21 @@ export const VALF008PacketStream:React.FC<any> = ({title,nodes,flowLabel,intensi
   return <AbsoluteFill>
     <Title title={title||"Energy moving through the system"} kicker="Live energy stream"/>
     <Panel style={{position:"absolute",left,top:285,width:W,height:620,opacity:p,transform:`translateY(${(1-p)*16}px)`}}>
-      {flowLabel?<div style={{position:"absolute",left:80,right:80,top:46,textAlign:"center",fontFamily:"Inter,Arial",fontSize:29,fontWeight:650,color:C.slate}}>{flowLabel}</div>:null}
+      {flowLabel?<div style={{position:"absolute",left:80,right:80,top:46,textAlign:"center",fontFamily:"Inter,Arial",fontSize:29,fontWeight:650,color:C.slate,opacity:staged(progress,.13,.25)}}>{flowLabel}</div>:null}
       <svg width={W} height="620" style={{position:"absolute",inset:0}}>
-        <line x1={x0} y1={y} x2={x1} y2={y} stroke={C.line} strokeWidth="10" strokeLinecap="round"/>
+        <line x1={x0} y1={y} x2={x1} y2={y} stroke={C.line} strokeWidth="10" strokeLinecap="round" opacity={staged(progress,.65,.77)}/>
         {[...Array(count)].map((_,i)=>{
           const q=loop01(real,period,Math.round(i*period/count));
           const x=x0+span*q;
           const glow=.55+.45*Math.sin(q*Math.PI);
-          return <g key={i}>
+          return <g key={i} opacity={staged(progress,.79,.92)}>
             <circle cx={x} cy={y} r={18} fill={C.teal} opacity={.14*glow}/>
             <circle cx={x} cy={y} r={8} fill={C.teal} opacity={.95}/>
           </g>;
         })}
       </svg>
-      {nodes.map((node:string,i:number)=><NodeBox key={node+i} label={node} x={xs[i]} y={y-75} width={nodeW} accent={i===0||i===n-1?C.teal:C.slate} opacity={appear(f,fps,12+i*5)}/>)}
-      <div style={{position:"absolute",left:100,right:100,bottom:48,textAlign:"center",fontFamily:"Inter,Arial",fontSize:27,fontWeight:750,color:C.teal,letterSpacing:.5}}>CONTINUOUS ENERGY FLOW</div>
+      {nodes.map((node:string,i:number)=><NodeBox key={node+i} label={node} x={xs[i]} y={y-75} width={nodeW} accent={i===0||i===n-1?C.teal:C.slate} opacity={staged(progress,.23+i*.085,.34+i*.085)}/>)}
+      <div style={{position:"absolute",left:100,right:100,bottom:48,textAlign:"center",fontFamily:"Inter,Arial",fontSize:27,fontWeight:750,color:C.teal,letterSpacing:.5,opacity:staged(progress,.89,.98)}}>CONTINUOUS ENERGY FLOW</div>
     </Panel>
     <Footer text={footer}/>
   </AbsoluteFill>;
@@ -226,22 +226,22 @@ export const VALF012DataDecision:React.FC<any> = ({title,sensors,decisionLabel,a
   return <AbsoluteFill>
     <Title title={title||"Data becomes a battery decision"} kicker="Live BMS logic"/>
     <Panel style={{position:"absolute",left:155,top:285,width:W,height:620,opacity:p}}>
-      <div style={{position:"absolute",left:80,right:80,top:48,textAlign:"center",fontFamily:"Inter,Arial",fontSize:27,fontWeight:700,color:C.slate}}>SENSORS → ESTIMATE → DECIDE → ACT</div>
+      <div style={{position:"absolute",left:80,right:80,top:48,textAlign:"center",fontFamily:"Inter,Arial",fontSize:27,fontWeight:700,color:C.slate,opacity:staged(progress,.12,.24)}}>SENSORS → ESTIMATE → DECIDE → ACT</div>
       <svg width={W} height="620" style={{position:"absolute",inset:0}}>
         {ys.map((y:number,i:number)=>{
           const q=loop01(real,period,Math.round(i*period/sensors.length));
           const from=sx+sensorW,to=cx-centerW/2;
           return <g key={i}>
-            <line x1={from} y1={y} x2={to} y2={cy} stroke={C.line} strokeWidth="5"/>
-            <circle cx={from+(to-from)*q} cy={y+(cy-y)*q} r="8" fill={i%2?C.cold:C.teal}/>
+            <line x1={from} y1={y} x2={to} y2={cy} stroke={C.line} strokeWidth="5" opacity={staged(progress,.54,.66)}/>
+            <circle cx={from+(to-from)*q} cy={y+(cy-y)*q} r="8" fill={i%2?C.cold:C.teal} opacity={staged(progress,.66,.79)}/>
           </g>;
         })}
-        <line x1={cx+centerW/2} y1={cy} x2={actionX} y2={cy} stroke={C.line} strokeWidth="8" strokeLinecap="round"/>
-        {[0,1,2].map(i=>{const q=loop01(real,Math.round(fps*1.65),i*16);return <circle key={"out"+i} cx={cx+centerW/2+(actionX-cx-centerW/2)*q} cy={cy} r="9" fill={C.heat}/>;})}
+        <line x1={cx+centerW/2} y1={cy} x2={actionX} y2={cy} stroke={C.line} strokeWidth="8" strokeLinecap="round" opacity={staged(progress,.83,.91)}/>
+        {[0,1,2].map(i=>{const q=loop01(real,Math.round(fps*1.65),i*16);return <circle key={"out"+i} cx={cx+centerW/2+(actionX-cx-centerW/2)*q} cy={cy} r="9" fill={C.heat} opacity={staged(progress,.91,.985)}/>;})}
       </svg>
-      {sensors.map((label:string,i:number)=><div key={i} style={{position:"absolute",left:sx,top:ys[i]-sensorH/2,width:sensorW,height:sensorH,boxSizing:"border-box",border:`2px solid ${i%2?C.cold:C.teal}88`,borderRadius:20,background:"rgba(20,36,64,.97)",display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 15px",fontFamily:"Space Grotesk,Arial",fontSize:label.length>17?25:31,fontWeight:700,color:C.white,textAlign:"center",opacity:staged(progress,.20+i*.10,.40+i*.10)}}>{label}</div>)}
-      <div style={{position:"absolute",left:cx-centerW/2,top:cy-100,width:centerW,height:200,opacity:staged(progress,.58,.77),boxSizing:"border-box",borderRadius:30,border:`3px solid ${C.teal}`,background:"rgba(20,36,64,.97)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,textAlign:"center",fontFamily:"Space Grotesk,Arial",fontSize:30,fontWeight:750,color:C.white,transform:`scale(${centralPulse})`,boxShadow:`0 0 30px ${C.teal}33`}}>{decisionLabel}</div>
-      <NodeBox label={actionLabel} x={actionX} y={cy-75} width={300} accent={C.heat} opacity={staged(progress,.74,.92)}/>
+      {sensors.map((label:string,i:number)=><div key={i} style={{position:"absolute",left:sx,top:ys[i]-sensorH/2,width:sensorW,height:sensorH,boxSizing:"border-box",border:`2px solid ${i%2?C.cold:C.teal}88`,borderRadius:20,background:"rgba(20,36,64,.97)",display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 15px",fontFamily:"Space Grotesk,Arial",fontSize:label.length>17?25:31,fontWeight:700,color:C.white,textAlign:"center",opacity:staged(progress,.20+i*.087,.31+i*.087)}}>{label}</div>)}
+      <div style={{position:"absolute",left:cx-centerW/2,top:cy-100,width:centerW,height:200,opacity:staged(progress,.64,.79),boxSizing:"border-box",borderRadius:30,border:`3px solid ${C.teal}`,background:"rgba(20,36,64,.97)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,textAlign:"center",fontFamily:"Space Grotesk,Arial",fontSize:30,fontWeight:750,color:C.white,transform:`scale(${centralPulse})`,boxShadow:`0 0 30px ${C.teal}33`}}>{decisionLabel}</div>
+      <NodeBox label={actionLabel} x={actionX} y={cy-75} width={300} accent={C.heat} opacity={staged(progress,.79,.90)}/>
     </Panel><Footer text={footer}/>
   </AbsoluteFill>;
 };
@@ -249,9 +249,11 @@ export const VALF012DataDecision:React.FC<any> = ({title,sensors,decisionLabel,a
 const CompareLane:React.FC<{x:number;label:string;value:string;intensity:number;accent:string;metric?:string;frame:number;fps:number}> = ({x,label,value,intensity,accent,metric,frame,fps}) => {
   // The intensity is a percentage of a fixed gray 0–100 reference track.
   const progress=useLFRevealProgress();
-  const cue=x<600?.24:.43;
+  const cue=x<600?.23:.42;
   const targetPct=Number.isFinite(intensity)?Math.max(0,Math.min(100,intensity)):0;
-  const reveal=ease((frame-fps*0.25)/(fps*1.35));
+  // Both progress bars are the final payoff after the lane labels and values.
+  const barStart=x<600?.79:.84;
+  const reveal=staged(progress,barStart,.98);
   const filledPct=targetPct*reveal;
   const labelRef=React.useRef<HTMLDivElement>(null);
   const valueRef=React.useRef<HTMLDivElement>(null);
@@ -274,27 +276,28 @@ const CompareLane:React.FC<{x:number;label:string;value:string;intensity:number;
 
   const trackLabels={fontFamily:"Inter,Arial",fontSize:23,fontWeight:700,color:C.slate};
   const showNumberInsideFill=filledPct>=18;
+  const barOpacity=staged(progress,barStart-.045,barStart+.035);
   return <div style={{position:"absolute",left:x,top:95,width:620,height:430,border:"2px solid "+accent+"55",borderRadius:28,background:"rgba(20,36,64,.88)",boxSizing:"border-box"}}>
     <div ref={labelRef} style={{position:"absolute",left:38,right:38,top:28,height:66,overflow:"hidden",overflowWrap:"anywhere",fontFamily:"Space Grotesk,Arial",fontSize:36,lineHeight:1.1,fontWeight:750,color:accent,opacity:staged(progress,cue,cue+.15)}}>{label}</div>
     <div ref={valueRef} style={{position:"absolute",left:38,right:38,top:107,height:134,overflow:"hidden",overflowWrap:"anywhere",fontFamily:"Space Grotesk,Arial",fontSize:66,lineHeight:1.05,fontWeight:750,color:C.white,opacity:staged(progress,cue+.09,cue+.24)}}>{value}</div>
     {metric?<div style={{position:"absolute",left:38,right:38,top:251,height:56,overflow:"hidden",overflowWrap:"anywhere",fontFamily:"Inter,Arial",fontSize:25,lineHeight:1.12,fontWeight:650,color:C.slate,opacity:staged(progress,cue+.17,cue+.32)}}>{metric}</div>:null}
-    <div style={{position:"absolute",left:45,right:45,bottom:77,height:34,borderRadius:10,background:C.line,overflow:"hidden"}}>
+    <div style={{position:"absolute",left:45,right:45,bottom:77,height:34,borderRadius:10,background:C.line,overflow:"hidden",opacity:barOpacity}}>
       <div style={{position:"absolute",left:0,top:0,height:"100%",width:String(filledPct)+"%",borderRadius:10,background:accent}}/>
       <div style={{position:"absolute",left:0,top:0,height:"100%",width:showNumberInsideFill?String(filledPct)+"%":"100%",display:"flex",alignItems:"center",justifyContent:showNumberInsideFill?"center":"flex-start",paddingLeft:showNumberInsideFill?0:10,boxSizing:"border-box",fontFamily:"Inter,Arial",fontSize:22,fontWeight:800,letterSpacing:0.2,color:showNumberInsideFill?C.navy:C.white}}>
         {Math.round(filledPct)}%
       </div>
     </div>
-    <div style={{position:"absolute",left:45,right:45,bottom:31,display:"flex",justifyContent:"space-between",...trackLabels}}><span>0</span><span>100</span></div>
+    <div style={{position:"absolute",left:45,right:45,bottom:31,display:"flex",justifyContent:"space-between",...trackLabels,opacity:barOpacity}}><span>0</span><span>100</span></div>
   </div>;
 };
 export const VALF013DynamicCompare:React.FC<any> = ({title,leftLabel,rightLabel,leftValue,rightValue,leftIntensity,rightIntensity,metricLabel,footer}) => {
-  const f=useCurrentFrame(); const real=useLFRealFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
+  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const real=useLFRealFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
   return <AbsoluteFill>
     <Title title={title||"Same system, different operating condition"} kicker="Live comparator"/>
     <Panel style={{position:"absolute",left:155,top:285,width:1610,height:620,opacity:p}}>
       <CompareLane x={105} label={leftLabel} value={leftValue} intensity={Number(leftIntensity)} accent={C.teal} metric={metricLabel} frame={f} fps={fps}/>
       <CompareLane x={885} label={rightLabel} value={rightValue} intensity={Number(rightIntensity)} accent={C.heat} metric={metricLabel} frame={f} fps={fps}/>
-      <div style={{position:"absolute",left:775,top:255,width:60,textAlign:"center",fontFamily:"Space Grotesk,Arial",fontSize:44,fontWeight:800,color:C.slate}}>VS</div>
+      <div style={{position:"absolute",left:775,top:255,width:60,textAlign:"center",fontFamily:"Space Grotesk,Arial",fontSize:44,fontWeight:800,color:C.slate,opacity:staged(progress,.39,.52)}}>VS</div>
     </Panel><Footer text={footer}/>
   </AbsoluteFill>;
 };
