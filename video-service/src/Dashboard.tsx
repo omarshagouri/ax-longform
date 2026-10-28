@@ -94,7 +94,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
           opacity: opacity(0.67),
         }}>{detail}</div> : null}
         {status ? <div style={{
-          ...label, position: "absolute", top: 521,
+          // Keep the final status clear of the detail line when a large metric is shown.
+          ...label, position: "absolute", top: metric && detail ? 550 : 521,
           color: "#74E5C8", fontSize: 23, fontWeight: 700,
           letterSpacing: 2.5, opacity: opacity(0.81),
         }}>{status}</div> : null}
