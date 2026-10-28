@@ -11,6 +11,8 @@ import { selectComposition, renderMedia, renderStill } from "@remotion/renderer"
 import { GoogleAuth } from "google-auth-library";
 import { uploadFinalAssemblyToGCS } from "./assembly-gcs.mjs";
 import { prepareChapterSidecar, buildFinalSrt } from "./subtitles.mjs";
+import { generateSegmentedChapter } from "./segmented-tts.mjs";
+import { makeVisualTimingContext } from "./visual-timing-context.mjs";
 import { parseRenderDelivery, assertRenderDeliveryReady, deliverRenderedMp4 } from "./render-delivery.mjs";
 import { assertChapterTimelineMatchesAudio } from "./chapter-timing.mjs";
 import { chooseSplitFrame, makeSilentPartManifest, makeAudioPartManifest, validatePairedJoin } from "./paired-chapter.mjs";
@@ -556,14 +558,59 @@ app.post("/render-dashboard", async (req, res) => {
   }
 });
 
+// Visual planning receives actual sentence timestamps from uploaded WordTimings JSON.
+app.post("/visual/timing-context",async(req,res)=>{
+  if(!ok(req))return res.status(401).json({error:"bad api key"});
+  try{
+    const {video_id,chapter,narration,subtitle_alignment_file_id}=req.body||{};
+    const id=String(subtitle_alignment_file_id||"").trim();
+    if(!/^[a-zA-Z0-9_-]{15,256}$/.test(id))return res.status(400).json({error:"Valid chapter WordTimings Drive file ID is required"});
+    const {buf}=await driveDownload(id,path.join(ASSETS,"visual_timing_"+randomUUID()));
+    if(buf.length>1000000)throw Error("Word-timing sidecar exceeds 1 MB");
+    const sidecar=JSON.parse(buf.toString("utf8"));
+    return res.json({status:"ok",...makeVisualTimingContext({sidecar,video_id,chapter,narration})});
+  }catch(error){return res.status(422).json({status:"error",error:String(error?.message||error)});}
+});
+
+// One approved chapter narration -> short TTS generations -> one stitched MP3 and
+// measured word timing JSON. Protects the original Make one-MP3-per-chapter contract.
+app.post("/audio/generate-chapter",async(req,res)=>{
+  if(!ok(req))return res.status(401).json({error:"bad api key"});
+  try{
+    const {text,video_id,chapter,voice_id,model_id,voice_settings}=req.body||{};
+    const generated=await generateSegmentedChapter({text,video_id,chapter,voice_id,
+      model_id,voice_settings,apiKey:String(req.headers["xi-api-key"]||"")});
+    return res.json(generated);
+  }catch(error){
+    console.error("segmented LF audio failed:",String(error?.message||error));
+    return res.status(422).json({status:"error",error:String(error?.message||error)});
+  }
+});
+
 // Prepare compact timing JSON for Drive; never store or echo the MP3 base64.
 app.post("/subtitle/prepare-chapter", (req,res) => {
   if (!ok(req)) return res.status(401).json({error:"bad api key"});
   try {
-    const { video_id, chapter, narration, audio_file_id, elevenlabs_response } = req.body || {};
-    if (!elevenlabs_response || typeof elevenlabs_response !== "object")
-      return res.status(400).json({error:"ElevenLabs raw response is required"});
-    const sidecar = prepareChapterSidecar({video_id,chapter,narration,tts:elevenlabs_response,audio_file_id});
+    const { video_id, chapter, narration, audio_file_id, elevenlabs_response, prepared_sidecar_base64 } = req.body || {};
+    let sidecar;
+    if (prepared_sidecar_base64) {
+      if(typeof prepared_sidecar_base64!=="string"||prepared_sidecar_base64.length>2000000)
+        throw Error("Prepared subtitle timing is invalid or too large");
+      try { sidecar=JSON.parse(Buffer.from(prepared_sidecar_base64,"base64").toString("utf8")); }
+      catch {throw Error("Prepared word timings JSON cannot be decoded");}
+      if(sidecar?.schema!=="ampcorex.lf.word-timing.v1" || sidecar.video_id!==video_id ||
+        sidecar.chapter!==Number(chapter) || !Array.isArray(sidecar.words) || !sidecar.words.length)
+        throw Error("Prepared timestamps do not match video and chapter");
+      const {createHash}=await import("node:crypto");
+      const expected=createHash("sha256").update(String(narration||"").replace(/\s+/g," ").trim()).digest("hex");
+      if(sidecar.narration_sha256!==expected)throw Error("Prepared timestamp narration does not match approved narration");
+      sidecar.audio_file_id=String(audio_file_id||"").trim();
+      if(!sidecar.audio_file_id)throw Error("Uploaded MP3 Drive file ID required");
+    }else{
+      if (!elevenlabs_response || typeof elevenlabs_response !== "object")
+        return res.status(400).json({error:"ElevenLabs raw response is required"});
+      sidecar=prepareChapterSidecar({video_id,chapter,narration,tts:elevenlabs_response,audio_file_id});
+    }
     const filename = String(video_id).replace(/[^A-Za-z0-9_-]/g,"") +
       "_CH" + String(sidecar.chapter).padStart(2,"0") + "_WordTimings.json";
     return res.json({status:"ok",sidecar_filename:filename,
