@@ -10,6 +10,7 @@ import { bundle } from "@remotion/bundler";
 import { selectComposition, renderMedia, renderStill } from "@remotion/renderer";
 import { GoogleAuth } from "google-auth-library";
 import { uploadFinalAssemblyToGCS } from "./assembly-gcs.mjs";
+import { prepareChapterSidecar, buildFinalSrt } from "./subtitles.mjs";
 import { parseRenderDelivery, assertRenderDeliveryReady, deliverRenderedMp4 } from "./render-delivery.mjs";
 import { assertChapterTimelineMatchesAudio } from "./chapter-timing.mjs";
 import { chooseSplitFrame, makeSilentPartManifest, makeAudioPartManifest, validatePairedJoin } from "./paired-chapter.mjs";
@@ -28,7 +29,7 @@ const HEIGHT = 1080;
 fs.mkdirSync(ASSETS, { recursive: true });
 
 const app = express();
-app.use(express.json({ limit: "16mb" }));
+app.use(express.json({ limit: "32mb" }));
 app.use("/assets", express.static(ASSETS));
 
 let serveUrlPromise = null;
@@ -252,6 +253,7 @@ async function assembleApprovedChapters(video_id, chapters, endClipId, thumbnail
     chapter: Number(x?.chapter) || i + 1,
     file_id: String(x?.file_id || "").trim(),
     review_status: String(x?.review_status || "").trim(),
+    subtitle_alignment_file_id: String(x?.subtitle_alignment_file_id || "").trim(),
   }));
   if (!normalized.length) throw new Error("need at least one approved chapter");
   const blocked = normalized.filter((x) => x.review_status !== "Approved");
@@ -268,6 +270,30 @@ async function assembleApprovedChapters(video_id, chapters, endClipId, thumbnail
     throw new Error("assembly blocked: duplicate chapter numbers found");
   }
 
+  // Every narrative chapter must carry its measured ElevenLabs word timing.
+  // One sidecar belongs to the full chapter, not independently to P1 and P2.
+  const chaptersExpected = [...new Set(ordered.map(x => Math.floor(x.chapter)))];
+  const subtitleFileIds = new Map();
+  for (const item of ordered) {
+    if (!item.subtitle_alignment_file_id) continue;
+    const chapter = Math.floor(item.chapter);
+    const previous = subtitleFileIds.get(chapter);
+    if (previous && previous !== item.subtitle_alignment_file_id)
+      throw new Error("Conflicting subtitle alignments for chapter " + chapter);
+    subtitleFileIds.set(chapter, item.subtitle_alignment_file_id);
+  }
+  if (subtitleFileIds.size !== chaptersExpected.length)
+    throw new Error("Missing chapter word-timing JSON; rerun/backfill LF Audio Agent for chapters: " +
+      chaptersExpected.filter(n => !subtitleFileIds.has(n)).join(", "));
+  const subtitleSidecars = new Map();
+  for (const [chapter, fileId] of subtitleFileIds) {
+    const { buf } = await driveDownload(fileId, path.join(ASSETS, safe + "_subtitle_ch" + chapter));
+    let sidecar;
+    try { sidecar = JSON.parse(buf.toString("utf8")); }
+    catch { throw new Error("Word-timing JSON file is not valid for chapter " + chapter); }
+    subtitleSidecars.set(chapter, sidecar);
+  }
+  const partDurations = [];
   const inputs = [];
   const thumbId = String(thumbnailFileId || "").trim();
   // A one-second 1920x1080 silent intro. We encode an AAC silence track so that
@@ -295,8 +321,19 @@ async function assembleApprovedChapters(video_id, chapters, endClipId, thumbnail
       ordered[i].file_id,
       path.join(ASSETS, `${safe}_assembly_ch_${String(ordered[i].chapter).padStart(2, "0")}_${i + 1}`)
     );
-    inputs.push(path.join(ASSETS, name));
+    const filename = path.join(ASSETS, name);
+    inputs.push(filename);
+    const probe = spawnSync("ffprobe", ["-v", "error", "-show_entries",
+      "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", filename],
+      { encoding: "utf8", maxBuffer: 1024 * 1024 });
+    const seconds = Number(String(probe.stdout || "").trim());
+    if (probe.status !== 0 || !Number.isFinite(seconds) || seconds <= 0)
+      throw new Error("Cannot determine rendered part duration for chapter " + ordered[i].chapter);
+    partDurations.push({chapter:ordered[i].chapter,duration:seconds});
   }
+  const finalSubtitles = buildFinalSrt({video_id,parts:partDurations,
+    sidecars:subtitleSidecars,thumbnail_intro_seconds:thumbId?1:0});
+  const srtFilename = safe + "_FINAL.srt";
 
   const endId = String(endClipId || "").trim();
   if (endId) {
@@ -337,6 +374,10 @@ async function assembleApprovedChapters(video_id, chapters, endClipId, thumbnail
       end_clip_included: Boolean(endId),
       thumbnail_intro_included: Boolean(thumbId),
       thumbnail_intro_seconds: thumbId ? 1 : 0,
+      srt_filename: srtFilename,
+      srt_base64: Buffer.from(finalSubtitles.text, "utf8").toString("base64"),
+      subtitle_caption_count: finalSubtitles.caption_count,
+      subtitle_chapter_count: finalSubtitles.chapter_count,
     };
   } finally {
     try { fs.unlinkSync(out); } catch {}
@@ -513,6 +554,22 @@ app.post("/render-dashboard", async (req, res) => {
   } finally {
     try { fs.unlinkSync(outPath); } catch {}
   }
+});
+
+// Prepare compact timing JSON for Drive; never store or echo the MP3 base64.
+app.post("/subtitle/prepare-chapter", (req,res) => {
+  if (!ok(req)) return res.status(401).json({error:"bad api key"});
+  try {
+    const { video_id, chapter, narration, audio_file_id, elevenlabs_response } = req.body || {};
+    if (!elevenlabs_response || typeof elevenlabs_response !== "object")
+      return res.status(400).json({error:"ElevenLabs raw response is required"});
+    const sidecar = prepareChapterSidecar({video_id,chapter,narration,tts:elevenlabs_response,audio_file_id});
+    const filename = String(video_id).replace(/[^A-Za-z0-9_-]/g,"") +
+      "_CH" + String(sidecar.chapter).padStart(2,"0") + "_WordTimings.json";
+    return res.json({status:"ok",sidecar_filename:filename,
+      sidecar_base64:Buffer.from(JSON.stringify(sidecar),"utf8").toString("base64"),
+      word_count:sidecar.words.length,duration_seconds:sidecar.duration_seconds});
+  } catch(error) { return res.status(422).json({status:"error",error:String(error?.message||error)}); }
 });
 
 app.post("/assemble-video", async (req, res) => {
