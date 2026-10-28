@@ -21,9 +21,10 @@ For bounded integer fields (grid indexes/counts), use `clampInteger(min, max)`.
 Out-of-range finite values are normalized to the nearest permitted boundary,
 not rejected. Values already within range remain unchanged.
 
-The renderer and animation preview must use the **parsed Zod output** for
-actual drawing, not just validate it; otherwise the old out-of-range number
-would still reach the component. The standalone dashboard path follows the
+The renderer and animation preview must apply **the numeric values returned
+by their bounded Zod slot parsers** to actual drawing, not only validate them.
+Do not newly reject unrelated editorial text in existing previews; the
+`normalizeBoundedAnimationValues` helper preserves non-numeric fields. The standalone dashboard path follows the
 same policy. Add low / high / in-range regression cases to
 `scripts/test-lf-animation-clamping.mjs` for every new bounded numeric field,
 and keep that test in `validate-longform-video.yml`.
