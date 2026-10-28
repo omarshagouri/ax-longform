@@ -5,6 +5,7 @@ import { registry, bannedVisualIds } from "./registry";
 import { Frame } from "./Frame";
 import { theme } from "./theme";
 import { LFAnimationTimingProvider } from "./LFAnimationTiming";
+import { normalizeBoundedAnimationValues } from "./clampNumeric";
 
 const asset = (s: string) => (s.startsWith("http") || s.startsWith("data:") ? s : staticFile(s));
 
@@ -42,7 +43,7 @@ export const Video: React.FC<{ manifest: VideoManifest }> = ({ manifest }) => {
         const Card = entry.component;
         // Use the clamped Zod result for the actual visual, not only for validation.
         const renderedProps = item.track === "anim"
-          ? { ...item.props, ...entry.schema.parse(item.props) }
+          ? normalizeBoundedAnimationValues(entry.schema, item.props)
           : item.props;
         const customBg = item.track === "anim" ? String((item.props as any)?.backgroundSrc || "") : "";
         const rawBgOpacity = Number((item.props as any)?.backgroundOpacity ?? 0.72);
