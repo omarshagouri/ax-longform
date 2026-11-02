@@ -20,8 +20,10 @@ test("style defaults and validation", () => {
   const s = normalizeThumbnailStyle({headline:"LFP vs NMC",visual_concept:"split-screen"});
   assert.equal(s.layout,"comparison");
   assert.equal(s.showSubhead,false);
-  assert.equal(s.overlayStrength,0.78);
-  assert.equal(s.vignetteStrength,0.84);
+  assert.equal(s.showSubhead,true);
+  assert.equal(normalizeThumbnailStyle({headline:"OK",show_subhead:false}).showSubhead,false);
+  assert.equal(s.overlayStrength,0.84);
+  assert.equal(s.vignetteStrength,0.96);
   assert.equal(normalizeThumbnailStyle({headline:"OK",vignette_strength:0}).vignetteStrength,0);
   assert.equal(normalizeThumbnailStyle({headline:"OK",vignette_strength:1}).vignetteStrength,1);
   assert.throws(()=>normalizeThumbnailStyle({headline:"OK",vignette_strength:-0.1}), /vignette_strength/);
