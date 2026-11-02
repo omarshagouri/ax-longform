@@ -22,8 +22,8 @@ export type ThumbnailProps = {
 
 export const Thumbnail: React.FC<ThumbnailProps> = ({
   backgroundSrc, logoSrc = "", series = "AMPCOREX BRIEF", headline, subhead = "",
-  layout = "hero", highlightPhrases = [], overlayStrength = 0.78,
-  vignetteStrength = 0.84, backgroundBrightness = 1.08, showSubhead = false,
+  layout = "hero", highlightPhrases = [], overlayStrength = 0.84,
+  vignetteStrength = 0.96, backgroundBrightness = 1.08, showSubhead = true,
   comparisonLeftLabel = "", comparisonLeftSub = "", comparisonCenterLabel = "VS", comparisonRightLabel = "",
 }) => {
   const strength = Math.min(1, Math.max(0, Number(overlayStrength) || 0));
@@ -34,8 +34,8 @@ export const Thumbnail: React.FC<ThumbnailProps> = ({
   const vignetteOpacity = Math.min(1, Math.max(0, Number(vignetteStrength) || 0));
   // Radial falloff frames the whole image while keeping the right-side hero subject bright.
   // The independent left-to-right gradient remains dedicated to headline readability.
-  const vignette = "radial-gradient(ellipse 83% 85% at "+(layout==="comparison"?"65%":"69%")+" 45%, rgba(2,8,19,0) 0%, rgba(2,8,19,0) 34%, rgba(2,8,19,"+(vignetteOpacity*.12).toFixed(3)+") 58%, rgba(2,8,19,"+(vignetteOpacity*.5).toFixed(3)+") 83%, rgba(2,8,19,"+(vignetteOpacity*.78).toFixed(3)+") 100%)";
-  const floorShade = "linear-gradient(0deg, rgba(3,14,32,"+(vignetteOpacity*.68).toFixed(3)+") 0%, rgba(3,14,32,"+(vignetteOpacity*.15).toFixed(3)+") 20%, transparent 46%)";
+  const vignette = "radial-gradient(ellipse 83% 85% at "+(layout==="comparison"?"65%":"69%")+" 45%, rgba(2,8,19,0) 0%, rgba(2,8,19,0) 34%, rgba(2,8,19,"+(vignetteOpacity*.20).toFixed(3)+") 58%, rgba(2,8,19,"+(vignetteOpacity*.73).toFixed(3)+") 83%, rgba(2,8,19,"+(vignetteOpacity*.99).toFixed(3)+") 100%)";
+  const floorShade = "linear-gradient(0deg, rgba(3,14,32,"+(vignetteOpacity*.86).toFixed(3)+") 0%, rgba(3,14,32,"+(vignetteOpacity*.22).toFixed(3)+") 20%, transparent 46%)";
   const gradient = "linear-gradient(90deg, rgba(3,14,32,"+(strength*1).toFixed(3)+") 0%, rgba(3,14,32,"+(strength*.99).toFixed(3)+") 27%, rgba(3,14,32,"+(strength*.94).toFixed(3)+") 36%, rgba(3,14,32,"+(strength*.54).toFixed(3)+") 47%, rgba(3,14,32,"+(strength*.15).toFixed(3)+") 59%, rgba(3,14,32,0) 73%)";
   const len = String(headline || "").length;
   const headlineSize = isReference ? 59 : len > 96 ? 43 : len > 76 ? 49 : len > 60 ? 56 : len > 43 ? 65 : len > 27 ? 74 : 82;
@@ -61,9 +61,24 @@ export const Thumbnail: React.FC<ThumbnailProps> = ({
             return <span key={i} style={{color:teal?theme.teal:theme.white}}>{token}</span>;
           })}
         </div>
-        {showSubhead && subhead ? <div style={{marginTop:15,fontSize:25,lineHeight:1.12,fontWeight:500,color:"#F1F6FB",textShadow:"0 2px 8px rgba(0,0,0,0.75)"}}>{subhead}</div>:null}
       </div>
-      {logoSrc ? <Img src={logoSrc} style={{position:"absolute",left:86,bottom:55,height:80,width:"auto",maxWidth:295,objectFit:"contain",filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.5))"}} /> : null}
+      {showSubhead && String(subhead || "").trim() ? (
+        <div style={{
+          position:"absolute",left:isReference?29:56,top:486,width:isReference?545:562,
+          maxHeight:56,overflow:"hidden",display:"-webkit-box",WebkitBoxOrient:"vertical",WebkitLineClamp:2,
+          fontSize:24,lineHeight:1.15,fontWeight:500,color:"#E4EFF6",letterSpacing:.2,
+          textShadow:"0 2px 9px rgba(0,0,0,.95)"
+        }}>{subhead}</div>
+      ) : null}
+      {logoSrc ? <Img src={logoSrc} style={{
+        position:"absolute",left:77,bottom:67,height:108,width:"auto",maxWidth:375,objectFit:"contain",
+        mixBlendMode:"screen",filter:"drop-shadow(0 2px 9px rgba(0,0,0,.4))"
+      }} /> : null}
+      {logoSrc ? <div style={{
+        position:"absolute",left:96,bottom:40,color:theme.teal,
+        fontSize:11.5,fontWeight:600,letterSpacing:1.1,
+        textShadow:"0 2px 5px rgba(0,0,0,.8)"
+      }}>BATTERY INTELLIGENCE FOR THE ELECTRIC AGE</div> : null}
       {compareLabels ? <>
         <div style={{position:"absolute",left:584,bottom:83,width:200,textAlign:"center",fontWeight:700,fontSize:comparisonLeftLabel.length>7?45:61,color:theme.teal,textShadow:"0 3px 13px #061326"}}>
           {comparisonLeftLabel}{comparisonLeftSub ? <div style={{fontSize:26,marginTop:-2}}>{comparisonLeftSub}</div> : null}
