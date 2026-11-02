@@ -61,9 +61,9 @@ export function normalizeThumbnailStyle(body = {}) {
   const headline = String(body.headline || "").trim();
   if (!headline) throw new Error("headline is required");
   if (headline.length > 180) throw new Error("headline is too long for a thumbnail (180 character maximum)");
-  const opacity = body.overlay_strength === undefined ? 0.78 : Number(body.overlay_strength);
+  const opacity = body.overlay_strength === undefined ? 0.84 : Number(body.overlay_strength);
   if (!Number.isFinite(opacity) || opacity < 0 || opacity > 1) throw new Error("overlay_strength must be between 0 and 1");
-  const vignette = body.vignette_strength === undefined ? 0.84 : Number(body.vignette_strength);
+  const vignette = body.vignette_strength === undefined ? 0.96 : Number(body.vignette_strength);
   if (!Number.isFinite(vignette) || vignette < 0 || vignette > 1) throw new Error("vignette_strength must be between 0 and 1");
   const brightness = body.background_brightness === undefined ? 1.08 : Number(body.background_brightness);
   if (!Number.isFinite(brightness) || brightness < 0.8 || brightness > 1.35) throw new Error("background_brightness must be between 0.8 and 1.35");
@@ -77,7 +77,7 @@ export function normalizeThumbnailStyle(body = {}) {
     overlayStrength: opacity,
     vignetteStrength: vignette,
     backgroundBrightness: brightness,
-    showSubhead: body.show_subhead === true || body.show_subhead === "true",
+    showSubhead: body.show_subhead === undefined ? true : (body.show_subhead === true || body.show_subhead === "true"),
     ...labels,
   };
 }
