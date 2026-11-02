@@ -131,10 +131,14 @@ export const RemotionRoot: React.FC = () => (
         subhead: "",
         layout: "hero",
         highlightPhrases: [],
-        overlayStrength: 0.75,
-        vignetteStrength: 0.72,
-        backgroundBrightness: 1.07,
+        overlayStrength: 0.78,
+        vignetteStrength: 0.84,
+        backgroundBrightness: 1.08,
         showSubhead: false,
+        comparisonLeftLabel: "",
+        comparisonLeftSub: "",
+        comparisonCenterLabel: "VS",
+        comparisonRightLabel: "",
       }}
     />
   </>
