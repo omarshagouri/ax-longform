@@ -19,7 +19,6 @@ test("emphasis is selective and supports explicit override", () => {
 test("style defaults and validation", () => {
   const s = normalizeThumbnailStyle({headline:"LFP vs NMC",visual_concept:"split-screen"});
   assert.equal(s.layout,"comparison");
-  assert.equal(s.showSubhead,false);
   assert.equal(s.showSubhead,true);
   assert.equal(normalizeThumbnailStyle({headline:"OK",show_subhead:false}).showSubhead,false);
   assert.equal(s.overlayStrength,0.84);
