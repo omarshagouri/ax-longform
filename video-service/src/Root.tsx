@@ -126,9 +126,14 @@ export const RemotionRoot: React.FC = () => (
       defaultProps={{
         backgroundSrc: "",
         logoSrc: "",
-        series: "BATTERY INTELLIGENCE",
+        series: "AMPCOREX BRIEF",
         headline: "Battery intelligence",
         subhead: "",
+        layout: "hero",
+        highlightPhrases: [],
+        overlayStrength: 0.75,
+        backgroundBrightness: 1.07,
+        showSubhead: false,
       }}
     />
   </>
