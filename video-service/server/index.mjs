@@ -18,6 +18,7 @@ import { assertChapterTimelineMatchesAudio } from "./chapter-timing.mjs";
 import { chooseSplitFrame, makeSilentPartManifest, makeAudioPartManifest, validatePairedJoin } from "./paired-chapter.mjs";
 import { CLIP_ID, readLiveClipCatalog, selectClip, resolveExplicitClip, assertClipFitsBeat } from "./clip-catalog.mjs";
 import { parseBuffer } from "music-metadata";
+import { normalizeThumbnailStyle } from "./thumbnail-policy.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -179,10 +180,11 @@ async function buildChapter(video_id, fps, beats, audioIds) {
   return { video_id: video_id || "chapter", fps, width: WIDTH, height: HEIGHT, timeline, audio };
 }
 
-async function renderThumbnail({ background_base64, headline, subhead = "", series = "BATTERY INTELLIGENCE", logo_file_id = "", output_name = "thumbnail.png" }) {
+async function renderThumbnail({ background_base64, headline, subhead = "", series = "AMPCOREX BRIEF", logo_file_id = "", output_name = "thumbnail.png", ...styleInput }) {
   if (!background_base64) throw new Error("background_base64 is required");
   if (!headline) throw new Error("headline is required");
 
+  const thumbnailStyle = normalizeThumbnailStyle({ headline, ...styleInput });
   const safe = String(output_name || "thumbnail.png").replace(/[^A-Za-z0-9._-]/g, "_");
   const bgName = `thumb_bg_${Date.now()}.png`;
   const bgPath = path.join(ASSETS, bgName);
@@ -202,6 +204,7 @@ async function renderThumbnail({ background_base64, headline, subhead = "", seri
     series,
     headline,
     subhead,
+    ...thumbnailStyle,
   };
   const composition = await selectComposition({ serveUrl, id: "AXThumbnail", inputProps });
   const out = path.join("/tmp", safe.endsWith(".png") ? safe : `${safe}.png`);
