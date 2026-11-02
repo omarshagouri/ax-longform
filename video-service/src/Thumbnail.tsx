@@ -8,63 +8,40 @@ export type ThumbnailProps = {
   series?: string;
   headline: string;
   subhead?: string;
+  layout?: "hero" | "comparison" | "problem";
+  highlightPhrases?: string[];
+  overlayStrength?: number;
+  backgroundBrightness?: number;
+  showSubhead?: boolean;
 };
 
 export const Thumbnail: React.FC<ThumbnailProps> = ({
-  backgroundSrc,
-  logoSrc = "",
-  series = "BATTERY INTELLIGENCE",
-  headline,
-  subhead = "",
+  backgroundSrc, logoSrc = "", series = "AMPCOREX BRIEF", headline, subhead = "",
+  layout = "hero", highlightPhrases = [], overlayStrength = 0.75,
+  backgroundBrightness = 1.07, showSubhead = false,
 }) => {
+  const strength = Math.min(1, Math.max(0, Number(overlayStrength) || 0));
+  const brightness = Math.min(1.35, Math.max(0.8, Number(backgroundBrightness) || 1.07));
+  const gradient = `linear-gradient(90deg, rgba(5,14,26,${(strength * 0.84).toFixed(3)}) 0%, rgba(5,14,26,${(strength * 0.68).toFixed(3)}) 32%, rgba(5,14,26,${(strength * 0.23).toFixed(3)}) 58%, rgba(5,14,26,0.015) 83%, rgba(5,14,26,0) 100%)`;
   const len = String(headline || "").length;
-  const headlineSize = len > 58 ? 64 : len > 42 ? 72 : 82;
-
+  const headlineSize = len > 96 ? 47 : len > 76 ? 54 : len > 60 ? 62 : len > 43 ? 70 : len > 27 ? 77 : 85;
+  const textWidth = layout === "comparison" ? 550 : 610;
+  const highlightWords = new Set(highlightPhrases.flatMap((p) => String(p).toUpperCase().split(/\s+/).map((w) => w.replace(/[^A-Z0-9]/g, ""))));
   return (
     <AbsoluteFill style={{ backgroundColor: theme.navy, fontFamily: theme.font, overflow: "hidden" }}>
-      {backgroundSrc ? (
-        <Img src={backgroundSrc} style={{ width: "100%", height: "100%", objectFit: "cover", transform: "scale(1.02)" }} />
-      ) : null}
-
-      <AbsoluteFill
-        style={{
-          background:
-            "linear-gradient(90deg, rgba(10,22,40,0.98) 0%, rgba(10,22,40,0.92) 37%, rgba(10,22,40,0.45) 62%, rgba(10,22,40,0.08) 100%)",
-        }}
-      />
-
-      <div style={{ position: "absolute", left: 72, top: 54, right: 72, bottom: 54, display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 18, minHeight: 54 }}>
-          {logoSrc ? <Img src={logoSrc} style={{ height: 44, width: "auto", objectFit: "contain" }} /> : null}
-          <div style={{ color: theme.teal, fontSize: 24, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase" }}>
-            {series}
-          </div>
+      {backgroundSrc ? <Img src={backgroundSrc} style={{ width:"100%",height:"100%",objectFit:"cover",transform:"scale(1.015)",filter:`brightness(${brightness}) contrast(1.06) saturate(1.08)` }} /> : null}
+      <AbsoluteFill style={{ background: gradient }} />
+      <div style={{position:"absolute",left:70,top:50,fontSize:18,color:"#CFDCE7",fontWeight:600,letterSpacing:2.4,textTransform:"uppercase",textShadow:"0 2px 8px rgba(0,0,0,0.7)"}}>{series}</div>
+      <div style={{position:"absolute",left:68,top:layout==="comparison"?160:185,width:textWidth,height:425,display:"flex",flexDirection:"column",justifyContent:"center"}}>
+        <div style={{fontSize:headlineSize,fontWeight:700,color:theme.white,letterSpacing:-2.4,lineHeight:0.96,overflowWrap:"break-word",textShadow:"0 3px 16px rgba(0,0,0,0.66), 0 1px 2px rgba(0,0,0,0.84)"}}>
+          {String(headline || "").split(/(\s+)/).map((token,i) => {
+            const key=token.toUpperCase().replace(/[^A-Z0-9]/g,"");
+            return <span key={i} style={{color:key && highlightWords.has(key)?theme.teal:theme.white}}>{token}</span>;
+          })}
         </div>
-
-        <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-          <div style={{ width: 760, transform: "translateY(-6px)" }}>
-            <div
-              style={{
-                color: theme.white,
-                fontSize: headlineSize,
-                lineHeight: 0.96,
-                fontWeight: 700,
-                letterSpacing: -2.6,
-                textShadow: "0 8px 32px rgba(0,0,0,0.4)",
-              }}
-            >
-              {headline}
-            </div>
-            {subhead ? (
-              <div style={{ marginTop: 26, color: "#DCE6F2", fontSize: 31, lineHeight: 1.14, fontWeight: 500, width: 700 }}>
-                {subhead}
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        <div style={{ height: 9, width: 180, borderRadius: 9, background: theme.teal }} />
+        {showSubhead && subhead ? <div style={{marginTop:15,fontSize:25,lineHeight:1.12,fontWeight:500,color:"#F1F6FB",textShadow:"0 2px 8px rgba(0,0,0,0.75)"}}>{subhead}</div>:null}
       </div>
+      {logoSrc ? <Img src={logoSrc} style={{position:"absolute",left:69,bottom:47,height:43,width:"auto",maxWidth:240,objectFit:"contain",filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.5))"}} /> : null}
     </AbsoluteFill>
   );
 };
