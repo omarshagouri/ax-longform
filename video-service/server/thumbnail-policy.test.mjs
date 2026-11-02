@@ -21,6 +21,11 @@ test("style defaults and validation", () => {
   assert.equal(s.layout,"comparison");
   assert.equal(s.showSubhead,false);
   assert.equal(s.overlayStrength,0.75);
+  assert.equal(s.vignetteStrength,0.72);
+  assert.equal(normalizeThumbnailStyle({headline:"OK",vignette_strength:0}).vignetteStrength,0);
+  assert.equal(normalizeThumbnailStyle({headline:"OK",vignette_strength:1}).vignetteStrength,1);
+  assert.throws(()=>normalizeThumbnailStyle({headline:"OK",vignette_strength:-0.1}), /vignette_strength/);
+  assert.throws(()=>normalizeThumbnailStyle({headline:"OK",vignette_strength:1.01}), /vignette_strength/);
   assert.throws(()=>normalizeThumbnailStyle({headline:"ok",overlay_strength:4}), /overlay_strength/);
   assert.throws(()=>normalizeThumbnailStyle({headline:"ok",layout:"unknown"}), /layout/);
   assert.throws(()=>normalizeThumbnailStyle({headline:"ok",background_brightness:2}), /brightness/);
