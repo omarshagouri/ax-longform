@@ -67,8 +67,12 @@ export function normalizeThumbnailStyle(body = {}) {
   if (!Number.isFinite(vignette) || vignette < 0 || vignette > 1) throw new Error("vignette_strength must be between 0 and 1");
   const brightness = body.background_brightness === undefined ? 1.08 : Number(body.background_brightness);
   if (!Number.isFinite(brightness) || brightness < 0.8 || brightness > 1.35) throw new Error("background_brightness must be between 0.8 and 1.35");
+  const visualConcept = String(body.visual_concept || "");
+  const videoTitle = String(body.video_title || "");
+  const layout = selectThumbnailLayout(headline, visualConcept, body.layout || "auto", videoTitle);
+  const labels = layout === "comparison" ? comparisonLabels(headline, visualConcept, videoTitle) : comparisonLabels("", "", "");
   return {
-    layout: selectThumbnailLayout(headline, body.visual_concept || "", body.layout || "auto"),
+    layout,
     highlightPhrases: selectThumbnailHighlights(headline, body.highlight_phrases),
     overlayStrength: opacity,
     vignetteStrength: vignette,
