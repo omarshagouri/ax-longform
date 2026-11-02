@@ -132,6 +132,7 @@ export const RemotionRoot: React.FC = () => (
         layout: "hero",
         highlightPhrases: [],
         overlayStrength: 0.75,
+        vignetteStrength: 0.72,
         backgroundBrightness: 1.07,
         showSubhead: false,
       }}
