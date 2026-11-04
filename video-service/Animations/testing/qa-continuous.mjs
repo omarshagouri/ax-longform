@@ -13,6 +13,10 @@ fs.rmSync(OUT,{recursive:true,force:true}); fs.mkdirSync(OUT,{recursive:true});
 const cases=[
  {id:"VA-LF-008",durationFrames:240,values:{title:"Energy packets moving through the charging system",nodes:["Charger","BMS","Pack","Cells"],flowLabel:"Power keeps moving while the vehicle controls the path",intensity:4,footer:"QA"}},
  {id:"VA-LF-009",durationFrames:240,values:{title:"The BMS can throttle requested charging power",inputLabel:"Charger request",gateLabel:"BMS limit",outputLabel:"Cell power",inputRate:100,outputRate:42,footer:"QA"}},
+ {id:"VA-LF-009",caseName:"fractional-production-85-38",durationFrames:210,values:{title:"Power Under Control",inputLabel:"Charger capability",gateLabel:"Pack limit",outputLabel:"Allowed power",inputRate:0.85,outputRate:0.38,footer:"Schematic, not a measured session"}},
+ {id:"VA-LF-009",caseName:"fractional-production-90-50",durationFrames:210,values:{title:"Rated Is Not Delivered",inputLabel:"Rated charger",gateLabel:"Vehicle request",outputLabel:"Actual supply",inputRate:0.9,outputRate:0.5,footer:"Qualitative schematic; no kW claim"}},
+ {id:"VA-LF-009",caseName:"small-explicit-percent",durationFrames:210,values:{title:"Low power test",inputLabel:"Request",gateLabel:"BMS limit",outputLabel:"Supply",inputRate:0.9,outputRate:0.5,rateUnit:"percent",footer:"0.9 percent of rated power"}},
+ 
  {id:"VA-LF-010",durationFrames:270,values:{title:"A hot spot spreads unless cooling removes the heat",heatLevel:82,hotspotRow:2,hotspotCol:5,cooling:true,note:"Cell temperature is not uniform across a working pack",footer:"QA"}},
  {id:"VA-LF-011",durationFrames:270,values:{title:"The dashboard estimate can move after recalibration",displayedStart:88,displayedEnd:96,usablePct:95,displayedLabel:"Displayed SoH",usableLabel:"Usable-energy reference",footer:"QA"}},
  {id:"VA-LF-012",durationFrames:270,values:{title:"The BMS turns live sensor data into a control decision",sensors:["Voltage","Current","Temperature","SOC"],decisionLabel:"BMS estimate + limits",actionLabel:"Allowed power",footer:"QA"}},
