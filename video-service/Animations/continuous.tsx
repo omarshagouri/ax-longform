@@ -58,6 +58,8 @@ const throttleSchema=z.object({
   outputLabel:z.string(),
   inputRate:clampNumeric(0, 100),
   outputRate:clampNumeric(0, 100),
+  // Auto recognizes 0..1 fractional rates used by Visual_Plan, with explicit override.
+  rateUnit:z.enum(["auto","fraction","percent"]).optional(),
   footer:z.string().optional(),
 });
 const thermalSchema=z.object({
@@ -132,37 +134,82 @@ export const VALF008PacketStream:React.FC<any> = ({title,nodes,flowLabel,intensi
   </AbsoluteFill>;
 };
 
-export const VALF009ThrottleGate:React.FC<any> = ({title,inputLabel,gateLabel,outputLabel,inputRate,outputRate,footer}) => {
-  const progress=useLFRevealProgress(); const f=useCurrentFrame(); const real=useLFRealFrame(); const {fps}=useVideoConfig(); const p=appear(f,fps,6);
-  const W=1610, cy=348, inputEnd=370, gateL=696, gateR=914, outputStart=1240;
-  const pct=clamp01(Number(outputRate)/100);
+/**
+ * VA-LF-009. Real Visual_Plan beats use fractional rates (e.g. 0.85 / 0.38)
+ * while older QA uses percentage rates (e.g. 100 / 42). Respect both formats.
+ * rateUnit="percent" overrides auto-detection for genuine small percentages.
+ */
+export const VALF009ThrottleGate:React.FC<any> = ({
+  title,inputLabel,gateLabel,outputLabel,inputRate,outputRate,rateUnit="auto",footer
+}) => {
+  const progress=useLFRevealProgress();
+  const real=useLFRealFrame();
+  const {fps}=useVideoConfig();
+  const W=1610,cy=348,inputEnd=370,gateL=696,gateR=914,outputStart=1240;
+  const rawRequest=Number(inputRate),rawAllowed=Number(outputRate);
+  const fractional=rateUnit==="fraction" || (rateUnit!=="percent" && rawRequest<=1 && rawAllowed<=1);
+  const requestPct=Math.max(0,Math.min(100,rawRequest*(fractional?100:1)));
+  const allowedPct=Math.max(0,Math.min(100,rawAllowed*(fractional?100:1)));
+  const gateFill=allowedPct*staged(progress,.48,.62);
   const period=Math.max(30,Math.round(fps*2));
-  const inCount=Math.max(1,Math.round(2+Number(inputRate)*.055));
-  const outCount=Math.max(0,Math.round(inCount*pct));
+  const inCount=requestPct>0?Math.max(2,Math.round(2+requestPct*.055)):0;
+  const outCount=requestPct>0?Math.max(0,Math.min(inCount,Math.round(inCount*allowedPct/requestPct))):0;
+  const inputLine=staged(progress,.18,.30);
+  const outputLine=staged(progress,.56,.66);
+  const lineProps={stroke:C.line,strokeWidth:9,strokeLinecap:"round" as const};
+
   return <AbsoluteFill>
     <Title title={title||"The BMS can throttle power"} kicker="Control gate"/>
-    <Panel style={{position:"absolute",left:155,top:285,width:W,height:620,opacity:p}}>
-      <div style={{position:"absolute",top:56,left:90,right:90,display:"flex",justifyContent:"center",gap:80,fontFamily:"Inter,Arial",fontSize:29,fontWeight:750}}>
-        <span style={{color:C.teal,opacity:staged(progress,.27,.43)}}>REQUEST {Math.round(inputRate)}%</span>
-        <span style={{color:C.heat,opacity:staged(progress,.65,.80)}}>ALLOWED {Math.round(outputRate)}%</span>
-      </div>
-      <svg width={W} height="620" style={{position:"absolute",inset:0}}>
-        <line x1={inputEnd} y1={cy} x2={gateL} y2={cy} stroke={C.line} strokeWidth="9" strokeLinecap="round"/>
-        <line x1={gateR} y1={cy} x2={outputStart} y2={cy} stroke={C.line} strokeWidth="9" strokeLinecap="round"/>
-        {[...Array(inCount)].map((_,i)=>{const q=loop01(real,period,Math.round(i*period/inCount));return <circle key={"in"+i} cx={inputEnd+(gateL-inputEnd)*q} cy={cy} r={8} fill={C.teal}/>;})}
-        {[...Array(outCount)].map((_,i)=>{const q=loop01(real,period,Math.round(i*period/outCount));return <circle key={"out"+i} cx={gateR+(outputStart-gateR)*q} cy={cy} r={8} fill={C.heat}/>;})}
+    <Panel style={{position:"absolute",left:155,top:285,width:W,height:620,opacity:staged(progress,0,.10)}}>
+      {/* Lines and moving dots stay behind the source, gate, and destination boxes. */}
+      <svg width={W} height="620" style={{position:"absolute",inset:0,pointerEvents:"none"}}>
+        <line x1={inputEnd} y1={cy} x2={inputEnd+(gateL-inputEnd)*inputLine} y2={cy} {...lineProps}/>
+        <line x1={gateR} y1={cy} x2={gateR+(outputStart-gateR)*outputLine} y2={cy} {...lineProps}/>
+        {[...Array(inCount)].map((_,i)=>{
+          const q=loop01(real,period,Math.round(i*period/inCount));
+          return <circle key={"in"+i} cx={inputEnd+(gateL-inputEnd)*q} cy={cy}
+            r={8} fill={C.teal} opacity={staged(progress,.40,.50)}/>;
+        })}
+        {[...Array(outCount)].map((_,i)=>{
+          const q=loop01(real,period,Math.round(i*period/outCount));
+          return <circle key={"out"+i} cx={gateR+(outputStart-gateR)*q} cy={cy}
+            r={8} fill={C.heat} opacity={staged(progress,.74,.83)}/>;
+        })}
       </svg>
-      <NodeBox label={inputLabel} x={70} y={cy-75} width={300} accent={C.teal} opacity={staged(progress,.20,.42)}/>
-      <div style={{position:"absolute",left:gateL,top:cy-130,width:gateR-gateL,height:260,opacity:staged(progress,.42,.66),border:`2px solid ${C.heat}88`,borderRadius:26,background:"rgba(20,36,64,.97)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",boxSizing:"border-box"}}>
-        <div style={{fontFamily:"Space Grotesk,Arial",fontSize:29,fontWeight:700,color:C.white,textAlign:"center",padding:"0 15px"}}>{gateLabel}</div>
-        <div style={{marginTop:23,width:125,height:38,border:`2px solid ${C.slate}`,borderRadius:10,padding:5,boxSizing:"border-box",background:C.navy}}>
-          <div style={{width:`${pct*100}%`,height:"100%",background:C.heat,borderRadius:5,boxShadow:`0 0 16px ${C.heat}66`}}/>
+      <NodeBox label={inputLabel} x={70} y={cy-75} width={300} accent={C.teal}
+        opacity={staged(progress,.08,.19)}/>
+      <div style={{
+        position:"absolute",left:gateL,top:cy-130,width:gateR-gateL,height:260,
+        opacity:staged(progress,.28,.40),border:"2px solid "+C.heat+"88",
+        borderRadius:26,background:"rgba(20,36,64,.97)",display:"flex",flexDirection:"column",
+        alignItems:"center",justifyContent:"center",boxSizing:"border-box"
+      }}>
+        <div style={{fontFamily:"Space Grotesk,Arial",fontSize:29,fontWeight:700,
+          color:C.white,textAlign:"center",padding:"0 15px"}}>{gateLabel}</div>
+        <div style={{marginTop:23,width:125,height:38,border:"2px solid "+C.slate,
+          borderRadius:10,padding:5,boxSizing:"border-box",background:C.navy}}>
+          <div style={{width:gateFill+"%",height:"100%",background:C.heat,borderRadius:5,
+            boxShadow:"0 0 16px "+C.heat+"66"}}/>
         </div>
-        <div style={{fontFamily:"Inter,Arial",fontSize:23,fontWeight:750,color:C.heat,marginTop:17}}>{Math.round(Number(outputRate))}% OPEN</div>
+        <div style={{fontFamily:"Inter,Arial",fontSize:23,fontWeight:750,color:C.heat,
+          marginTop:17,opacity:staged(progress,.52,.62)}}>{Math.round(allowedPct)}% ALLOWED</div>
       </div>
-      <NodeBox label={outputLabel} x={outputStart} y={cy-75} width={300} accent={C.heat} opacity={staged(progress,.65,.86)}/>
-      <div style={{position:"absolute",left:90,right:90,bottom:40,textAlign:"center",fontFamily:"Inter,Arial",fontSize:25,color:C.slate}}>The BMS limits delivered power when operating conditions require it.</div>
-    </Panel><Footer text={footer}/>
+      {/* Each value is aligned above its side of the central BMS control gate. */}
+      <div style={{position:"absolute",top:70,left:365,width:315,textAlign:"center",
+        fontFamily:"Inter,Arial",fontSize:29,fontWeight:750,color:C.teal,
+        opacity:staged(progress,.39,.48)}}>REQUEST {Math.round(requestPct)}%</div>
+      <div style={{position:"absolute",top:70,left:934,width:300,textAlign:"center",
+        fontFamily:"Inter,Arial",fontSize:29,fontWeight:750,color:C.heat,
+        opacity:staged(progress,.48,.58)}}>ALLOWED {Math.round(allowedPct)}%</div>
+      <NodeBox label={outputLabel} x={outputStart} y={cy-75} width={300} accent={C.heat}
+        opacity={staged(progress,.65,.75)}/>
+      <div style={{position:"absolute",left:90,right:90,bottom:40,textAlign:"center",
+        fontFamily:"Inter,Arial",fontSize:25,color:C.slate,
+        opacity:staged(progress,.79,.88)}}>
+        The BMS limits delivered power when operating conditions require it.
+      </div>
+    </Panel>
+    {footer ? <div style={{opacity:staged(progress,.81,.90)}}><Footer text={footer}/></div> : null}
   </AbsoluteFill>;
 };
 
@@ -305,7 +352,7 @@ export const VALF013DynamicCompare:React.FC<any> = ({title,leftLabel,rightLabel,
 
 export const continuousAnimationRegistry:Record<string,AnimEntry> = {
   "VA-LF-008":{component:VALF008PacketStream,schema:packetStreamSchema,description:"Continuous multi-packet energy/data flow across 2-5 system nodes.",slots:["title","nodes","flowLabel","intensity","footer"],defaultDurationSec:8},
-  "VA-LF-009":{component:VALF009ThrottleGate,schema:throttleSchema,description:"Continuous input stream passes through a control gate and exits at a reduced rate.",slots:["title","inputLabel","gateLabel","outputLabel","inputRate","outputRate","footer"],defaultDurationSec:8},
+  "VA-LF-009":{component:VALF009ThrottleGate,schema:throttleSchema,description:"Continuous input stream passes through a control gate and exits at a reduced rate.",slots:["title","inputLabel","gateLabel","outputLabel","inputRate","outputRate","rateUnit","footer"],defaultDurationSec:8},
   "VA-LF-010":{component:VALF010ThermalField,schema:thermalSchema,description:"Continuously pulsing cell heat map with optional moving cooling sweep.",slots:["title","heatLevel","hotspotRow","hotspotCol","cooling","note","footer"],defaultDurationSec:9},
   "VA-LF-011":{component:VALF011CalibrationShift,schema:calibrationSchema,description:"Displayed battery estimate shifts while usable-energy reference stays stable; scan markers remain active.",slots:["title","displayedStart","displayedEnd","usablePct","displayedLabel","usableLabel","footer"],defaultDurationSec:9},
   "VA-LF-012":{component:VALF012DataDecision,schema:dataDecisionSchema,description:"Continuous sensor data packets feed BMS logic and produce an animated control action.",slots:["title","sensors","decisionLabel","actionLabel","footer"],defaultDurationSec:9},
