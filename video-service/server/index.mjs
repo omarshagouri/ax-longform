@@ -458,7 +458,7 @@ app.post("/render-chapter-part", async(req,res)=>{
     if(full.timeline.filter(x=>x.track==="clip").length!==2)throw new Error("each coherent narrative chapter must have exactly two catalog footage clips");
     const split=chooseSplitFrame(full.timeline,{requireClipPerPart:true});
     const output=audio_mode==="segment"?makeAudioPartManifest(full,part,split):makeSilentPartManifest(full,part,split);
-    return res.json({status:"ok",video_id,part,audio_mode,split_frame:split.splitFrame,total_frames:split.totalFrames,part_frames:part===1?split.part1Frames:split.part2Frames,...(await renderManifest(output,{delivery,jobId}))});
+    return res.json({status:"ok",video_id,part,audio_mode,renderer_build_commit:process.env.AX_LF_BUILD_SHA||null,va009_source_sha256:VA009_SOURCE_SHA256,split_frame:split.splitFrame,total_frames:split.totalFrames,part_frames:part===1?split.part1Frames:split.part2Frames,...(await renderManifest(output,{delivery,jobId}))});
   }catch(e){console.error("paired render error",jobId,e?.message);return res.status(e?.statusCode||422).json({status:"error",phase:"failed",job_id:jobId,video_id,part,error:String(e?.message||e)});}
 });
 function probePairedPart(file){
