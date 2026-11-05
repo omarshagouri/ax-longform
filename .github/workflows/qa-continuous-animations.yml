@@ -8,6 +8,13 @@ on:
       - "video-service/Animations/registry.tsx"
       - "video-service/Animations/testing/qa-continuous.mjs"
       - ".github/workflows/qa-continuous-animations.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "video-service/Animations/continuous.tsx"
+      - "video-service/src/LFAnimationTiming.tsx"
+      - "video-service/src/AnimationPreview.tsx"
+      - "video-service/src/Video.tsx"
   workflow_dispatch:
 
 jobs:

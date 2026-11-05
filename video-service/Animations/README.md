@@ -13,6 +13,27 @@
 | `testing/qa-continuous.mjs` | Continuous motion render checks |
 | `testing/qa-editorial.mjs` | Individual editorial animation MP4 and checkpoint inspection |
 
+## Permanent numeric-bounds policy for new animations
+
+Every **user-supplied bounded numeric animation field** must use
+`clampNumeric(min, max)` from `../src/clampNumeric` in its Zod schema.
+For bounded integer fields (grid indexes/counts), use `clampInteger(min, max)`.
+Out-of-range finite values are normalized to the nearest permitted boundary,
+not rejected. Values already within range remain unchanged.
+
+The renderer and animation preview must apply **the numeric values returned
+by their bounded Zod slot parsers** to actual drawing, not only validate them.
+Do not newly reject unrelated editorial text in existing previews; the
+`normalizeBoundedAnimationValues` helper preserves non-numeric fields. The standalone dashboard path follows the
+same policy. Add low / high / in-range regression cases to
+`scripts/test-lf-animation-clamping.mjs` for every new bounded numeric field,
+and keep that test in `validate-longform-video.yml`.
+
+Non-numeric input and missing required fields still fail validation. Unbounded
+measured/chart values have no arbitrary invented min/max. Clamping is a
+visual input compatibility rule; do not represent a clamped value as a verified
+battery measurement or external research result. Preserve full-beat reveal timing.
+
 ## One standard renderer and naming system
 
 Every animation retains its existing `VA-LF-###` ID, catalog entry and Zod prop schema. The only public registry is `animationRegistry` in `registry.tsx`; don't add competing registries elsewhere.
@@ -81,6 +102,7 @@ Continuous-motion family:
 - VA-LF-011: active calibration scan and changing estimate
 - VA-LF-012: continuous sensor packets into BMS logic and output action
 - VA-LF-013: two independent progress bars that fill once to the supplied level, then hold (no looping particles). `leftIntensity` and `rightIntensity` are each a percentage from 0 to 100 of the full gray reference track: 50 and 50 yield equal half-length colored bars. These values are normalized illustrative proportions, not measured battery aging rates unless independently sourced and correctly labeled.
+  Each colored bar shows its animated numeric level (e.g., `50%`) inside the bar when there is room; values near zero display on the gray track for legibility. Both comparison headings and values use independently fitted, vertically reserved text zones so a wrapped value cannot overlap the metric or bar.
 
 Do not use motion as decoration only.
 Do not add facts, mechanisms, values, rankings, or causal claims that are absent from narration/evidence.

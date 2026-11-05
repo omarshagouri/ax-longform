@@ -4,6 +4,8 @@ import { VideoManifest } from "./manifest";
 import { registry, bannedVisualIds } from "./registry";
 import { Frame } from "./Frame";
 import { theme } from "./theme";
+import { LFAnimationTimingProvider } from "./LFAnimationTiming";
+import { normalizeBoundedAnimationValues } from "./clampNumeric";
 
 const asset = (s: string) => (s.startsWith("http") || s.startsWith("data:") ? s : staticFile(s));
 
@@ -39,6 +41,10 @@ export const Video: React.FC<{ manifest: VideoManifest }> = ({ manifest }) => {
         const entry = registry[item.component];
         if (!entry) return null;
         const Card = entry.component;
+        // Use the clamped Zod result for the actual visual, not only for validation.
+        const renderedProps = item.track === "anim"
+          ? normalizeBoundedAnimationValues(entry.schema, item.props)
+          : item.props;
         const customBg = item.track === "anim" ? String((item.props as any)?.backgroundSrc || "") : "";
         const rawBgOpacity = Number((item.props as any)?.backgroundOpacity ?? 0.72);
         const bgOpacity = Math.max(0, Math.min(1, Number.isFinite(rawBgOpacity) ? rawBgOpacity : 0.72));
@@ -50,7 +56,13 @@ export const Video: React.FC<{ manifest: VideoManifest }> = ({ manifest }) => {
                 <AbsoluteFill style={{ backgroundColor: "rgba(10,22,40,0.40)" }} />
               </AbsoluteFill>
             ) : null}
-            <Card {...item.props} __holdFrames={item.durationFrames} />
+            {item.track === "anim" ? (
+              <LFAnimationTimingProvider animationId={item.component} durationFrames={item.durationFrames}>
+                <Card {...renderedProps} __holdFrames={item.durationFrames} />
+              </LFAnimationTimingProvider>
+            ) : (
+              <Card {...renderedProps} __holdFrames={item.durationFrames} />
+            )}
           </Sequence>
         );
       })}

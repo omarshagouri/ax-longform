@@ -1,6 +1,7 @@
 import React from "react";
 import { AbsoluteFill, Img, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { z } from "zod";
+import { clampNumeric, clampNumericValue } from "./clampNumeric";
 
 // Fixed 1920x1080 slot geometry. The supplied image owns all baked-in dashboard labels.
 export const dashboardSchema = z.object({
@@ -8,7 +9,7 @@ export const dashboardSchema = z.object({
   subtitle: z.string().trim().max(36).optional().default(""),
   mainValue: z.string().trim().max(12).optional().default(""),
   mainUnit: z.string().trim().max(10).optional().default(""),
-  progress: z.number().min(0).max(100).optional(),
+  progress: clampNumeric(0, 100).optional(),
   detail: z.string().trim().max(38).optional().default(""),
   status: z.string().trim().max(24).optional().default(""),
   backgroundSrc: z.string().optional().default(""),
@@ -32,6 +33,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const frames = Math.max(1, __holdFrames ?? durationInFrames);
   const at = (start: number, span = 0.12) => clamp((frame / frames - start) / span);
   const appear = (start: number) => easeOut(at(start));
+  const boundedProgress = progress === undefined ? undefined : clampNumericValue(progress, 0, 100);
   const progressP = easeOut(at(0.35, 0.38));
   const opacity = (start: number) => appear(start);
   const metric = mainValue.trim().length > 0;
@@ -78,14 +80,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div style={{ height: 18, borderRadius: 12, overflow: "hidden",
               border: "1px solid #2B514F", background: "rgba(7,28,29,.88)",
               boxShadow: "0 0 18px #1E817555" }}>
-              <div style={{ height: "100%", width: `${progress * progressP}%`,
+              <div style={{ height: "100%", width: `${(boundedProgress ?? 0) * progressP}%`,
                 background: "linear-gradient(90deg,#72E9BE,#22B6AE)",
                 boxShadow: "0 0 24px #4AF9CB", borderRadius: 12 }} />
             </div>
             <div style={{
               ...label, marginTop: 14, fontSize: 22, color: MUTED,
               opacity: opacity(0.51),
-            }}>{Math.round(progress * progressP)}%</div>
+            }}>{Math.round((boundedProgress ?? 0) * progressP)}%</div>
           </div>
         ) : null}
         {detail ? <div style={{

@@ -40,15 +40,23 @@ jobs:
 
       - name: Test paired chapters, footage, storyboard QA and measured audio cues
         working-directory: video-service
-        run: node --test server/paired-chapter.test.mjs server/clip-catalog.test.mjs server/visual-plan-validator.test.mjs server/visual-word-alignment.test.mjs
+        run: node --test server/paired-chapter.test.mjs server/clip-catalog.test.mjs server/visual-plan-validator.test.mjs server/visual-word-alignment.test.mjs server/assembly-gcs.test.mjs server/render-delivery.test.mjs server/subtitles.test.mjs server/segmented-tts.test.mjs
 
       - name: Test resolved catalog MP4 entries in Remotion timeline
         working-directory: video-service
         run: node scripts/test-catalog-clip-manifest.mjs
 
+      - name: Verify all bounded LF animation controls clamp automatically
+        working-directory: video-service
+        run: node scripts/test-lf-animation-clamping.mjs
+
       - name: Typecheck
         working-directory: video-service
         run: npm run typecheck
+
+      - name: Test full-beat LF card and animation motion
+        working-directory: video-service
+        run: node scripts/test-lf-full-duration-motion.mjs
 
       - name: Build container
         run: docker build -t longform-video-test ./video-service
