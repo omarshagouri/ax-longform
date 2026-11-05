@@ -2,7 +2,7 @@ import React from "react";
 import { AbsoluteFill, interpolate, spring, useVideoConfig } from "remotion";
 import { z } from "zod";
 import { clampNumeric, clampInteger } from "../src/clampNumeric";
-import { useLFPacedFrame as useCurrentFrame, useLFRealFrame, useLFRevealProgress } from "../src/LFAnimationTiming";
+import { useLFPacedFrame as useCurrentFrame, useLFRealFrame, useLFRevealProgress, useLFStagedHold } from "../src/LFAnimationTiming";
 import { theme } from "../src/theme";
 
 const C = {
@@ -158,96 +158,95 @@ export const VALF008PacketStream:React.FC<any> = ({title,nodes,flowLabel,intensi
  *  1.2s inbound packets; 1.6s reduced outbound packets.
  * Every scene stays complete even if rendered at 4-6 seconds.
  */
+/**
+ * VA-LF-009: exactly the same normalized staged-reveal pattern as the
+ * other LF process animations. Duration is supplied by Visual_Plan E through
+ * LFAnimationTimingProvider. One full second is reserved for a frozen final pose.
+ *
+ * Order: input box -> gate box -> output box -> lines -> moving dots.
+ */
 export const VALF009ThrottleGate:React.FC<any> = ({
-  title,inputLabel,gateLabel,outputLabel,inputRate,outputRate,rateUnit="auto",footer
+  title,inputLabel,gateLabel,outputLabel,inputRate,outputRate,
+  rateUnit="auto",footer
 }) => {
-  const frame=useLFRealFrame();
-  const {fps}=useVideoConfig();
-  // All timing is local to the Remotion Sequence, in REAL frames.
-  const seconds=frame/Math.max(1,fps);
-  const fromTo=(begin:number,end:number)=>staged(seconds,begin,end);
-  const W=1610,cy=348, inputX=70,inputW=300, gateX=696,gateW=218, outputX=1240,outputW=300;
-  const inputEnd=inputX+inputW, gateEnd=gateX+gateW;
-  const requestRaw=Number(inputRate), allowedRaw=Number(outputRate);
-  const fraction=rateUnit==="fraction" || (rateUnit!=="percent" && requestRaw<=1 && allowedRaw<=1);
-  const requestPct=Math.max(0,Math.min(100,requestRaw*(fraction?100:1)));
-  const allowedPct=Math.max(0,Math.min(requestPct,allowedRaw*(fraction?100:1)));
-  const requestGlow=fromTo(.35,.72);
-  const fillPct=allowedPct*fromTo(.85,1.20);
-  // Packets may NEVER precede the middle gate or output box.
-  const incomingVisible=seconds>=1.20;
-  const outgoingVisible=seconds>=1.60 && allowedPct>0;
-  const loopFrames=Math.max(30,Math.round(fps*2.1));
+  const {progress}=useLFStagedHold(1);
+  const show=(a:number,b:number)=>staged(progress,a,b);
+  const box1=show(.04,.20),box2=show(.21,.37),box3=show(.38,.54);
+  const lineReveal=show(.58,.75),dotReveal=show(.79,.90);
+  const footerReveal=show(.88,.98);
+  const rawRequest=Number(inputRate),rawAllowed=Number(outputRate);
+  const fractional=rateUnit==="fraction" || (rateUnit!=="percent" && rawRequest<=1 && rawAllowed<=1);
+  const requestPct=Math.max(0,Math.min(100,rawRequest*(fractional?100:1)));
+  const allowedPct=Math.max(0,Math.min(requestPct,rawAllowed*(fractional?100:1)));
+  const W=1610,cy=348,inputX=70,inputW=300,gateX=696,gateW=218,outputX=1240,outputW=300;
+  const inputEnd=inputX+inputW,gateEnd=gateX+gateW;
+  // Packets use the same beat-normalized progress: nothing can keep moving
+  // during the final second, because progress is clamped by useLFStagedHold.
+  const flowProgress=clamp01((progress-.79)/.21);
   const inCount=requestPct>0?Math.max(2,Math.round(2+requestPct*.055)):0;
-  const outCount=outgoingVisible?Math.max(1,Math.min(inCount,Math.round(inCount*allowedPct/Math.max(1,requestPct)))):0;
-  const titleText=title||"The BMS controls charging power";
-  const titleSize=titleText.length>52?54:titleText.length>38?60:66;
-  const panelTop=285;
+  const outCount=requestPct>0?Math.max(0,Math.min(inCount,Math.round(inCount*allowedPct/requestPct))):0;
 
   return <AbsoluteFill>
-    <div style={{position:"absolute",left:120,right:120,top:62}}>
-      <div style={{fontFamily:"Inter,Arial",fontSize:27,fontWeight:700,color:C.teal,
-        letterSpacing:4.2,marginBottom:12}}>CONTROL GATE</div>
-      <div style={{fontFamily:"Space Grotesk,Arial",fontSize:titleSize,fontWeight:700,
-        color:C.white,lineHeight:1.05,letterSpacing:-1,maxWidth:1580}}>{titleText}</div>
-    </div>
-
-    <Panel style={{position:"absolute",left:155,top:panelTop,width:W,height:620,opacity:1}}>
-      {/* Topology is static. Draw connectors behind ALL three nodes. */}
+    <Title title={title||"The BMS controls charging power"} kicker="Control gate"/>
+    <Panel style={{position:"absolute",left:155,top:285,width:W,height:620,opacity:show(0,.08)}}>
+      {/* SVG behind the boxes; both connector lines appear AFTER box 3. */}
       <svg width={W} height={620} viewBox={"0 0 "+W+" 620"}
         style={{position:"absolute",left:0,top:0,pointerEvents:"none"}}>
-        <line x1={inputEnd} y1={cy} x2={gateX} y2={cy}
-          stroke={C.line} strokeWidth={9} strokeLinecap="round"/>
-        <line x1={gateEnd} y1={cy} x2={outputX} y2={cy}
-          stroke={C.line} strokeWidth={9} strokeLinecap="round"/>
-        {/* Inbound request; dots travel only on the connector, never through node labels. */}
-        {incomingVisible ? [...Array(inCount)].map((_,i)=>{
-          const q=loop01(frame-36,loopFrames,Math.round(i*loopFrames/inCount));
-          return <circle key={"request-"+i} cx={inputEnd+(gateX-inputEnd)*q}
-            cy={cy} r={8} fill={C.teal} opacity={.95}/>;
-        }) : null}
-        {/* Accepted output; lower packet density is tied to allowed request. */}
-        {outgoingVisible ? [...Array(outCount)].map((_,i)=>{
-          const q=loop01(frame-48,loopFrames,Math.round(i*loopFrames/outCount));
-          return <circle key={"allowed-"+i} cx={gateEnd+(outputX-gateEnd)*q}
-            cy={cy} r={8} fill={C.heat} opacity={.95}/>;
-        }) : null}
+        <g opacity={lineReveal}>
+          <line x1={inputEnd} y1={cy} x2={gateX} y2={cy}
+            stroke={C.line} strokeWidth={9} strokeLinecap="round"/>
+          <line x1={gateEnd} y1={cy} x2={outputX} y2={cy}
+            stroke={C.line} strokeWidth={9} strokeLinecap="round"/>
+        </g>
+        {/* No dots appear until the complete connected diagram is on screen. */}
+        <g opacity={dotReveal}>
+          {[...Array(inCount)].map((_,i)=>{
+            const q=loop01(flowProgress*320,210,Math.round(i*210/Math.max(1,inCount)));
+            return <circle key={"in-"+i} cx={inputEnd+(gateX-inputEnd)*q}
+              cy={cy} r={8} fill={C.teal}/>;
+          })}
+          {[...Array(outCount)].map((_,i)=>{
+            const q=loop01(flowProgress*320,210,Math.round(i*210/Math.max(1,outCount)));
+            return <circle key={"out-"+i} cx={gateEnd+(outputX-gateEnd)*q}
+              cy={cy} r={8} fill={C.heat}/>;
+          })}
+        </g>
       </svg>
 
-      <div style={{position:"absolute",left:410,top:64,width:240,textAlign:"center",
-        fontFamily:"Inter,Arial",fontSize:27,fontWeight:750,color:C.teal}}>
-        REQUEST {Math.round(requestPct)}%
-      </div>
-      <div style={{position:"absolute",left:954,top:64,width:240,textAlign:"center",
-        fontFamily:"Inter,Arial",fontSize:27,fontWeight:750,color:C.heat}}>
-        ALLOWED {Math.round(allowedPct)}%
-      </div>
-
-      <NodeBox label={inputLabel} x={inputX} y={cy-75} width={inputW} accent={C.teal}/>
-      {/* Middle gate remains visible throughout: only its fill moves. */}
+      <NodeBox label={inputLabel} x={inputX} y={cy-75} width={inputW}
+        accent={C.teal} opacity={box1}/>
       <div style={{position:"absolute",left:gateX,top:cy-125,width:gateW,height:250,
-        border:"2px solid "+C.heat+"AA",borderRadius:26,background:"rgba(20,36,64,.98)",
-        boxSizing:"border-box",display:"flex",flexDirection:"column",alignItems:"center",
-        justifyContent:"center",boxShadow:"0 0 "+Math.round(7+13*requestGlow)+"px "+C.heat+"33"}}>
+        opacity:box2,border:"2px solid "+C.heat+"AA",borderRadius:26,
+        background:"rgba(20,36,64,.98)",boxSizing:"border-box",display:"flex",
+        flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
         <div style={{fontFamily:"Space Grotesk,Arial",fontSize:28,fontWeight:700,
           color:C.white,textAlign:"center",padding:"0 16px",lineHeight:1.14}}>{gateLabel}</div>
         <div style={{marginTop:20,width:132,height:38,border:"2px solid "+C.slate,
           borderRadius:10,padding:5,boxSizing:"border-box",background:C.navy}}>
-          <div style={{height:"100%",width:fillPct+"%",background:C.heat,
-            borderRadius:4,boxShadow:"0 0 12px "+C.heat+"66"}}/>
+          <div style={{height:"100%",width:(allowedPct*show(.65,.86))+"%",
+            background:C.heat,borderRadius:4}}/>
         </div>
         <div style={{fontFamily:"Inter,Arial",fontSize:22,fontWeight:750,color:C.heat,marginTop:16}}>
           {Math.round(allowedPct)}% ALLOWED
         </div>
       </div>
-      <NodeBox label={outputLabel} x={outputX} y={cy-75} width={outputW} accent={C.heat}/>
+      <NodeBox label={outputLabel} x={outputX} y={cy-75} width={outputW}
+        accent={C.heat} opacity={box3}/>
 
-      <div style={{position:"absolute",left:90,right:90,bottom:43,textAlign:"center",
-        fontFamily:"Inter,Arial",fontSize:25,color:C.slate}}>
+      <div style={{position:"absolute",top:64,left:395,width:270,textAlign:"center",
+        opacity:show(.54,.68),fontFamily:"Inter,Arial",fontSize:27,fontWeight:750,color:C.teal}}>
+        REQUEST {Math.round(requestPct)}%
+      </div>
+      <div style={{position:"absolute",top:64,left:943,width:275,textAlign:"center",
+        opacity:show(.54,.68),fontFamily:"Inter,Arial",fontSize:27,fontWeight:750,color:C.heat}}>
+        ALLOWED {Math.round(allowedPct)}%
+      </div>
+      <div style={{position:"absolute",left:90,right:90,bottom:43,
+        opacity:footerReveal,textAlign:"center",fontFamily:"Inter,Arial",fontSize:25,color:C.slate}}>
         The BMS limits delivered power when operating conditions require it.
       </div>
     </Panel>
-    {footer ? <Footer text={footer}/> : null}
+    {footer ? <div style={{opacity:footerReveal}}><Footer text={footer}/></div> : null}
   </AbsoluteFill>;
 };
 
