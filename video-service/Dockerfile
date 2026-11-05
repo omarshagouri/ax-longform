@@ -33,5 +33,7 @@ RUN node --test server/segmented-tts.test.mjs
 RUN bash -n scripts/setup-lf-assembly-gcs.sh
 RUN python3 scripts/extract_cards.py Cards
 RUN npx remotion browser ensure
+# Real 1920x1080 pixel snapshots ensure VA009 boxes are present before motion.
+RUN node server/va009-visual-qa.mjs
 ENV NODE_ENV=production
 CMD ["node", "server/index.mjs"]
