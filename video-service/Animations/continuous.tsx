@@ -148,87 +148,106 @@ export const VALF008PacketStream:React.FC<any> = ({title,nodes,flowLabel,intensi
  *
  * Accept rate inputs in either 0..1 or 0..100 form; explicit rateUnit wins.
  */
+/**
+ * VA-LF-009: deterministic, visible-first 30 fps control gate.
+ * Same choreography as the working LF flow visuals, but the complete
+ * topology (three labelled nodes, both connectors, request/allow values)
+ * is shown on frame zero. No element reveal uses the beat-wide pacing
+ * clock. The motion begins only AFTER the viewer sees the whole circuit:
+ *  0.0s static topology; 0.4s request highlight; 0.9s gate response;
+ *  1.2s inbound packets; 1.6s reduced outbound packets.
+ * Every scene stays complete even if rendered at 4-6 seconds.
+ */
 export const VALF009ThrottleGate:React.FC<any> = ({
   title,inputLabel,gateLabel,outputLabel,inputRate,outputRate,rateUnit="auto",footer
 }) => {
-  const realFrame=useLFRealFrame();
+  const frame=useLFRealFrame();
   const {fps}=useVideoConfig();
-  const seconds=realFrame/Math.max(1,fps);
-  const reveal=(a:number,b:number)=>staged(seconds,a,b);
-  const W=1610,cy=348,inputEnd=370,gateL=696,gateR=914,outputStart=1240;
-  const rawRequest=Number(inputRate),rawAllowed=Number(outputRate);
-  const isFraction=rateUnit==="fraction" || (rateUnit!=="percent" && rawRequest<=1 && rawAllowed<=1);
-  const requestPct=Math.max(0,Math.min(100,rawRequest*(isFraction?100:1)));
-  const allowedPct=Math.max(0,Math.min(100,rawAllowed*(isFraction?100:1)));
-  const fill=allowedPct*reveal(.75,1.25);
-  const inLine=reveal(.18,.50);
-  const outLine=reveal(.56,.88);
-  const period=Math.max(30,Math.round(fps*2));
+  // All timing is local to the Remotion Sequence, in REAL frames.
+  const seconds=frame/Math.max(1,fps);
+  const fromTo=(begin:number,end:number)=>staged(seconds,begin,end);
+  const W=1610,cy=348, inputX=70,inputW=300, gateX=696,gateW=218, outputX=1240,outputW=300;
+  const inputEnd=inputX+inputW, gateEnd=gateX+gateW;
+  const requestRaw=Number(inputRate), allowedRaw=Number(outputRate);
+  const fraction=rateUnit==="fraction" || (rateUnit!=="percent" && requestRaw<=1 && allowedRaw<=1);
+  const requestPct=Math.max(0,Math.min(100,requestRaw*(fraction?100:1)));
+  const allowedPct=Math.max(0,Math.min(requestPct,allowedRaw*(fraction?100:1)));
+  const requestGlow=fromTo(.35,.72);
+  const fillPct=allowedPct*fromTo(.85,1.20);
+  // Packets may NEVER precede the middle gate or output box.
+  const incomingVisible=seconds>=1.20;
+  const outgoingVisible=seconds>=1.60 && allowedPct>0;
+  const loopFrames=Math.max(30,Math.round(fps*2.1));
   const inCount=requestPct>0?Math.max(2,Math.round(2+requestPct*.055)):0;
-  const outCount=requestPct>0?Math.max(0,Math.min(inCount,Math.round(inCount*allowedPct/requestPct))):0;
-  const displayTitle=title||"The BMS can throttle power";
-  const titleSize=displayTitle.length>52?54:displayTitle.length>38?60:66;
-  const lineProps={stroke:C.line,strokeWidth:9,strokeLinecap:"round" as const};
+  const outCount=outgoingVisible?Math.max(1,Math.min(inCount,Math.round(inCount*allowedPct/Math.max(1,requestPct)))):0;
+  const titleText=title||"The BMS controls charging power";
+  const titleSize=titleText.length>52?54:titleText.length>38?60:66;
+  const panelTop=285;
 
   return <AbsoluteFill>
-    {/* The title and complete left -> gate -> right path are readable immediately. */}
     <div style={{position:"absolute",left:120,right:120,top:62}}>
-      <div style={{fontFamily:"Inter,Arial",fontSize:27,fontWeight:700,
-        color:C.teal,letterSpacing:4.2,marginBottom:12}}>CONTROL GATE</div>
+      <div style={{fontFamily:"Inter,Arial",fontSize:27,fontWeight:700,color:C.teal,
+        letterSpacing:4.2,marginBottom:12}}>CONTROL GATE</div>
       <div style={{fontFamily:"Space Grotesk,Arial",fontSize:titleSize,fontWeight:700,
-        color:C.white,lineHeight:1.05,letterSpacing:-1,maxWidth:1580}}>
-        {displayTitle}
-      </div>
+        color:C.white,lineHeight:1.05,letterSpacing:-1,maxWidth:1580}}>{titleText}</div>
     </div>
-    <Panel style={{position:"absolute",left:155,top:285,width:W,height:620,opacity:1}}>
-      {/* Connections and their particles sit underneath the three labeled boxes. */}
-      <svg width={W} height={620} style={{position:"absolute",inset:0,pointerEvents:"none"}}>
-        <line x1={inputEnd} y1={cy}
-          x2={inputEnd+(gateL-inputEnd)*inLine} y2={cy} {...lineProps}/>
-        <line x1={gateR} y1={cy}
-          x2={gateR+(outputStart-gateR)*outLine} y2={cy} {...lineProps}/>
-        {[...Array(inCount)].map((_,i)=>{
-          const q=loop01(realFrame,period,Math.round(i*period/inCount));
-          return <circle key={"in"+i} cx={inputEnd+(gateL-inputEnd)*q} cy={cy}
-            r={8} fill={C.teal} opacity={reveal(.66,.90)}/>;
-        })}
-        {[...Array(outCount)].map((_,i)=>{
-          const q=loop01(realFrame,period,Math.round(i*period/outCount));
-          return <circle key={"out"+i} cx={gateR+(outputStart-gateR)*q} cy={cy}
-            r={8} fill={C.heat} opacity={reveal(1.14,1.40)}/>;
-        })}
+
+    <Panel style={{position:"absolute",left:155,top:panelTop,width:W,height:620,opacity:1}}>
+      {/* Topology is static. Draw connectors behind ALL three nodes. */}
+      <svg width={W} height={620} viewBox={"0 0 "+W+" 620"}
+        style={{position:"absolute",left:0,top:0,pointerEvents:"none"}}>
+        <line x1={inputEnd} y1={cy} x2={gateX} y2={cy}
+          stroke={C.line} strokeWidth={9} strokeLinecap="round"/>
+        <line x1={gateEnd} y1={cy} x2={outputX} y2={cy}
+          stroke={C.line} strokeWidth={9} strokeLinecap="round"/>
+        {/* Inbound request; dots travel only on the connector, never through node labels. */}
+        {incomingVisible ? [...Array(inCount)].map((_,i)=>{
+          const q=loop01(frame-36,loopFrames,Math.round(i*loopFrames/inCount));
+          return <circle key={"request-"+i} cx={inputEnd+(gateX-inputEnd)*q}
+            cy={cy} r={8} fill={C.teal} opacity={.95}/>;
+        }) : null}
+        {/* Accepted output; lower packet density is tied to allowed request. */}
+        {outgoingVisible ? [...Array(outCount)].map((_,i)=>{
+          const q=loop01(frame-48,loopFrames,Math.round(i*loopFrames/outCount));
+          return <circle key={"allowed-"+i} cx={gateEnd+(outputX-gateEnd)*q}
+            cy={cy} r={8} fill={C.heat} opacity={.95}/>;
+        }) : null}
       </svg>
 
-      <NodeBox label={inputLabel} x={70} y={cy-75} width={300} accent={C.teal}/>
-      <div style={{position:"absolute",left:gateL,top:cy-130,width:gateR-gateL,
-        height:260,border:"2px solid "+C.heat+"88",borderRadius:26,
-        background:"rgba(20,36,64,.97)",display:"flex",flexDirection:"column",
-        alignItems:"center",justifyContent:"center",boxSizing:"border-box"}}>
-        <div style={{fontFamily:"Space Grotesk,Arial",fontSize:29,fontWeight:700,
-          color:C.white,textAlign:"center",padding:"0 15px"}}>{gateLabel}</div>
-        <div style={{marginTop:23,width:125,height:38,border:"2px solid "+C.slate,
-          borderRadius:10,padding:5,boxSizing:"border-box",background:C.navy}}>
-          <div style={{width:fill+"%",height:"100%",background:C.heat,
-            borderRadius:5,boxShadow:"0 0 16px "+C.heat+"66"}}/>
-        </div>
-        <div style={{fontFamily:"Inter,Arial",fontSize:23,fontWeight:750,
-          color:C.heat,marginTop:17}}>{Math.round(allowedPct)}% ALLOWED</div>
-      </div>
-      <NodeBox label={outputLabel} x={outputStart} y={cy-75} width={300} accent={C.heat}/>
-      <div style={{position:"absolute",top:70,left:365,width:315,textAlign:"center",
-        fontFamily:"Inter,Arial",fontSize:29,fontWeight:750,color:C.teal}}>
+      <div style={{position:"absolute",left:410,top:64,width:240,textAlign:"center",
+        fontFamily:"Inter,Arial",fontSize:27,fontWeight:750,color:C.teal}}>
         REQUEST {Math.round(requestPct)}%
       </div>
-      <div style={{position:"absolute",top:70,left:934,width:300,textAlign:"center",
-        fontFamily:"Inter,Arial",fontSize:29,fontWeight:750,color:C.heat}}>
+      <div style={{position:"absolute",left:954,top:64,width:240,textAlign:"center",
+        fontFamily:"Inter,Arial",fontSize:27,fontWeight:750,color:C.heat}}>
         ALLOWED {Math.round(allowedPct)}%
       </div>
-      <div style={{position:"absolute",left:90,right:90,bottom:40,textAlign:"center",
-        fontFamily:"Inter,Arial",fontSize:25,color:C.slate,opacity:reveal(1.30,1.60)}}>
+
+      <NodeBox label={inputLabel} x={inputX} y={cy-75} width={inputW} accent={C.teal}/>
+      {/* Middle gate remains visible throughout: only its fill moves. */}
+      <div style={{position:"absolute",left:gateX,top:cy-125,width:gateW,height:250,
+        border:"2px solid "+C.heat+"AA",borderRadius:26,background:"rgba(20,36,64,.98)",
+        boxSizing:"border-box",display:"flex",flexDirection:"column",alignItems:"center",
+        justifyContent:"center",boxShadow:"0 0 "+Math.round(7+13*requestGlow)+"px "+C.heat+"33"}}>
+        <div style={{fontFamily:"Space Grotesk,Arial",fontSize:28,fontWeight:700,
+          color:C.white,textAlign:"center",padding:"0 16px",lineHeight:1.14}}>{gateLabel}</div>
+        <div style={{marginTop:20,width:132,height:38,border:"2px solid "+C.slate,
+          borderRadius:10,padding:5,boxSizing:"border-box",background:C.navy}}>
+          <div style={{height:"100%",width:fillPct+"%",background:C.heat,
+            borderRadius:4,boxShadow:"0 0 12px "+C.heat+"66"}}/>
+        </div>
+        <div style={{fontFamily:"Inter,Arial",fontSize:22,fontWeight:750,color:C.heat,marginTop:16}}>
+          {Math.round(allowedPct)}% ALLOWED
+        </div>
+      </div>
+      <NodeBox label={outputLabel} x={outputX} y={cy-75} width={outputW} accent={C.heat}/>
+
+      <div style={{position:"absolute",left:90,right:90,bottom:43,textAlign:"center",
+        fontFamily:"Inter,Arial",fontSize:25,color:C.slate}}>
         The BMS limits delivered power when operating conditions require it.
       </div>
     </Panel>
-    {footer ? <div style={{opacity:reveal(1.35,1.65)}}><Footer text={footer}/></div> : null}
+    {footer ? <Footer text={footer}/> : null}
   </AbsoluteFill>;
 };
 
