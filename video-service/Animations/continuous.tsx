@@ -139,77 +139,96 @@ export const VALF008PacketStream:React.FC<any> = ({title,nodes,flowLabel,intensi
  * while older QA uses percentage rates (e.g. 100 / 42). Respect both formats.
  * rateUnit="percent" overrides auto-detection for genuine small percentages.
  */
+/**
+ * VA-LF-009 Control Gate. All meaningful information is visible from frame 0.
+ * The older beat-wide LF reveal clock caused moving dots / footer to appear
+ * while the gate and output boxes were invisible in 5–6 second scenes.
+ * Keep structure stable, then animate just connections and packet flow
+ * using actual 30fps frame time (never beat-normalized reveal progress).
+ *
+ * Accept rate inputs in either 0..1 or 0..100 form; explicit rateUnit wins.
+ */
 export const VALF009ThrottleGate:React.FC<any> = ({
   title,inputLabel,gateLabel,outputLabel,inputRate,outputRate,rateUnit="auto",footer
 }) => {
-  const progress=useLFRevealProgress();
-  const real=useLFRealFrame();
+  const realFrame=useLFRealFrame();
   const {fps}=useVideoConfig();
+  const seconds=realFrame/Math.max(1,fps);
+  const reveal=(a:number,b:number)=>staged(seconds,a,b);
   const W=1610,cy=348,inputEnd=370,gateL=696,gateR=914,outputStart=1240;
   const rawRequest=Number(inputRate),rawAllowed=Number(outputRate);
-  const fractional=rateUnit==="fraction" || (rateUnit!=="percent" && rawRequest<=1 && rawAllowed<=1);
-  const requestPct=Math.max(0,Math.min(100,rawRequest*(fractional?100:1)));
-  const allowedPct=Math.max(0,Math.min(100,rawAllowed*(fractional?100:1)));
-  const gateFill=allowedPct*staged(progress,.48,.62);
+  const isFraction=rateUnit==="fraction" || (rateUnit!=="percent" && rawRequest<=1 && rawAllowed<=1);
+  const requestPct=Math.max(0,Math.min(100,rawRequest*(isFraction?100:1)));
+  const allowedPct=Math.max(0,Math.min(100,rawAllowed*(isFraction?100:1)));
+  const fill=allowedPct*reveal(.75,1.25);
+  const inLine=reveal(.18,.50);
+  const outLine=reveal(.56,.88);
   const period=Math.max(30,Math.round(fps*2));
   const inCount=requestPct>0?Math.max(2,Math.round(2+requestPct*.055)):0;
   const outCount=requestPct>0?Math.max(0,Math.min(inCount,Math.round(inCount*allowedPct/requestPct))):0;
-  const inputLine=staged(progress,.18,.30);
-  const outputLine=staged(progress,.56,.66);
+  const displayTitle=title||"The BMS can throttle power";
+  const titleSize=displayTitle.length>52?54:displayTitle.length>38?60:66;
   const lineProps={stroke:C.line,strokeWidth:9,strokeLinecap:"round" as const};
 
   return <AbsoluteFill>
-    <Title title={title||"The BMS can throttle power"} kicker="Control gate"/>
-    <Panel style={{position:"absolute",left:155,top:285,width:W,height:620,opacity:staged(progress,0,.10)}}>
-      {/* Lines and moving dots stay behind the source, gate, and destination boxes. */}
-      <svg width={W} height="620" style={{position:"absolute",inset:0,pointerEvents:"none"}}>
-        <line x1={inputEnd} y1={cy} x2={inputEnd+(gateL-inputEnd)*inputLine} y2={cy} {...lineProps}/>
-        <line x1={gateR} y1={cy} x2={gateR+(outputStart-gateR)*outputLine} y2={cy} {...lineProps}/>
+    {/* The title and complete left -> gate -> right path are readable immediately. */}
+    <div style={{position:"absolute",left:120,right:120,top:62}}>
+      <div style={{fontFamily:"Inter,Arial",fontSize:27,fontWeight:700,
+        color:C.teal,letterSpacing:4.2,marginBottom:12}}>CONTROL GATE</div>
+      <div style={{fontFamily:"Space Grotesk,Arial",fontSize:titleSize,fontWeight:700,
+        color:C.white,lineHeight:1.05,letterSpacing:-1,maxWidth:1580}}>
+        {displayTitle}
+      </div>
+    </div>
+    <Panel style={{position:"absolute",left:155,top:285,width:W,height:620,opacity:1}}>
+      {/* Connections and their particles sit underneath the three labeled boxes. */}
+      <svg width={W} height={620} style={{position:"absolute",inset:0,pointerEvents:"none"}}>
+        <line x1={inputEnd} y1={cy}
+          x2={inputEnd+(gateL-inputEnd)*inLine} y2={cy} {...lineProps}/>
+        <line x1={gateR} y1={cy}
+          x2={gateR+(outputStart-gateR)*outLine} y2={cy} {...lineProps}/>
         {[...Array(inCount)].map((_,i)=>{
-          const q=loop01(real,period,Math.round(i*period/inCount));
+          const q=loop01(realFrame,period,Math.round(i*period/inCount));
           return <circle key={"in"+i} cx={inputEnd+(gateL-inputEnd)*q} cy={cy}
-            r={8} fill={C.teal} opacity={staged(progress,.40,.50)}/>;
+            r={8} fill={C.teal} opacity={reveal(.66,.90)}/>;
         })}
         {[...Array(outCount)].map((_,i)=>{
-          const q=loop01(real,period,Math.round(i*period/outCount));
+          const q=loop01(realFrame,period,Math.round(i*period/outCount));
           return <circle key={"out"+i} cx={gateR+(outputStart-gateR)*q} cy={cy}
-            r={8} fill={C.heat} opacity={staged(progress,.74,.83)}/>;
+            r={8} fill={C.heat} opacity={reveal(1.14,1.40)}/>;
         })}
       </svg>
-      <NodeBox label={inputLabel} x={70} y={cy-75} width={300} accent={C.teal}
-        opacity={staged(progress,.08,.19)}/>
-      <div style={{
-        position:"absolute",left:gateL,top:cy-130,width:gateR-gateL,height:260,
-        opacity:staged(progress,.28,.40),border:"2px solid "+C.heat+"88",
-        borderRadius:26,background:"rgba(20,36,64,.97)",display:"flex",flexDirection:"column",
-        alignItems:"center",justifyContent:"center",boxSizing:"border-box"
-      }}>
+
+      <NodeBox label={inputLabel} x={70} y={cy-75} width={300} accent={C.teal}/>
+      <div style={{position:"absolute",left:gateL,top:cy-130,width:gateR-gateL,
+        height:260,border:"2px solid "+C.heat+"88",borderRadius:26,
+        background:"rgba(20,36,64,.97)",display:"flex",flexDirection:"column",
+        alignItems:"center",justifyContent:"center",boxSizing:"border-box"}}>
         <div style={{fontFamily:"Space Grotesk,Arial",fontSize:29,fontWeight:700,
           color:C.white,textAlign:"center",padding:"0 15px"}}>{gateLabel}</div>
         <div style={{marginTop:23,width:125,height:38,border:"2px solid "+C.slate,
           borderRadius:10,padding:5,boxSizing:"border-box",background:C.navy}}>
-          <div style={{width:gateFill+"%",height:"100%",background:C.heat,borderRadius:5,
-            boxShadow:"0 0 16px "+C.heat+"66"}}/>
+          <div style={{width:fill+"%",height:"100%",background:C.heat,
+            borderRadius:5,boxShadow:"0 0 16px "+C.heat+"66"}}/>
         </div>
-        <div style={{fontFamily:"Inter,Arial",fontSize:23,fontWeight:750,color:C.heat,
-          marginTop:17,opacity:staged(progress,.52,.62)}}>{Math.round(allowedPct)}% ALLOWED</div>
+        <div style={{fontFamily:"Inter,Arial",fontSize:23,fontWeight:750,
+          color:C.heat,marginTop:17}}>{Math.round(allowedPct)}% ALLOWED</div>
       </div>
-      {/* Each value is aligned above its side of the central BMS control gate. */}
+      <NodeBox label={outputLabel} x={outputStart} y={cy-75} width={300} accent={C.heat}/>
       <div style={{position:"absolute",top:70,left:365,width:315,textAlign:"center",
-        fontFamily:"Inter,Arial",fontSize:29,fontWeight:750,color:C.teal,
-        opacity:staged(progress,.39,.48)}}>REQUEST {Math.round(requestPct)}%</div>
+        fontFamily:"Inter,Arial",fontSize:29,fontWeight:750,color:C.teal}}>
+        REQUEST {Math.round(requestPct)}%
+      </div>
       <div style={{position:"absolute",top:70,left:934,width:300,textAlign:"center",
-        fontFamily:"Inter,Arial",fontSize:29,fontWeight:750,color:C.heat,
-        opacity:staged(progress,.48,.58)}}>ALLOWED {Math.round(allowedPct)}%</div>
-      <NodeBox label={outputLabel} x={outputStart} y={cy-75} width={300} accent={C.heat}
-        opacity={staged(progress,.65,.75)}/>
+        fontFamily:"Inter,Arial",fontSize:29,fontWeight:750,color:C.heat}}>
+        ALLOWED {Math.round(allowedPct)}%
+      </div>
       <div style={{position:"absolute",left:90,right:90,bottom:40,textAlign:"center",
-        fontFamily:"Inter,Arial",fontSize:25,color:C.slate,
-        opacity:staged(progress,.79,.88)}}>
+        fontFamily:"Inter,Arial",fontSize:25,color:C.slate,opacity:reveal(1.30,1.60)}}>
         The BMS limits delivered power when operating conditions require it.
       </div>
     </Panel>
-    {footer ? <div style={{opacity:staged(progress,.81,.90)}}><Footer text={footer}/></div> : null}
+    {footer ? <div style={{opacity:reveal(1.35,1.65)}}><Footer text={footer}/></div> : null}
   </AbsoluteFill>;
 };
 
