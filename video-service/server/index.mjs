@@ -392,6 +392,20 @@ async function assembleApprovedChapters(video_id, chapters, endClipId, thumbnail
 const ok = (req) => req.headers["x-api-key"] === API_KEY;
 
 app.get("/", (_req, res) => res.json({ status: "ok", service: "ax-longform-video", width: WIDTH, height: HEIGHT, fps: 30 }));
+// Read the actual animation source inside the running image, not an assumed Git branch.
+const VA009_BUILD_CONTRACT = "VA009_VISIBLE_FIRST_V2";
+const VA009_SOURCE_SHA256 = createHash("sha256")
+  .update(fs.readFileSync(path.join(ROOT, "Animations", "continuous.tsx")))
+  .digest("hex");
+app.get("/render-version", (_req, res) => res.json({
+  status: "ok",
+  service: "ax-longform-video",
+  animation: "VA-LF-009",
+  contract: VA009_BUILD_CONTRACT,
+  animation_source_sha256: VA009_SOURCE_SHA256,
+  build_commit: process.env.AX_LF_BUILD_SHA || null,
+}));
+
 
 app.post("/render-video", async (req, res) => {
   if (!ok(req)) return res.status(401).json({ error: "bad api key" });
