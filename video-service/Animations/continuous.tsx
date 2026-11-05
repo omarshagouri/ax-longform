@@ -135,30 +135,6 @@ export const VALF008PacketStream:React.FC<any> = ({title,nodes,flowLabel,intensi
 };
 
 /**
- * VA-LF-009. Real Visual_Plan beats use fractional rates (e.g. 0.85 / 0.38)
- * while older QA uses percentage rates (e.g. 100 / 42). Respect both formats.
- * rateUnit="percent" overrides auto-detection for genuine small percentages.
- */
-/**
- * VA-LF-009 Control Gate. All meaningful information is visible from frame 0.
- * The older beat-wide LF reveal clock caused moving dots / footer to appear
- * while the gate and output boxes were invisible in 5–6 second scenes.
- * Keep structure stable, then animate just connections and packet flow
- * using actual 30fps frame time (never beat-normalized reveal progress).
- *
- * Accept rate inputs in either 0..1 or 0..100 form; explicit rateUnit wins.
- */
-/**
- * VA-LF-009: deterministic, visible-first 30 fps control gate.
- * Same choreography as the working LF flow visuals, but the complete
- * topology (three labelled nodes, both connectors, request/allow values)
- * is shown on frame zero. No element reveal uses the beat-wide pacing
- * clock. The motion begins only AFTER the viewer sees the whole circuit:
- *  0.0s static topology; 0.4s request highlight; 0.9s gate response;
- *  1.2s inbound packets; 1.6s reduced outbound packets.
- * Every scene stays complete even if rendered at 4-6 seconds.
- */
-/**
  * VA-LF-009: exactly the same normalized staged-reveal pattern as the
  * other LF process animations. Duration is supplied by Visual_Plan E through
  * LFAnimationTimingProvider. One full second is reserved for a frozen final pose.
