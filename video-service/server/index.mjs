@@ -393,7 +393,7 @@ const ok = (req) => req.headers["x-api-key"] === API_KEY;
 
 app.get("/", (_req, res) => res.json({ status: "ok", service: "ax-longform-video", width: WIDTH, height: HEIGHT, fps: 30 }));
 // Read the actual animation source inside the running image, not an assumed Git branch.
-const VA009_BUILD_CONTRACT = "VA009_TOPOLOGY_FIRST_V3";
+const VA009_BUILD_CONTRACT = "VA009_SEQUENTIAL_PLAN_PACED_V4";
 const VA009_SOURCE_SHA256 = createHash("sha256")
   .update(fs.readFileSync(path.join(ROOT, "Animations", "continuous.tsx")))
   .digest("hex");
