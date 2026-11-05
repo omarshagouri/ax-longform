@@ -16,7 +16,7 @@ RUN node --check server/chapter-timing.mjs
 RUN node --test server/chapter-timing.test.mjs
 RUN node --check server/native-motion.mjs
 RUN node --test server/native-motion.test.mjs
-# Fail build if Control Gate boxes are delayed behind moving dots.
+# Fail build if Control Gate reveal order or Visual_Plan-based pacing regresses.
 RUN node --test server/va009-contract.test.mjs
 RUN node --check server/paired-chapter.mjs
 RUN node --test server/paired-chapter.test.mjs
@@ -33,7 +33,7 @@ RUN node --test server/segmented-tts.test.mjs
 RUN bash -n scripts/setup-lf-assembly-gcs.sh
 RUN python3 scripts/extract_cards.py Cards
 RUN npx remotion browser ensure
-# Real 1920x1080 pixel snapshots ensure VA009 boxes are present before motion.
+# Real 1920x1080 pixel QA verifies box1 -> box2 -> box3 -> lines -> dots, and final 1s hold.
 RUN node server/va009-visual-qa.mjs
 ENV NODE_ENV=production
 CMD ["node", "server/index.mjs"]
