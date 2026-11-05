@@ -187,7 +187,16 @@ export const VALF009ThrottleGate:React.FC<any> = ({
   const outCount=requestPct>0?Math.max(0,Math.min(inCount,Math.round(inCount*allowedPct/requestPct))):0;
 
   return <AbsoluteFill>
-    <Title title={title||"The BMS controls charging power"} kicker="Control gate"/>
+    <div style={{position:"absolute",left:120,right:120,top:62,
+      opacity:show(0,.09),transform:"translateY("+(1-show(0,.09))*15+"px)"}}>
+      <div style={{fontFamily:"Inter,Arial",fontSize:27,fontWeight:700,
+        color:C.teal,letterSpacing:4.2,marginBottom:12}}>CONTROL GATE</div>
+      <div style={{fontFamily:"Space Grotesk,Arial",
+        fontSize:(title||"The BMS controls charging power").length>52?54:(title||"The BMS controls charging power").length>38?60:66,
+        fontWeight:700,color:C.white,lineHeight:1.05,letterSpacing:-1,maxWidth:1580}}>
+        {title||"The BMS controls charging power"}
+      </div>
+    </div>
     <Panel style={{position:"absolute",left:155,top:285,width:W,height:620,opacity:show(0,.08)}}>
       {/* SVG behind the boxes; both connector lines appear AFTER box 3. */}
       <svg width={W} height={620} viewBox={"0 0 "+W+" 620"}
