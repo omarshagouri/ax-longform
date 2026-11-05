@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from "react";
-import { useCurrentFrame as useRawCurrentFrame } from "remotion";
+import { useCurrentFrame as useRawCurrentFrame, useVideoConfig } from "remotion";
 
 /**
  * Long-form reveal choreography. Existing LF animations were authored with
@@ -85,4 +85,36 @@ export function useLFRevealProgress(): number {
   return context
     ? getLFRevealProgress(raw, context.durationFrames)
     : 1;
+}
+
+/**
+ * Visual-Plan-paced staged reveal with an exact final hold.
+ * The containing Video Sequence supplies durationFrames from Visual_Plan E
+ * through LFAnimationTimingProvider. Phase boundaries remain normalized 0..1;
+ * only the last holdSeconds seconds are reserved for a frozen final pose.
+ * Does not change any other animation's existing clock.
+ */
+export function getLFStagedHoldTiming(
+  frame: number, durationFrames: number, fps: number, holdSeconds = 1
+) {
+  const total = Math.max(2, Math.round(Number(durationFrames) || 2));
+  const holdFrames = Math.min(Math.max(0, Math.round(fps * holdSeconds)), total - 2);
+  const activeLastFrame = Math.max(1, total - holdFrames - 1);
+  const heldFrame = Math.min(Math.max(0, frame), activeLastFrame);
+  return {
+    progress: clamp01(heldFrame / activeLastFrame),
+    heldFrame,
+    activeLastFrame,
+    holdFrames,
+    durationFrames: total
+  };
+}
+export function useLFStagedHold(holdSeconds = 1) {
+  const frame = useRawCurrentFrame();
+  const context = useContext(Context);
+  const { fps } = useVideoConfig();
+  // Video.tsx / AnimationPreview.tsx both set the provider duration from the
+  // real scene. A missing provider intentionally does not imply fixed seconds.
+  if (!context) throw new Error("VA-LF-009 requires LFAnimationTimingProvider with Visual_Plan durationFrames");
+  return getLFStagedHoldTiming(frame, context.durationFrames, fps, holdSeconds);
 }
