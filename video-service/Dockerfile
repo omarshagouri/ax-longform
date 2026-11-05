@@ -16,6 +16,8 @@ RUN node --check server/chapter-timing.mjs
 RUN node --test server/chapter-timing.test.mjs
 RUN node --check server/native-motion.mjs
 RUN node --test server/native-motion.test.mjs
+# Fail build if Control Gate boxes are delayed behind moving dots.
+RUN node --test server/va009-contract.test.mjs
 RUN node --check server/paired-chapter.mjs
 RUN node --test server/paired-chapter.test.mjs
 RUN node --check server/clip-catalog.mjs
