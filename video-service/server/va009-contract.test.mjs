@@ -7,6 +7,7 @@ const start = source.indexOf("export const VALF009ThrottleGate:");
 const end = source.indexOf("export const VALF010ThermalField:", start);
 const gate = start>=0 && end>start ? source.slice(start,end) : "";
 const CONTRACT = "VA009_TOPOLOGY_FIRST_V3";
+const timing = readFileSync(new URL("../src/LFAnimationTiming.tsx", import.meta.url), "utf8");
 const requireToken = token => assert.ok(gate.includes(token), CONTRACT+": missing "+token);
 
 test("VA009 has exactly one canonical registered renderer",()=>{
@@ -23,6 +24,9 @@ test("VA009 draws complete input, gate and output from its first frame",()=>{
  assert.doesNotMatch(gate,/useLFRevealProgress\s*\(/);
  assert.doesNotMatch(gate,/useLFPacedFrame\s*\(/);
  assert.doesNotMatch(gate,/staged\s*\(\s*progress\s*,/);
+});
+test("VA009 is exempt from the generic beat-paced reveal clock",()=>{
+ assert.doesNotMatch(timing, /"VA-LF-009"\s*:\s*\d+/);
 });
 test("VA009 gates packet movement behind all labelled nodes",()=>{
  requireToken("const frame=useLFRealFrame()");
