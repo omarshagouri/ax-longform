@@ -20,7 +20,7 @@ export const LF_REVEAL_LAST_FRAME: Readonly<Record<string, number>> = {
   "VA-LF-006": 79,
   "VA-LF-007": 88,
   "VA-LF-008": 60,
-  "VA-LF-009": 75,
+  // VA-LF-009 uses the unpaced real frame clock: topology first, then packet flow.
   "VA-LF-010": 75,
   "VA-LF-011": 75,
   "VA-LF-012": 83,
